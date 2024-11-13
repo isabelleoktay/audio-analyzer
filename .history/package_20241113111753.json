@@ -1,0 +1,14 @@
+{
+  "name": "audio-analyzer",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently \"npm run frontend\" \"npm run backend\" \"npm run python-service\"",
+    "frontend": "npm start --prefix frontend",
+    "backend": "npm start --prefix backend",
+    "python-service": "cd python-service && source venv/bin/activate && flask run --host=0.0.0.0 --port=8000",
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install && cd ../python-service && pip install -r requirements.txt"
+  },
+  "dependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
