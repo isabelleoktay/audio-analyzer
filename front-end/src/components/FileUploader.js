@@ -33,8 +33,8 @@ const FileUploader = ({
       const processAudioResult = await processAudio(file);
       setFeatures(processAudioResult);
 
-      console.log("PYTHON RESULT");
-      console.log(processAudioResult);
+      // console.log("PYTHON RESULT");
+      // console.log(processAudioResult);
     } catch (error) {
       console.error("Error processing audio:", error);
     }
@@ -71,7 +71,7 @@ const FileUploader = ({
     <div
       onDrop={handleDrop}
       onDragOver={handleDragOver}
-      className="mt-8 p-8 border-2 border-dashed border-blue-300 bg-blue-100 text-center rounded-lg w-3/4 max-w-lg cursor-default"
+      className="mt-8 p-8 border-2 border-dashed border-blue-300 bg-blue-100 text-center rounded-lg w-full cursor-default"
     >
       <input
         type="file"
