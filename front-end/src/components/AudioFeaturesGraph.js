@@ -66,6 +66,17 @@ const AudioFeaturesGraph = ({
 
   // Draw chart on the canvas
   const drawData = (context, width, height, padding) => {
+    if (typeof data[0] === "object") {
+      data.forEach((values) => {
+        const { data: lineData, lineColor } = values;
+        drawValues(lineData, lineColor, context, width, height, padding);
+      });
+    } else {
+      drawValues(data, color, context, width, height, padding);
+    }
+  };
+
+  const drawValues = (data, color, context, width, height, padding) => {
     context.strokeStyle = color;
     context.lineWidth = 2;
 
@@ -90,8 +101,8 @@ const AudioFeaturesGraph = ({
   const drawHighlights = (context, width, height, padding) => {
     highlightedSections.forEach((section) => {
       const { start, end, color: sectionColor, label } = section;
-      const startX = padding + (start / data.length) * (width - 3 * padding);
-      const endX = padding + (end / data.length) * (width - 3 * padding);
+      const startX = padding + (start / data.length) * (width - 4 * padding);
+      const endX = padding + (end / data.length) * (width - 4 * padding);
       const sectionWidth = endX - startX;
 
       context.fillStyle = sectionColor;
