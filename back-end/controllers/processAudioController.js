@@ -1,6 +1,9 @@
 import multer from "multer";
 import axios from "axios";
 import FormData from "form-data";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const upload = multer({ storage: multer.memoryStorage() }).single("audioFile");
 
@@ -23,7 +26,7 @@ const processAudio = async (req, res) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/process-audio",
+        `${process.env.PYTHON_SERVICE_URL}/process-audio`,
         formData,
         {
           headers: formData.getHeaders(),
