@@ -4,9 +4,11 @@ const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL,
 });
 
-const processAudio = async (audioFile) => {
+const processAudio = async (audioFile, minNote, maxNote) => {
   const formData = new FormData();
   formData.append("audioFile", audioFile);
+  formData.append("minNote", minNote);
+  formData.append("maxNote", maxNote);
 
   try {
     const response = await apiClient.post("/api/process-audio", formData, {

@@ -23,6 +23,8 @@ const AudioAnalyzer = () => {
   const [activeVisualizationTab, setActiveVisualizationTab] =
     useState("Highlights");
   const [playingAudioRange, setPlayingAudioRange] = useState(null);
+  const [minNote, setMinNote] = useState("");
+  const [maxNote, setMaxNote] = useState("");
   const audioContextRef = useRef(null);
   const sourceNodeRef = useRef(null);
 
@@ -241,6 +243,10 @@ const AudioAnalyzer = () => {
             setAudioBuffer={setAudioBuffer}
             setAudioData={setAudioData}
             setFeatures={setFeatures}
+            minNote={minNote}
+            maxNote={maxNote}
+            setMinNote={setMinNote}
+            setMaxNote={setMaxNote}
           />
         ) : (
           <div className="w-full">

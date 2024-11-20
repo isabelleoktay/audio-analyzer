@@ -11,12 +11,15 @@ const processAudio = async (req, res) => {
     }
 
     const audioFile = req.file;
+    const { minNote, maxNote } = req.body;
     if (!audioFile) {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
     const formData = new FormData();
     formData.append("audioFile", audioFile.buffer, audioFile.originalname);
+    formData.append("minNote", minNote);
+    formData.append("maxNote", maxNote);
 
     try {
       const response = await axios.post(
