@@ -18,6 +18,8 @@ SEGMENT_LENGTH_FACTOR = 2.32
 def process_audio():
     print('Processing audio file...')
     audio_file = request.files.get('audioFile')
+    min_note = request.form.get('minNote')
+    max_note = request.form.get('maxNote')
 
     print('Received audio file:', audio_file)
 
@@ -33,7 +35,7 @@ def process_audio():
         return jsonify({'error': str(e)}), 400
 
     # Extract features
-    mfccs, rms, pitches, zcr, hop_length = extract_features(audio, sr)
+    mfccs, rms, pitches, zcr, hop_length = extract_features(audio, sr, min_note, max_note)
 
     loudness_smoothed = smooth_curve(rms[0], window_size=100)
     pitches_smoothed = adaptive_smooth_pitch(pitches, base_window=15, max_window=25)
@@ -112,13 +114,13 @@ def load_audio(file_path):
     audio, sr = librosa.load(file_path, sr=None)
     return audio, sr
 
-def extract_features(audio, sr):
+def extract_features(audio, sr, min_note, max_note):
     """Extract MFCCs, RMS, pitches, and ZCR from the audio."""
     n_fft = 2048
     hop_length = 512
     mfccs = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=13, n_fft=n_fft, hop_length=hop_length)
     rms = librosa.feature.rms(y=audio, frame_length=n_fft, hop_length=hop_length)
-    pitches = librosa.yin(audio, fmin=librosa.note_to_hz('F3'), fmax=librosa.note_to_hz('B6'), sr=sr, hop_length=hop_length)
+    pitches = librosa.yin(audio, fmin=librosa.note_to_hz(min_note), fmax=librosa.note_to_hz(max_note), sr=sr, hop_length=hop_length)
     zcr = librosa.feature.zero_crossing_rate(y=audio, frame_length=n_fft, hop_length=hop_length)
     return mfccs, rms, pitches, zcr, hop_length
 

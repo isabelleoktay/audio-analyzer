@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { processAudio } from "../utils/api";
 
@@ -8,7 +8,26 @@ const FileUploader = ({
   setAudioBuffer,
   setAudioData,
   setFeatures,
+  minNote,
+  maxNote,
+  setMinNote,
+  setMaxNote,
 }) => {
+  const [error, setError] = useState("");
+
+  const noteRegex = /^[A-Ga-g]#?[0-9]$/;
+
+  const validateNotes = () => {
+    if (!noteRegex.test(minNote) || !noteRegex.test(maxNote)) {
+      setError(
+        "Invalid note format. Please use a format like C4, F#3, G3, etc."
+      );
+      return false;
+    }
+    setError("");
+    return true;
+  };
+
   const getAudioBuffer = useCallback(async (audioFile) => {
     if (!audioContext) {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -30,25 +49,29 @@ const FileUploader = ({
 
   const processAudioBuffer = async (file) => {
     try {
-      const processAudioResult = await processAudio(file);
+      const processAudioResult = await processAudio(file, minNote, maxNote);
       setFeatures(processAudioResult);
 
       // console.log("PYTHON RESULT");
       // console.log(processAudioResult);
     } catch (error) {
       console.error("Error processing audio:", error);
+      setError("Error processing audio. Please try again.");
     }
   };
 
   const handleFile = async (uploadedFile) => {
     if (uploadedFile && uploadedFile.type.startsWith("audio/")) {
+      if (!validateNotes()) {
+        return;
+      }
       setFile(uploadedFile);
       const buffer = await getAudioBuffer(uploadedFile);
       setAudioBuffer(buffer);
       setAudioData(buffer.getChannelData(0));
       await processAudioBuffer(uploadedFile);
     } else {
-      alert("Please upload an audio file.");
+      setError("Please upload an audio file.");
     }
   };
 
@@ -65,6 +88,14 @@ const FileUploader = ({
 
   const handleDragOver = (event) => {
     event.preventDefault();
+  };
+
+  const handleMinNoteChange = (event) => {
+    setMinNote(event.target.value);
+  };
+
+  const handleMaxNoteChange = (event) => {
+    setMaxNote(event.target.value);
   };
 
   return (
@@ -91,6 +122,33 @@ const FileUploader = ({
           </p>
         </div>
       </label>
+      <div className="mt-4">
+        <label className="block text-gray-600">
+          Min Note:
+          <input
+            type="text"
+            value={minNote}
+            onChange={handleMinNoteChange}
+            className="ml-2 p-1 border rounded"
+            placeholder="e.g., F3"
+          />
+        </label>
+        <label className="block text-gray-600 mt-2">
+          Max Note:
+          <input
+            type="text"
+            value={maxNote}
+            onChange={handleMaxNoteChange}
+            className="ml-2 p-1 border rounded"
+            placeholder="e.g., B6"
+          />
+        </label>
+        {error && (
+          <p className="text-white rounded font-semibold bg-red-500 opacity-90 py-1 px-2 mt-4">
+            {error}
+          </p>
+        )}
+      </div>
     </div>
   );
 };
