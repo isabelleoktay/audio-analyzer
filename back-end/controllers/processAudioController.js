@@ -26,7 +26,7 @@ const processAudio = async (req, res) => {
 
     try {
       const response = await axios.post(
-        `${process.env.PYTHON_SERVICE_URL}/process-audio`,
+        `${process.env.PYTHON_SERVICE_URL}/python-service/process-audio`,
         formData,
         {
           headers: formData.getHeaders(),

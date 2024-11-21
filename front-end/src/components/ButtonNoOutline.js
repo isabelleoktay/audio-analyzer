@@ -32,7 +32,7 @@ const ButtonNoOutline = ({
   return (
     <button
       onClick={handleClick}
-      className={`ml-auto hover:cursor-pointer transition ease-in-out delay-50 text-${fontSize} text-center text-${textColor} hover:text-${textColorHover} border-transparent focus:border-transparent focus:ring-0 focus:outline-none bg-red-500 hover:bg-red-400 py-1 px-2 outline-none rounded`}
+      className={`ml-auto hover:cursor-pointer transition ease-in-out delay-50 text-${fontSize} text-center text-${textColor} hover:text-${textColorHover} border-transparent focus:border-transparent focus:ring-0 focus:outline-none bg-${bgColor} hover:opacity-75 py-1 px-2 outline-none rounded`}
     >
       {text}
     </button>
