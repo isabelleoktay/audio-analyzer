@@ -14,7 +14,7 @@ WINDOW_SIZE = 100
 HOP_SIZE = 25
 SEGMENT_LENGTH_FACTOR = 2.32
 
-@app.route('/process-audio', methods=['POST'])
+@app.route('/python-service/process-audio', methods=['POST'])
 def process_audio():
     print('Processing audio file...')
     audio_file = request.files.get('audioFile')
@@ -84,7 +84,7 @@ def process_audio():
 
     return jsonify(response)
 
-@app.route('/')
+@app.route('/python-service/')
 def home():
     return "Welcome to the Audio Processing API!"
 

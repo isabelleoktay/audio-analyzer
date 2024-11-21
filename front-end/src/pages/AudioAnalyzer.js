@@ -236,10 +236,11 @@ const AudioAnalyzer = () => {
 
       <div className="flex flex-row space-x-6 h-full xl:w-3/5 lg:w-3/4">
         {/* Upload File/Playback Audio File */}
-        {!file ? (
+        {!(audioBuffer && features && waveformAxes && highlightedSections) ? (
           <FileUploader
             audioContext={audioContextRef.current}
             setFile={setFile}
+            file={file}
             setAudioBuffer={setAudioBuffer}
             setAudioData={setAudioData}
             setFeatures={setFeatures}
@@ -250,18 +251,16 @@ const AudioAnalyzer = () => {
           />
         ) : (
           <div className="w-full">
-            {audioBuffer && features && waveformAxes && highlightedSections && (
-              <WaveformPlayback
-                file={file}
-                playingSection={playingSection}
-                setPlayingSection={setPlayingSection}
-                setFile={setFile}
-                setAudioBuffer={setAudioBuffer}
-                setFeatures={setFeatures}
-                highlightedRegions={highlightedSections}
-                sampleRate={features.sample_rate}
-              />
-            )}
+            <WaveformPlayback
+              file={file}
+              playingSection={playingSection}
+              setPlayingSection={setPlayingSection}
+              setFile={setFile}
+              setAudioBuffer={setAudioBuffer}
+              setFeatures={setFeatures}
+              highlightedRegions={highlightedSections}
+              sampleRate={features.sample_rate}
+            />
           </div>
         )}
       </div>
