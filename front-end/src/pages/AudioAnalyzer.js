@@ -38,12 +38,20 @@ const AudioAnalyzer = () => {
     { name: "Pitch", color: "blue-500" },
   ];
 
-  const calculateAxes = (data, sampleRate, hopLength) => {
-    const minY = Math.min(...data);
-    const maxY = Math.max(...data);
+  const calculateAxes = (data, sampleRate, hopLength, type) => {
+    let minY, maxY, duration;
+
+    if (type === "feature") {
+      minY = Math.min(...data);
+      maxY = Math.max(...data);
+      duration = (data.length * hopLength) / sampleRate;
+    } else {
+      minY = data.reduce((min, val) => Math.min(min, val), Infinity);
+      maxY = data.reduce((max, val) => Math.max(max, val), -Infinity);
+      duration = audioBuffer.duration;
+    }
 
     // X-axis time labels based on sample rate and hop length
-    const duration = (data.length * hopLength) / sampleRate; // total time in seconds
     const xLabels = Array.from({ length: 6 }, (_, i) => ({
       label: `${((duration * i) / 5).toFixed(2)}s`,
       position: i / 5, // normalized position (0 to 1) to use within width
@@ -53,52 +61,6 @@ const AudioAnalyzer = () => {
     const yLabels = Array.from({ length: 5 }, (_, i) => ({
       label: (minY + ((maxY - minY) * i) / 4).toFixed(2),
       position: i / 4, // normalized (1 to 0) for top to bottom
-    }));
-
-    return { xLabels, yLabels, minY, maxY };
-  };
-
-  const calculateWaveformAxes = (data) => {
-    // Calculate min and max values for the y-axis
-    const minY = data.reduce((min, val) => Math.min(min, val), Infinity);
-    const maxY = data.reduce((max, val) => Math.max(max, val), -Infinity);
-
-    // Calculate total duration in seconds (number of samples / sample rate)
-    const duration = audioBuffer.duration;
-
-    // Calculate x-axis labels (time in seconds)
-    const xLabels = Array.from({ length: 6 }, (_, i) => ({
-      label: `${((duration * i) / 5).toFixed(2)}s`, // Time label at specific intervals
-      position: i / 5, // Normalized position (0 to 1) to fit within the canvas width
-    }));
-
-    // Calculate y-axis labels (min to max amplitude/frequency)
-    const yLabels = Array.from({ length: 5 }, (_, i) => ({
-      label: (minY + ((maxY - minY) * i) / 4).toFixed(2), // Label range between minY and maxY
-      position: i / 4, // Normalized position (0 to 1) for vertical placement on canvas (bottom to top)
-    }));
-
-    return { xLabels, yLabels, minY, maxY };
-  };
-
-  const calculateVariabilityAxes = (data) => {
-    // Calculate min and max values for the y-axis
-    const minY = data.reduce((min, val) => Math.min(min, val), Infinity);
-    const maxY = data.reduce((max, val) => Math.max(max, val), -Infinity);
-
-    // Calculate total duration in seconds (number of samples / sample rate)
-    const duration = audioBuffer.duration;
-
-    // Calculate x-axis labels (time in seconds)
-    const xLabels = Array.from({ length: 6 }, (_, i) => ({
-      label: `${((duration * i) / 5).toFixed(2)}s`, // Time label at specific intervals
-      position: i / 5, // Normalized position (0 to 1) to fit within the canvas width
-    }));
-
-    // Calculate y-axis labels (min to max amplitude/frequency)
-    const yLabels = Array.from({ length: 5 }, (_, i) => ({
-      label: (minY + ((maxY - minY) * i) / 4).toFixed(2), // Label range between minY and maxY
-      position: i / 4, // Normalized position (0 to 1) for vertical placement on canvas (bottom to top)
     }));
 
     return { xLabels, yLabels, minY, maxY };
@@ -166,9 +128,9 @@ const AudioAnalyzer = () => {
 
   useEffect(() => {
     if (audioData && features) {
-      const axes = calculateWaveformAxes(audioData, features.sample_rate);
+      const axes = calculateAxes(audioData, features.sample_rate);
       setWaveformAxes(axes);
-      const normVariabilityAxes = calculateVariabilityAxes(
+      const normVariabilityAxes = calculateAxes(
         features.normalized_timbre_variability
       );
       setVariabilityAxes(normVariabilityAxes);
@@ -336,7 +298,8 @@ const AudioAnalyzer = () => {
                   const axes = calculateAxes(
                     features.loudness_smoothed,
                     features.sample_rate,
-                    features.hop_length
+                    features.hop_length,
+                    "feature"
                   );
 
                   return (
@@ -360,7 +323,8 @@ const AudioAnalyzer = () => {
                   const axes = calculateAxes(
                     features.pitches_smoothed,
                     features.sample_rate,
-                    features.hop_length
+                    features.hop_length,
+                    "feature"
                   );
 
                   return (
