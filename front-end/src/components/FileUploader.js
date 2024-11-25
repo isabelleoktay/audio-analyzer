@@ -4,6 +4,7 @@ import AttachmentIcon from "@mui/icons-material/Attachment";
 import CircularProgress from "@mui/material/CircularProgress";
 import { processAudio, uploadAudio } from "../utils/api";
 import ButtonNoOutline from "./ButtonNoOutline";
+import InstrumentSelector from "./InstrumentSelector";
 
 const FileUploader = ({
   audioContext,
@@ -158,8 +159,9 @@ const FileUploader = ({
               <span className="text-gray-500">{file.name}</span>
             </div>
           )}
+          <InstrumentSelector setMinNote={setMinNote} setMaxNote={setMaxNote} />
           <div className="my-4">
-            <label className="block text-gray-600">
+            {/* <label className="block text-gray-600">
               Min Note:
               <input
                 type="text"
@@ -178,7 +180,7 @@ const FileUploader = ({
                 className="ml-2 p-1 border rounded"
                 placeholder="e.g., B6"
               />
-            </label>
+            </label> */}
             {error && (
               <p
                 className={`transition-opacity duration-500 ease-in-out ${
