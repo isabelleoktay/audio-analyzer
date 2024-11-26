@@ -39,6 +39,7 @@ def process_audio():
 
     loudness_smoothed = smooth_curve(rms[0], window_size=100)
     pitches_smoothed = adaptive_smooth_pitch(pitches, base_window=15, max_window=25)
+    pitches_smoothed[loudness_smoothed < 0.02] = 0
 
     # Calculate articulation levels
     articulation_levels = calculate_articulation_level(rms, zcr)

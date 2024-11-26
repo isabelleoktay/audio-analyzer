@@ -7,6 +7,16 @@ import Tabs from "../components/Tabs";
 import CollapsibleLegend from "../components/CollapsibleLegend";
 import AudioFeaturesGraph from "../components/AudioFeaturesGraph";
 
+const visualizationTabs = [
+  { name: "Highlights", color: "blue-500" },
+  { name: "Variability", color: "blue-500" },
+];
+
+const featureTabs = [
+  { name: "Loudness", color: "blue-500" },
+  { name: "Pitch", color: "blue-500" },
+];
+
 const AudioAnalyzer = () => {
   const [file, setFile] = useState(null);
   const [audioBuffer, setAudioBuffer] = useState(null);
@@ -27,16 +37,6 @@ const AudioAnalyzer = () => {
   const [maxNote, setMaxNote] = useState("");
   const audioContextRef = useRef(null);
   const sourceNodeRef = useRef(null);
-
-  const visualizationTabs = [
-    { name: "Highlights", color: "blue-500" },
-    { name: "Variability", color: "blue-500" },
-  ];
-
-  const featureTabs = [
-    { name: "Loudness", color: "blue-500" },
-    { name: "Pitch", color: "blue-500" },
-  ];
 
   const calculateAxes = (data, sampleRate, hopLength, type) => {
     let minY, maxY, duration;
@@ -196,7 +196,7 @@ const AudioAnalyzer = () => {
     <div className="flex flex-col items-center min-h-screen bg-gray-100">
       <Header title="Audio Analyzer" />
 
-      <div className="flex flex-row space-x-6 h-full xl:w-3/5 lg:w-3/4">
+      <div className="flex flex-row space-x-6 h-full xl:w-3/5 lg:w-1/2">
         {/* Upload File/Playback Audio File */}
         {!(audioBuffer && features && waveformAxes && highlightedSections) ? (
           <FileUploader

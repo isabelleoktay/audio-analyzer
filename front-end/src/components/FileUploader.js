@@ -1,10 +1,10 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import AttachmentIcon from "@mui/icons-material/Attachment";
 import CircularProgress from "@mui/material/CircularProgress";
 import { processAudio, uploadAudio } from "../utils/api";
 import ButtonNoOutline from "./ButtonNoOutline";
-import InstrumentSelector from "./InstrumentSelector";
+import NoteRangeSelector from "./NoteRangeSelector/NoteRangeSelector";
 
 const FileUploader = ({
   audioContext,
@@ -97,14 +97,6 @@ const FileUploader = ({
     event.preventDefault();
   };
 
-  const handleMinNoteChange = (event) => {
-    setMinNote(event.target.value);
-  };
-
-  const handleMaxNoteChange = (event) => {
-    setMaxNote(event.target.value);
-  };
-
   const handleSubmit = async () => {
     if (!validateNotes()) {
       return;
@@ -122,11 +114,17 @@ const FileUploader = ({
     // await uploadAudioBuffer(file);
   };
 
+  useEffect(() => {
+    if (file) {
+      setError("");
+    }
+  }, [file]);
+
   return (
     <div
       onDrop={handleDrop}
       onDragOver={handleDragOver}
-      className="mt-8 p-8 border-2 border-dashed border-blue-300 bg-blue-100 text-center rounded-lg w-full cursor-default"
+      className="mt-8 p-8 border-2 border-dashed border-blue-300 bg-blue-100 text-center rounded-lg w-full cursor-default flex flex-col items-center justify-center"
     >
       {loading ? (
         <div>
@@ -146,7 +144,7 @@ const FileUploader = ({
             <div className="flex flex-col items-center">
               <UploadFileIcon className="text-gray-600 sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl mb-1" />
               <p>
-                Drag and drop file here or{" "}
+                1. Drag and drop file here or{" "}
                 <span className="text-blue-500 underline font-bold cursor-pointer">
                   upload file
                 </span>
@@ -159,47 +157,35 @@ const FileUploader = ({
               <span className="text-gray-500">{file.name}</span>
             </div>
           )}
-          <InstrumentSelector setMinNote={setMinNote} setMaxNote={setMaxNote} />
-          <div className="my-4">
-            {/* <label className="block text-gray-600">
-              Min Note:
-              <input
-                type="text"
-                value={minNote}
-                onChange={handleMinNoteChange}
-                className="ml-2 p-1 border rounded"
-                placeholder="e.g., F3"
-              />
-            </label>
-            <label className="block text-gray-600 mt-2">
-              Max Note:
-              <input
-                type="text"
-                value={maxNote}
-                onChange={handleMaxNoteChange}
-                className="ml-2 p-1 border rounded"
-                placeholder="e.g., B6"
-              />
-            </label> */}
-            {error && (
-              <p
-                className={`transition-opacity duration-500 ease-in-out ${
-                  error ? "opacity-90" : "opacity-0"
-                } text-white rounded font-semibold bg-red-500 py-1 px-2 mt-4`}
-              >
-                {error}
-              </p>
-            )}
-          </div>
-          <ButtonNoOutline
-            text="Process Audio"
-            handleClick={handleSubmit}
-            fontSize="base"
-            bgColor="blue-500"
-            bgColorHover="blue-400"
-            textColor="white"
-            textColorHover="white"
+          <hr className="my-4 border-blue-300 w-full" />
+          <NoteRangeSelector
+            minNote={minNote}
+            maxNote={maxNote}
+            setMinNote={setMinNote}
+            setMaxNote={setMaxNote}
           />
+          <div className="my-4">
+            <ButtonNoOutline
+              text="Process Audio"
+              handleClick={handleSubmit}
+              fontSize="base"
+              bgColor="blue-500"
+              bgColorHover="blue-400"
+              textColor="white"
+              textColorHover="white"
+              disabled={!file}
+              width="w-full"
+            />
+          </div>
+          {error && (
+            <p
+              className={`transition-opacity duration-500 ease-in-out ${
+                error ? "opacity-75" : "opacity-0"
+              } text-white text-sm rounded font-semibold bg-red-500 py-1 px-2 mt-6`}
+            >
+              {error}
+            </p>
+          )}
         </div>
       )}
     </div>

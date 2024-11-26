@@ -25,16 +25,11 @@ const InstrumentSelector = ({ setMinNote, setMaxNote }) => {
   }));
 
   return (
-    <div className="flex justify-center my-4">
-      <div className="w-1/4">
-        <label className="block text-gray-600 mb-1">
-          Select an instrument:
-        </label>
-        <Dropdown
-          options={instrumentOptions}
-          onSelect={handleInstrumentChange}
-        />
-      </div>
+    <div className="w-full flex items-center space-x-4">
+      <label className="text-gray-600 whitespace-nowrap">
+        2. Select instrument:
+      </label>
+      <Dropdown options={instrumentOptions} onSelect={handleInstrumentChange} />
     </div>
   );
 };
