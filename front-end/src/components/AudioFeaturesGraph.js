@@ -101,8 +101,8 @@ const AudioFeaturesGraph = ({
   const drawHighlights = (context, width, height, padding) => {
     highlightedSections.forEach((section) => {
       const { start, end, color: sectionColor, label } = section;
-      const startX = padding + (start / data.length) * (width - 4 * padding);
-      const endX = padding + (end / data.length) * (width - 4 * padding);
+      const startX = padding + (start / data.length) * (width - 2 * padding);
+      const endX = padding + (end / data.length) * (width - 2 * padding);
       const sectionWidth = endX - startX;
 
       context.fillStyle = sectionColor;
