@@ -297,7 +297,7 @@ const AudioAnalyzer = () => {
       {audioBuffer && features && waveformAxes && highlightedSections && (
         <div className="flex flex-col h-full w-full xl:w-3/5 lg:w-3/4 mt-4 flex-grow py-4 space-y-4">
           {/* First row of graphs */}
-          <div className="flex flex-row h-[300px]">
+          <div className="flex flex-row h-[300px] shadow-md">
             {/* Visualization Tabs */}
             <Tabs
               activeTab={activeVisualizationTab}
@@ -350,7 +350,7 @@ const AudioAnalyzer = () => {
           </div>
 
           {/* Second row of graphs */}
-          <div className="flex flex-row h-[300px]">
+          <div className="flex flex-row h-[300px] shadow-md">
             {/* Visualization Tabs */}
             <Tabs
               activeTab={activeFeatureTab}

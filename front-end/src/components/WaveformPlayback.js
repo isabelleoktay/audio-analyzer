@@ -48,7 +48,7 @@ const WaveformPlayback = ({
   }, [playingSection, wavesurfer]);
 
   return (
-    <div className="flex flex-col w-full mt-8 p-4 bg-blue-100 rounded-lg border-2 border-blue-300 border-solid">
+    <div className="flex flex-col w-full mt-8 p-4 bg-blue-100 rounded-lg border-2 border-blue-300 border-solid shadow-md">
       <div className="flex items-center mb-1">
         <div className="text-sm font-semibold text-blue-500">{file.name}</div>
         {/* Remove File Button */}
