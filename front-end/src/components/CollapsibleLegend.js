@@ -19,7 +19,7 @@ const CollapsibleLegend = ({
       {/* Legend with Tab */}
       <div
         className={`absolute top-0 h-full bg-blue-50 rounded-r-lg border-y-2 border-r-2 border-blue-500 border-solid transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-[calc(100%-50px)]"
+          isOpen ? "translate-x-0 shadow-md" : "-translate-x-[calc(100%-50px)]"
         }`}
         style={{
           width: "250px", // Total width including the tab
