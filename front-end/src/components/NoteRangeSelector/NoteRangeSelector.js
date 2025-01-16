@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import InstrumentSelector from "../InstrumentSelector";
 import "./NoteRangeSelector.css";
+import SmallTextLink from "../SmallTextLink";
 
 const NoteRangeSelector = ({ minNote, maxNote, setMinNote, setMaxNote }) => {
   const [showNoteRange, setShowNoteRange] = useState(false);
@@ -18,17 +19,13 @@ const NoteRangeSelector = ({ minNote, maxNote, setMinNote, setMaxNote }) => {
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className="w-full flex flex-col items-center overflow-visible">
       <InstrumentSelector setMinNote={setMinNote} setMaxNote={setMaxNote} />
-      <div className="text-gray-500 text-sm my-2">
-        Or{" "}
-        <span
-          className="underline hover:cursor-pointer hover:text-blue-500"
-          onClick={handleToggleNoteRange}
-        >
-          specify note range
-        </span>
-      </div>
+      <SmallTextLink
+        nonLinkText="Or "
+        linkText="specify note range"
+        handleClick={handleToggleNoteRange}
+      />
       <div
         className={`note-range-container ${showNoteRange ? "show" : "hide"}`}
       >
@@ -38,7 +35,7 @@ const NoteRangeSelector = ({ minNote, maxNote, setMinNote, setMaxNote }) => {
             type="text"
             value={minNote}
             onChange={handleMinNoteChange}
-            className="ml-2 p-1 border rounded"
+            className="ml-2 p-1 border rounded shadow-sm"
             placeholder="e.g., F3"
           />
         </label>
@@ -48,7 +45,7 @@ const NoteRangeSelector = ({ minNote, maxNote, setMinNote, setMaxNote }) => {
             type="text"
             value={maxNote}
             onChange={handleMaxNoteChange}
-            className="ml-2 p-1 border rounded"
+            className="ml-2 p-1 border rounded shadow-sm"
             placeholder="e.g., B6"
           />
         </label>

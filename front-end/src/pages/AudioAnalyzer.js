@@ -5,7 +5,6 @@ import WaveformPlayback from "../components/WaveformPlayback";
 import AudioFeaturesDisplay from "../components/AudioFeaturesDisplay";
 import Tabs from "../components/Tabs";
 import CollapsibleLegend from "../components/CollapsibleLegend";
-import AudioFeaturesGraph from "../components/AudioFeaturesGraph";
 
 const visualizationTabs = [
   { name: "Highlights", color: "blue-500" },
@@ -15,14 +14,22 @@ const visualizationTabs = [
 const featureTabs = [
   { name: "Loudness", color: "blue-500" },
   { name: "Pitch", color: "blue-500" },
+  { name: "Tempo", color: "blue-500" },
 ];
+
+const sectionLabels = ["Timbre", "Loudness", "Pitch", "Staccato", "Legato"];
+const sectionColors = ["red", "green", "orange", "pink", "purple"];
 
 const AudioAnalyzer = () => {
   const [file, setFile] = useState(null);
+  const [file2, setFile2] = useState(null);
   const [audioBuffer, setAudioBuffer] = useState(null);
   const [audioData, setAudioData] = useState(null);
   const [waveformAxes, setWaveformAxes] = useState(null);
   const [variabilityAxes, setVariabilityAxes] = useState(null);
+  const [loudnessAxes, setLoudnessAxes] = useState(null);
+  const [pitchAxes, setPitchAxes] = useState(null);
+  const [tempoAxes, setTempoAxes] = useState(null);
   const [highlightedSections, setHighlightedSections] = useState(null);
   const [normalizedVariabilities, setNormalizedVariabilities] = useState(null);
   const [selectedHighlightedSections, setSelectedHighlightedSections] =
@@ -32,39 +39,12 @@ const AudioAnalyzer = () => {
   const [activeFeatureTab, setActiveFeatureTab] = useState("Loudness");
   const [activeVisualizationTab, setActiveVisualizationTab] =
     useState("Highlights");
-  const [playingAudioRange, setPlayingAudioRange] = useState(null);
+  // const [playingAudioRange, setPlayingAudioRange] = useState(null);
   const [minNote, setMinNote] = useState("");
   const [maxNote, setMaxNote] = useState("");
   const audioContextRef = useRef(null);
   const sourceNodeRef = useRef(null);
-
-  const calculateAxes = (data, sampleRate, hopLength, type) => {
-    let minY, maxY, duration;
-
-    if (type === "feature") {
-      minY = Math.min(...data);
-      maxY = Math.max(...data);
-      duration = (data.length * hopLength) / sampleRate;
-    } else {
-      minY = data.reduce((min, val) => Math.min(min, val), Infinity);
-      maxY = data.reduce((max, val) => Math.max(max, val), -Infinity);
-      duration = audioBuffer.duration;
-    }
-
-    // X-axis time labels based on sample rate and hop length
-    const xLabels = Array.from({ length: 6 }, (_, i) => ({
-      label: `${((duration * i) / 5).toFixed(2)}s`,
-      position: i / 5, // normalized position (0 to 1) to use within width
-    }));
-
-    // Y-axis labels based on min and max values
-    const yLabels = Array.from({ length: 5 }, (_, i) => ({
-      label: (minY + ((maxY - minY) * i) / 4).toFixed(2),
-      position: i / 4, // normalized (1 to 0) for top to bottom
-    }));
-
-    return { xLabels, yLabels, minY, maxY };
-  };
+  const playingAudioRangeRef = useRef(null);
 
   const handleHighlightedSectionSelect = (label) => {
     setSelectedHighlightedSections((prev) => {
@@ -83,7 +63,7 @@ const AudioAnalyzer = () => {
 
   const togglePlayingSection = (idx, start, end) => {
     setPlayingSection(idx);
-    setPlayingAudioRange([start, end]);
+    playingAudioRangeRef.current = [start, end];
   };
 
   useEffect(() => {
@@ -99,14 +79,20 @@ const AudioAnalyzer = () => {
         sourceNodeRef.current = null;
       }
 
-      if (audioContextRef.current && audioBuffer && playingAudioRange) {
+      if (
+        audioContextRef.current &&
+        audioBuffer &&
+        playingAudioRangeRef.current &&
+        features.sample_rate
+      ) {
         const source = audioContextRef.current.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(audioContextRef.current.destination);
         source.start(
           0,
-          playingAudioRange[0] / features.sample_rate,
-          (playingAudioRange[1] - playingAudioRange[0]) / features.sample_rate
+          playingAudioRangeRef.current[0] / features.sample_rate,
+          (playingAudioRangeRef.current[1] - playingAudioRangeRef.current[0]) /
+            features.sample_rate
         );
         source.onended = () => {
           if (sourceNodeRef.current === source) {
@@ -117,7 +103,7 @@ const AudioAnalyzer = () => {
         sourceNodeRef.current = source;
       }
     }
-  }, [playingSection]);
+  }, [playingSection, audioBuffer, features?.sample_rate]);
 
   useEffect(() => {
     if (!audioContextRef.current) {
@@ -127,22 +113,101 @@ const AudioAnalyzer = () => {
   }, []);
 
   useEffect(() => {
-    if (audioData && features) {
-      const axes = calculateAxes(audioData, features.sample_rate);
-      setWaveformAxes(axes);
-      const normVariabilityAxes = calculateAxes(
-        features.normalized_timbre_variability
-      );
-      setVariabilityAxes(normVariabilityAxes);
+    const calculateAxes = (data, sampleRate, hopLength, type) => {
+      let minY, maxY, duration;
 
-      const sectionLabels = [
-        "Timbre",
-        "Loudness",
-        "Pitch",
-        "Staccato",
-        "Legato",
-      ];
-      const sectionColors = ["red", "green", "orange", "pink", "purple"];
+      if (type === "feature") {
+        minY = Math.min(...data);
+        maxY = Math.max(...data);
+        duration = (data.length * hopLength) / sampleRate;
+      } else {
+        minY = data.reduce((min, val) => Math.min(min, val), Infinity);
+        maxY = data.reduce((max, val) => Math.max(max, val), -Infinity);
+        duration = audioBuffer.duration;
+      }
+
+      // X-axis time labels based on sample rate and hop length
+      const xLabels = Array.from({ length: 6 }, (_, i) => ({
+        label: `${((duration * i) / 5).toFixed(2)}s`,
+        position: i / 5, // normalized position (0 to 1) to use within width
+      }));
+
+      // Y-axis labels based on min and max values
+      let yLabels;
+      if (type === "feature" && data === features.pitches_smoothed) {
+        // Convert frequency to note names
+        const freqToNote = (freq) => {
+          if (freq <= 0) return "N/A"; // Handle invalid frequencies
+          const midiNote = Math.round(69 + 12 * Math.log2(freq / 440)); // Convert freq to MIDI
+          const noteName =
+            midiNote >= 0 && midiNote <= 127
+              ? [
+                  "C",
+                  "C#",
+                  "D",
+                  "D#",
+                  "E",
+                  "F",
+                  "F#",
+                  "G",
+                  "G#",
+                  "A",
+                  "A#",
+                  "B",
+                ][midiNote % 12]
+              : "";
+          const octave = Math.floor(midiNote / 12) - 1;
+          return noteName && octave !== undefined
+            ? `${noteName}${octave}`
+            : "N/A";
+        };
+
+        yLabels = Array.from({ length: 10 }, (_, i) => {
+          const freq = minY + ((maxY - minY) * i) / 9;
+          return {
+            label: freqToNote(freq),
+            position: i / 9, // normalized (1 to 0) for top to bottom
+          };
+        });
+      } else {
+        // Standard numerical Y-axis labels
+        yLabels = Array.from({ length: 5 }, (_, i) => ({
+          label: (minY + ((maxY - minY) * i) / 4).toFixed(2),
+          position: i / 4, // normalized (1 to 0) for top to bottom
+        }));
+      }
+      return { xLabels, yLabels, minY, maxY };
+    };
+
+    if (audioData && features) {
+      console.log("FEATURES");
+      console.log(features);
+      setWaveformAxes(calculateAxes(audioData, features.sample_rate));
+      setLoudnessAxes(
+        calculateAxes(
+          features.loudness_smoothed,
+          features.sample_rate,
+          features.hop_length,
+          "feature"
+        )
+      );
+      setPitchAxes(
+        calculateAxes(
+          features.pitches_smoothed,
+          features.sample_rate,
+          features.hop_length,
+          "feature"
+        )
+      );
+      setTempoAxes(
+        calculateAxes(
+          features.dynamic_tempo,
+          features.sample_rate,
+          features.hop_length,
+          "feature"
+        )
+      );
+      setVariabilityAxes(calculateAxes(features.normalized_timbre_variability));
 
       const labeledHighlightedSections = features.variable_sections.reduce(
         (acc, section, idx) => {
@@ -190,7 +255,7 @@ const AudioAnalyzer = () => {
         },
       ]);
     }
-  }, [audioData, features]);
+  }, [audioData, features, audioBuffer?.duration]);
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100">
@@ -200,9 +265,11 @@ const AudioAnalyzer = () => {
         {/* Upload File/Playback Audio File */}
         {!(audioBuffer && features && waveformAxes && highlightedSections) ? (
           <FileUploader
-            audioContext={audioContextRef.current}
+            audioContextRef={audioContextRef}
             setFile={setFile}
             file={file}
+            setFile2={setFile2}
+            file2={file2}
             setAudioBuffer={setAudioBuffer}
             setAudioData={setAudioData}
             setFeatures={setFeatures}
@@ -293,56 +360,37 @@ const AudioAnalyzer = () => {
 
             {/* Graph Display */}
             <div className="p-4 bg-blue-50 rounded-r-lg border-2 border-blue-500 border-solid z-30 relative w-full">
-              {activeFeatureTab === "Loudness" &&
-                (() => {
-                  const axes = calculateAxes(
-                    features.loudness_smoothed,
-                    features.sample_rate,
-                    features.hop_length,
-                    "feature"
-                  );
+              {(() => {
+                let title, data, axes, color;
+                const highlightedSectionsData = [];
 
-                  return (
-                    <div className="flex flex-col items-center h-full">
-                      <div className="text-center font-semibold text-slate-800">
-                        Loudness
-                      </div>
-                      <AudioFeaturesGraph
-                        data={features.loudness_smoothed}
-                        xLabels={waveformAxes.xLabels}
-                        yLabels={axes.yLabels}
-                        minY={axes.minY}
-                        maxY={axes.maxY}
-                        color="green"
-                      />
-                    </div>
-                  );
-                })()}
-              {activeFeatureTab === "Pitch" &&
-                (() => {
-                  const axes = calculateAxes(
-                    features.pitches_smoothed,
-                    features.sample_rate,
-                    features.hop_length,
-                    "feature"
-                  );
+                if (activeFeatureTab === "Loudness") {
+                  title = "Loudness";
+                  data = features.loudness_smoothed;
+                  axes = loudnessAxes;
+                  color = "green";
+                } else if (activeFeatureTab === "Pitch") {
+                  title = "Pitch";
+                  data = features.pitches_smoothed;
+                  axes = pitchAxes;
+                  color = "orange";
+                } else if (activeFeatureTab === "Tempo") {
+                  title = "Tempo";
+                  data = features.dynamic_tempo;
+                  axes = tempoAxes;
+                  color = "hotpink";
+                }
 
-                  return (
-                    <div className="flex flex-col items-center h-full">
-                      <div className="text-center font-semibold text-slate-800">
-                        Pitch
-                      </div>
-                      <AudioFeaturesGraph
-                        data={features.pitches_smoothed}
-                        xLabels={waveformAxes.xLabels}
-                        yLabels={axes.yLabels}
-                        minY={axes.minY}
-                        maxY={axes.maxY}
-                        color="orange"
-                      />
-                    </div>
-                  );
-                })()}
+                return (
+                  <AudioFeaturesDisplay
+                    title={title}
+                    data={data}
+                    axes={axes}
+                    highlightedSections={highlightedSectionsData}
+                    color={color}
+                  />
+                );
+              })()}
             </div>
           </div>
         </div>

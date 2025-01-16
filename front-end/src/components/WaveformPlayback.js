@@ -45,7 +45,7 @@ const WaveformPlayback = ({
 
   useEffect(() => {
     if (playingSection !== "waveform" && wavesurfer) wavesurfer.pause();
-  }, [playingSection]);
+  }, [playingSection, wavesurfer]);
 
   return (
     <div className="flex flex-col w-full mt-8 p-4 bg-blue-100 rounded-lg border-2 border-blue-300 border-solid">

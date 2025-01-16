@@ -1,15 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 const Dropdown = ({ options, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("Violin");
   const dropdownRef = useRef(null);
 
-  const handleOptionClick = (option) => {
-    setSelectedOption(option.label);
-    onSelect(option.value);
-    setIsOpen(false);
-  };
+  const handleOptionClick = useCallback(
+    (option) => {
+      setSelectedOption(option.label);
+      onSelect(option.value);
+      setIsOpen(false);
+    },
+    [onSelect]
+  );
 
   const handleClickOutside = (event) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -32,7 +35,7 @@ const Dropdown = ({ options, onSelect }) => {
   useEffect(() => {
     setSelectedOption(options[0].label);
     handleOptionClick(options[0]);
-  }, []);
+  }, [options, handleOptionClick]);
 
   return (
     <div className="relative inline-block w-full" ref={dropdownRef}>

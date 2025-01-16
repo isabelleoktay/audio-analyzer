@@ -1,15 +1,15 @@
 import React, { useCallback, useState, useEffect } from "react";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import AttachmentIcon from "@mui/icons-material/Attachment";
 import CircularProgress from "@mui/material/CircularProgress";
 import { processAudio, uploadAudio } from "../utils/api";
 import ButtonNoOutline from "./ButtonNoOutline";
-import NoteRangeSelector from "./NoteRangeSelector/NoteRangeSelector";
+import AudioUploadContainer from "./AudioUploadContainer/AudioUploadContainer";
 
 const FileUploader = ({
-  audioContext,
+  audioContextRef,
   setFile,
+  setFile2,
   file,
+  file2,
   setAudioBuffer,
   setAudioData,
   setFeatures,
@@ -20,6 +20,7 @@ const FileUploader = ({
 }) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [analysisType, setAnalysisType] = useState(null);
 
   const noteRegex = /^[A-Ga-g]#?[0-9]$/;
 
@@ -34,24 +35,28 @@ const FileUploader = ({
     return true;
   };
 
-  const getAudioBuffer = useCallback(async (audioFile) => {
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    const reader = new FileReader();
-    return new Promise((resolve, reject) => {
-      reader.onload = (event) => {
-        audioContext.decodeAudioData(
-          event.target.result,
-          (buffer) => {
-            resolve(buffer);
-          },
-          reject
-        );
-      };
-      reader.readAsArrayBuffer(audioFile);
-    });
-  }, []);
+  const getAudioBuffer = useCallback(
+    async (audioFile) => {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext ||
+          window.webkitAudioContext)();
+      }
+      const reader = new FileReader();
+      return new Promise((resolve, reject) => {
+        reader.onload = (event) => {
+          audioContextRef.current.decodeAudioData(
+            event.target.result,
+            (buffer) => {
+              resolve(buffer);
+            },
+            reject
+          );
+        };
+        reader.readAsArrayBuffer(audioFile);
+      });
+    },
+    [audioContextRef]
+  );
 
   const processAudioBuffer = async (file) => {
     try {
@@ -66,35 +71,13 @@ const FileUploader = ({
     }
   };
 
+  // eslint-disable-next-line
   const uploadAudioBuffer = async (file) => {
     try {
       await uploadAudio(file);
     } catch (error) {
       console.error("Error uploading audio:", error);
     }
-  };
-
-  const handleFile = (uploadedFile) => {
-    if (uploadedFile && uploadedFile.type.startsWith("audio/")) {
-      setFile(uploadedFile);
-    } else {
-      setError("Please upload an audio file.");
-    }
-  };
-
-  const handleFileUpload = async (event) => {
-    const uploadedFile = event.target.files[0];
-    handleFile(uploadedFile);
-  };
-
-  const handleDrop = async (event) => {
-    event.preventDefault();
-    const uploadedFile = event.dataTransfer.files[0];
-    handleFile(uploadedFile);
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
   };
 
   const handleSubmit = async () => {
@@ -122,69 +105,120 @@ const FileUploader = ({
 
   return (
     <div
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      className="mt-8 p-8 border-2 border-dashed border-blue-300 bg-blue-100 text-center rounded-lg w-full cursor-default flex flex-col items-center justify-center"
+      // onDrop={handleDrop}
+      // onDragOver={handleDragOver}
+      className="mt-8 p-8 border-2 shadow-md border-dashed border-blue-300 bg-blue-100 text-center rounded-lg w-full flex flex-col items-center justify-center"
     >
-      {loading ? (
-        <div>
-          <p className="text-gray-600 text-lg mb-4">Processing audio</p>
-          <CircularProgress size={50} />
+      {!analysisType ? (
+        <div className="w-full items-center flex flex-col justify-center">
+          <p className="text-gray-600 text-lg mb-4">
+            Welcome to the audio analyzer! Please choose your analysis method:
+          </p>
+          <div className="flex flex-row space-x-4">
+            <ButtonNoOutline
+              text="Analyze Single Audio"
+              fontSize="lg"
+              bgColor="blue-500"
+              bgColorHover="blue-400"
+              handleClick={() => setAnalysisType("singleAudio")}
+            />
+            <ButtonNoOutline
+              text="Compare Two Audios"
+              fontSize="lg"
+              bgColor="blue-500"
+              bgColorHover="blue-400"
+              handleClick={() => setAnalysisType("doubleAudio")}
+              disabled={true}
+            />
+          </div>
         </div>
       ) : (
         <div>
-          <input
-            type="file"
-            accept="audio/*"
-            onChange={handleFileUpload}
-            className="hidden"
-            id="fileInput"
-          />
-          <label htmlFor="fileInput" className="block text-gray-600">
-            <div className="flex flex-col items-center">
-              <UploadFileIcon className="text-gray-600 sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl mb-1" />
-              <p>
-                1. Drag and drop file here or{" "}
-                <span className="text-blue-500 underline font-bold cursor-pointer">
-                  upload file
-                </span>
-              </p>
+          {loading ? (
+            <div className="w-full">
+              <p className="text-gray-600 text-lg mb-4">Processing audio</p>
+              <CircularProgress size={50} />
             </div>
-          </label>
-          {file && (
-            <div className="mt-1 flex items-center text-sm justify-center">
-              <AttachmentIcon className="text-gray-500 mr-2" />
-              <span className="text-gray-500">{file.name}</span>
+          ) : (
+            <div className="w-full">
+              <AudioUploadContainer
+                analysisType={analysisType}
+                file={file}
+                setFile={setFile}
+                file2={file2}
+                setFile2={setFile2}
+                minNote={minNote}
+                maxNote={maxNote}
+                setMinNote={setMinNote}
+                setMaxNote={setMaxNote}
+                setError={setError}
+              />
+              {/* <div
+                className={`audio-upload-section ${
+                  analysisType ? "show" : ""
+                } flex flex-row space-x-12`}
+              >
+                <div>
+                  {analysisType === "doubleAudio" && (
+                    <div className="text-xl font-bold text-gray-600 p-2">
+                      Audio 1
+                    </div>
+                  )}
+                  <AudioUploadSection
+                    file={file}
+                    setFile={setFile}
+                    setError={setError}
+                    minNote={minNote}
+                    maxNote={maxNote}
+                    setMinNote={setMinNote}
+                    setMaxNote={setMaxNote}
+                  />
+                </div>
+                {analysisType === "doubleAudio" && (
+                  <div>
+                    <div className="text-xl font-bold text-gray-600 p-2">
+                      Audio 2
+                    </div>
+
+                    <AudioUploadSection
+                      file={file2}
+                      setFile={setFile2}
+                      setError={setError}
+                      minNote={minNote}
+                      maxNote={maxNote}
+                      setMinNote={setMinNote}
+                      setMaxNote={setMaxNote}
+                    />
+                  </div>
+                )}
+              </div> */}
+              <div className="my-4">
+                <ButtonNoOutline
+                  text={
+                    analysisType === "doubleAudio"
+                      ? "Compare Both Audios"
+                      : "Process Audio"
+                  }
+                  handleClick={handleSubmit}
+                  fontSize="base"
+                  bgColor="blue-500"
+                  bgColorHover="blue-400"
+                  textColor="white"
+                  textColorHover="white"
+                  disabled={!file}
+                  width="w-full"
+                />
+              </div>
+              {error && (
+                <p
+                  className={`transition-opacity duration-500 ease-in-out ${
+                    error ? "opacity-75" : "opacity-0"
+                  } text-white text-sm rounded font-semibold bg-red-500 py-1 px-2 mt-6`}
+                >
+                  {error}
+                </p>
+              )}
             </div>
-          )}
-          <hr className="my-4 border-blue-300 w-full" />
-          <NoteRangeSelector
-            minNote={minNote}
-            maxNote={maxNote}
-            setMinNote={setMinNote}
-            setMaxNote={setMaxNote}
-          />
-          <div className="my-4">
-            <ButtonNoOutline
-              text="Process Audio"
-              handleClick={handleSubmit}
-              fontSize="base"
-              bgColor="blue-500"
-              bgColorHover="blue-400"
-              textColor="white"
-              textColorHover="white"
-              disabled={!file}
-              width="w-full"
-            />
-          </div>
-          {error && (
-            <p
-              className={`transition-opacity duration-500 ease-in-out ${
-                error ? "opacity-75" : "opacity-0"
-              } text-white text-sm rounded font-semibold bg-red-500 py-1 px-2 mt-6`}
-            >
-              {error}
-            </p>
           )}
         </div>
       )}
