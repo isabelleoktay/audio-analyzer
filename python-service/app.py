@@ -3,6 +3,7 @@ from flask_cors import CORS
 import librosa  
 import numpy as np
 from scipy.signal import medfilt
+from scipy.stats import lognorm
 from io import BytesIO
 import os
 
@@ -36,10 +37,11 @@ def process_audio():
 
     # Extract features
     mfccs, rms, pitches, zcr, hop_length = extract_features(audio, sr, min_note, max_note)
+    dynamic_tempo = calculate_dynamic_tempo(audio, sr, hop_length)
 
     loudness_smoothed = smooth_curve(rms[0], window_size=100)
     pitches_smoothed = adaptive_smooth_pitch(pitches, base_window=15, max_window=25)
-    pitches_smoothed[loudness_smoothed < 0.02] = 0
+    pitches_smoothed[loudness_smoothed < 0.01] = 0
 
     # Calculate articulation levels
     articulation_levels = calculate_articulation_level(rms, zcr)
@@ -76,6 +78,7 @@ def process_audio():
         'normalized_loudness_variability': loudness_variability_normalized.tolist(),
         'normalized_pitch_variability': pitch_diff_variability_normalized.tolist(),
         'normalized_articulation_variability': articulation_levels_normalized.tolist(),
+        'dynamic_tempo': dynamic_tempo.tolist(),
     }
 
     # Ensure all elements in the response are JSON serializable
@@ -138,6 +141,16 @@ def calculate_articulation_level(rms, zcr, window_size=WINDOW_SIZE, hop_size=HOP
         articulation_level = 1 - (0.5 * rms_diff_standardized + 0.5 * zcr_standardized)
         articulation_levels.append(articulation_level)
     return np.array(articulation_levels)
+
+def calculate_dynamic_tempo(audio, sr, hop_length):
+    onset_env = librosa.onset.onset_strength(y=audio, sr=sr)
+    prior_lognorm = lognorm(loc=np.log(120), scale=120, s=1)
+    dynamic_tempo = librosa.feature.tempo(y=audio, sr=sr, aggregate=None, hop_length=hop_length, onset_envelope=onset_env, prior=prior_lognorm)
+
+    window_size = 50
+    smooth_dynamic_tempo = np.convolve(dynamic_tempo, np.ones(window_size) / window_size, mode='same')
+
+    return smooth_dynamic_tempo
 
 def calculate_window_stats(rms, zcr, num_frames, window_size, hop_size):
     """Calculate mean and standard deviation for RMS and ZCR values within a sliding window."""
