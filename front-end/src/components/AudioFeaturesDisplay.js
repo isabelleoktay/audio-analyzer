@@ -1,7 +1,13 @@
 import React from "react";
 import AudioFeaturesGraph from "./AudioFeaturesGraph";
 
-const AudioFeaturesDisplay = ({ title, data, axes, highlightedSections }) => {
+const AudioFeaturesDisplay = ({
+  title,
+  data,
+  axes,
+  highlightedSections,
+  color = "",
+}) => {
   return (
     <div className="flex flex-col items-center h-full">
       <div className="text-center font-semibold text-slate-800">{title}</div>
@@ -12,6 +18,7 @@ const AudioFeaturesDisplay = ({ title, data, axes, highlightedSections }) => {
         minY={axes.minY}
         maxY={axes.maxY}
         highlightedSections={highlightedSections}
+        color={color}
       />
     </div>
   );

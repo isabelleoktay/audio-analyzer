@@ -25,7 +25,7 @@ const InstrumentSelector = ({ setMinNote, setMaxNote }) => {
   }));
 
   return (
-    <div className="w-full flex items-center space-x-4">
+    <div className="relative w-full flex items-center space-x-4">
       <label className="text-gray-600 whitespace-nowrap">
         2. Select instrument:
       </label>
