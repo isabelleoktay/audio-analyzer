@@ -8,11 +8,11 @@ const Header = ({ title }) => {
           {title}
         </h1>
         <a
-          className="text-blue-200 hover:text-opacity-75 tracking-widest font-poppins"
+          className="text-yellow-400 text-2xl font-bold hover:scale-105 transform transition-all font-poppins inline-block"
           href="https://forms.gle/aSRtqaxEMot2HCvH7"
           target="_blank"
         >
-          Click here to send feedback!
+          Click here to send us feedback!
         </a>
       </div>
     </header>
