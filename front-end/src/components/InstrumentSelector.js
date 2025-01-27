@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import Dropdown from "./Dropdown";
 
 const instruments = {
@@ -13,19 +13,26 @@ const instruments = {
 };
 
 const InstrumentSelector = ({ setMinNote, setMaxNote }) => {
-  const handleInstrumentChange = (selectedInstrument) => {
-    const { minNote, maxNote } = instruments[selectedInstrument];
-    setMinNote(minNote);
-    setMaxNote(maxNote);
-  };
+  const instrumentOptions = useMemo(
+    () =>
+      Object.keys(instruments).map((key) => ({
+        value: key,
+        label: instruments[key].label,
+      })),
+    [] // Dependency array remains empty because `instruments` is a constant and won't change.
+  );
 
-  const instrumentOptions = Object.keys(instruments).map((key) => ({
-    value: key,
-    label: instruments[key].label,
-  }));
+  const handleInstrumentChange = useCallback(
+    (selectedInstrument) => {
+      const { minNote, maxNote } = instruments[selectedInstrument];
+      setMinNote(minNote);
+      setMaxNote(maxNote);
+    },
+    [setMinNote, setMaxNote]
+  );
 
   return (
-    <div className="relative w-full flex items-center space-x-4">
+    <div className="relative w-3/4 flex items-center space-x-4">
       <label className="text-gray-600 whitespace-nowrap">
         2. Select instrument:
       </label>

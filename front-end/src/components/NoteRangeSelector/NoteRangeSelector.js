@@ -4,18 +4,15 @@ import "./NoteRangeSelector.css";
 import SmallTextLink from "../SmallTextLink";
 
 const NoteRangeSelector = ({ minNote, maxNote, setMinNote, setMaxNote }) => {
+  console.log(`min note: ${minNote}, max note: ${maxNote}`);
   const [showNoteRange, setShowNoteRange] = useState(false);
 
   const handleToggleNoteRange = () => {
     setShowNoteRange(!showNoteRange);
   };
 
-  const handleMinNoteChange = (event) => {
-    setMinNote(event.target.value);
-  };
-
-  const handleMaxNoteChange = (event) => {
-    setMaxNote(event.target.value);
+  const handleNoteChange = (setter) => (event) => {
+    setter(event.target.value);
   };
 
   return (
@@ -27,14 +24,16 @@ const NoteRangeSelector = ({ minNote, maxNote, setMinNote, setMaxNote }) => {
         handleClick={handleToggleNoteRange}
       />
       <div
-        className={`note-range-container ${showNoteRange ? "show" : "hide"}`}
+        className={`note-range-container ${
+          showNoteRange ? "show p-2" : "hide"
+        }`}
       >
         <label className="block text-gray-600">
           Min Note:
           <input
             type="text"
             value={minNote}
-            onChange={handleMinNoteChange}
+            onChange={handleNoteChange(setMinNote)}
             className="ml-2 p-1 border rounded shadow-sm"
             placeholder="e.g., F3"
           />
@@ -44,7 +43,7 @@ const NoteRangeSelector = ({ minNote, maxNote, setMinNote, setMaxNote }) => {
           <input
             type="text"
             value={maxNote}
-            onChange={handleMaxNoteChange}
+            onChange={handleNoteChange(setMaxNote)}
             className="ml-2 p-1 border rounded shadow-sm"
             placeholder="e.g., B6"
           />

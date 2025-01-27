@@ -32,11 +32,13 @@ const AudioUploadContainer = ({
   return (
     <div
       ref={sectionRef}
-      className={`audio-upload-section flex flex-row space-x-12`}
+      className={`audio-upload-section flex flex-row space-x-12 min-w-0 overflow-visible`}
     >
-      <div>
+      <div className="flex-1">
         {analysisType === "doubleAudio" && (
-          <div className="text-xl font-bold text-gray-600 p-2">Audio 1</div>
+          <div className="text-xl font-bold text-gray-600 p-2 w-full">
+            Audio 1
+          </div>
         )}
         <AudioUploadSection
           file={file}
@@ -48,7 +50,7 @@ const AudioUploadContainer = ({
           setMaxNote={setMaxNote}
         />
       </div>
-      {analysisType === "doubleAudio" && (
+      {/* {analysisType === "doubleAudio" && (
         <div>
           <div className="text-xl font-bold text-gray-600 p-2">Audio 2</div>
           <AudioUploadSection
@@ -61,7 +63,7 @@ const AudioUploadContainer = ({
             setMaxNote={setMaxNote}
           />
         </div>
-      )}
+      )} */}
     </div>
   );
 };
