@@ -25,15 +25,10 @@ const FileUploader = ({
   const noteRegex = /^[A-Ga-g]#?[0-9]$/;
 
   const validateNotes = () => {
-    if (!noteRegex.test(minNote) || !noteRegex.test(maxNote)) {
-      setError(
-        "Invalid note format. Please use a format like C4, F#3, G3, etc."
-      );
-      return false;
-    }
-    setError("");
-    return true;
+    return noteRegex.test(minNote) && noteRegex.test(maxNote);
   };
+
+  const isFormValid = file && validateNotes();
 
   const getAudioBuffer = useCallback(
     async (audioFile) => {
@@ -103,6 +98,16 @@ const FileUploader = ({
     }
   }, [file]);
 
+  useEffect(() => {
+    if (!file) {
+      setError("Please upload a file.");
+    } else if (!noteRegex.test(minNote) || !noteRegex.test(maxNote)) {
+      setError("Please enter valid min and max notes (e.g., C4, G#3).");
+    } else {
+      setError("");
+    }
+  }, [isFormValid, file, minNote, maxNote]);
+
   return (
     <div
       // onDrop={handleDrop}
@@ -133,7 +138,7 @@ const FileUploader = ({
           </div>
         </div>
       ) : (
-        <div>
+        <div className="w-1/2">
           {loading ? (
             <div className="w-full">
               <p className="text-gray-600 text-lg mb-4">Processing audio</p>
@@ -192,7 +197,7 @@ const FileUploader = ({
                   </div>
                 )}
               </div> */}
-              <div className="my-4">
+              <div className="mt-4 mb-2">
                 <ButtonNoOutline
                   text={
                     analysisType === "doubleAudio"
@@ -205,18 +210,17 @@ const FileUploader = ({
                   bgColorHover="blue-400"
                   textColor="white"
                   textColorHover="white"
-                  disabled={!file}
+                  disabled={!isFormValid}
                   width="w-full"
                 />
               </div>
               {error && (
-                <p
-                  className={`transition-opacity duration-500 ease-in-out ${
-                    error ? "opacity-75" : "opacity-0"
-                  } text-white text-sm rounded font-semibold bg-red-500 py-1 px-2 mt-6`}
+                <div
+                  aria-live="assertive"
+                  className={`w-full mt-2 text-red-700 text-sm font-semibold bg-red-100 border border-red-400 rounded py-1 px-3 whitespace-normal break-words`}
                 >
                   {error}
-                </p>
+                </div>
               )}
             </div>
           )}

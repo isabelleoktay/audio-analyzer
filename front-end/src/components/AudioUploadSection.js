@@ -36,7 +36,7 @@ const AudioUploadSection = ({
   };
   return (
     <div
-      className="rounded-lg shadow-inner border-2 border-blue-200 bg-gray-50 p-6 overflow-visible"
+      className="rounded-lg shadow-inner border-2 border-blue-200 bg-gray-50 p-6 overflow-visible w-full"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 
 const Dropdown = ({ options, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("Violin");
+  const [selectedOption, setSelectedOption] = useState(options[0]?.label);
   const dropdownRef = useRef(null);
 
   const handleOptionClick = useCallback(
@@ -33,9 +33,11 @@ const Dropdown = ({ options, onSelect }) => {
   }, [isOpen]);
 
   useEffect(() => {
-    setSelectedOption(options[0].label);
-    handleOptionClick(options[0]);
-  }, [options, handleOptionClick]);
+    if (options && options.length > 0) {
+      setSelectedOption(options[0].label); // Set initial selected option
+      onSelect(options[0].value); // Notify parent
+    }
+  }, [options, onSelect]);
 
   return (
     <div className="relative inline-block w-full" ref={dropdownRef}>
