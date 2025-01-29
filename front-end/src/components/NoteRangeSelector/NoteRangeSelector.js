@@ -4,7 +4,6 @@ import "./NoteRangeSelector.css";
 import SmallTextLink from "../SmallTextLink";
 
 const NoteRangeSelector = ({ minNote, maxNote, setMinNote, setMaxNote }) => {
-  console.log(`min note: ${minNote}, max note: ${maxNote}`);
   const [showNoteRange, setShowNoteRange] = useState(false);
 
   const handleToggleNoteRange = () => {

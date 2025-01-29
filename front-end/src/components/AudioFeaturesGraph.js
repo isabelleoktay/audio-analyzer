@@ -121,23 +121,60 @@ const AudioFeaturesGraph = ({
     const drawHighlights = (context, width, height, padding) => {
       highlightedSections.forEach((section) => {
         const { start, end, color: sectionColor, label } = section;
-        const startX =
-          padding + (start / (data.length - 1)) * (width - 2 * padding);
-        const endX =
-          padding + (end / (data.length - 1)) * (width - 2 * padding);
+
+        // Normalize start and end relative to the data length
+        const normalizedStart = start / (data.length - 1);
+        const normalizedEnd = end / (data.length - 1);
+
+        // Calculate startX and endX, taking padding into account
+        const startX = padding + normalizedStart * (width - 2 * padding);
+        const endX = padding + normalizedEnd * (width - 2 * padding);
         const sectionWidth = endX - startX;
 
+        // Draw the highlighted section
         context.fillStyle = sectionColor;
         context.globalAlpha = 0.3;
         context.fillRect(startX, padding, sectionWidth, height - 2 * padding);
         context.globalAlpha = 1;
 
+        // Draw the label
         context.fillStyle = color;
         context.font = "12px 'Poppins', sans-serif";
         context.textAlign = "center";
 
         const labelY = padding - 10;
-        context.fillText(label, startX + sectionWidth / 2, labelY);
+        const maxWidth = sectionWidth - 4; // Padding inside the highlight
+
+        // Function to wrap text within maxWidth
+        const wrapText = (text, maxWidth) => {
+          const words = text.split(" ");
+          let lines = [];
+          let currentLine = words[0];
+
+          for (let i = 1; i < words.length; i++) {
+            const testLine = currentLine + " " + words[i];
+            if (context.measureText(testLine).width < maxWidth) {
+              currentLine = testLine;
+            } else {
+              lines.push(currentLine);
+              currentLine = words[i];
+            }
+          }
+          lines.push(currentLine);
+          return lines;
+        };
+
+        const wrappedLines = wrapText(label, maxWidth);
+        const lineHeight = 14; // Line spacing
+
+        // Draw wrapped lines centered inside highlight section
+        wrappedLines.forEach((line, index) => {
+          context.fillText(
+            line,
+            startX + sectionWidth / 2,
+            labelY - index * lineHeight
+          );
+        });
       });
     };
 
@@ -148,7 +185,7 @@ const AudioFeaturesGraph = ({
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
 
-      context.clearRect(padding, 0, width - padding, height - padding);
+      context.clearRect(0, 0, width, height);
       drawHighlights(context, width, height, padding);
       setResizedWindow(false);
     };
