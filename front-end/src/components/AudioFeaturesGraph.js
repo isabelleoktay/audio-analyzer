@@ -8,10 +8,12 @@ const AudioFeaturesGraph = ({
   maxY,
   color = "black",
   highlightedSections = [],
+  onRenderComplete, // Callback to signal rendering completion
 }) => {
   const baseCanvasRef = useRef(null);
   const overlayCanvasRef = useRef(null);
   const [resizedWindow, setResizedWindow] = useState(false);
+  const [renderCount, setRenderCount] = useState(0); // Track rendering completionxw
 
   // Base layer setup
   useEffect(() => {
@@ -64,8 +66,9 @@ const AudioFeaturesGraph = ({
     };
 
     const drawData = (context, width, height, padding) => {
-      const drawValues = (data, color) => {
+      const drawValues = (data, color, dashed = false) => {
         context.strokeStyle = color;
+        context.setLineDash(dashed ? [5, 10] : []);
         context.lineWidth = 2;
         context.beginPath();
         data.forEach((value, index) => {
@@ -85,7 +88,9 @@ const AudioFeaturesGraph = ({
       };
 
       if (typeof data[0] === "object") {
-        data.forEach((line) => drawValues(line.data, line.lineColor));
+        data.forEach((line) =>
+          drawValues(line.data, line.lineColor, line.dashed)
+        );
       } else {
         drawValues(data, color);
       }
@@ -94,13 +99,16 @@ const AudioFeaturesGraph = ({
     const drawBase = () => {
       const canvas = baseCanvasRef.current;
       const context = canvas.getContext("2d");
-      const padding = 40;
+      const padding = 50;
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
 
       context.clearRect(0, 0, width, height);
       drawAxes(context, width, height, padding);
       drawData(context, width, height, padding);
+
+      // Increment render count
+      setRenderCount((prev) => prev + 1);
     };
 
     resizeCanvases();
@@ -181,19 +189,31 @@ const AudioFeaturesGraph = ({
     const updateHighlights = () => {
       const canvas = overlayCanvasRef.current;
       const context = canvas.getContext("2d");
-      const padding = 40;
+      const padding = 50;
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
 
       context.clearRect(0, 0, width, height);
       drawHighlights(context, width, height, padding);
       setResizedWindow(false);
+
+      // Increment render count
+      setRenderCount((prev) => prev + 1);
     };
 
     if (overlayCanvasRef.current) {
       updateHighlights();
     }
   }, [highlightedSections, data, color, resizedWindow]);
+
+  // Signal parent when both canvases are rendered
+  useEffect(() => {
+    if (onRenderComplete) {
+      requestAnimationFrame(() => {
+        onRenderComplete();
+      });
+    }
+  }, [renderCount, onRenderComplete]);
 
   return (
     <div className="relative w-full h-full">

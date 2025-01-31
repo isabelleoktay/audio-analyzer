@@ -8,8 +8,9 @@ const CollapsibleLegend = ({
   handleSectionSelect,
   playingSection,
   activeTab,
+  startOpen = true,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(startOpen);
 
   return (
     <div className="relative flex">
