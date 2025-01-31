@@ -54,13 +54,16 @@ def process_audio():
     mfccs, rms, pitches, zcr = extract_features_parallel(audio, sr, min_note, max_note, n_fft=N_FFT, hop_length=HOP_LENGTH)
     emit_progress(socketio, '(3/9) Feature extraction complete.', 45)
 
-    dynamic_tempo = calculate_dynamic_tempo(audio, sr, HOP_LENGTH)
+    dynamic_tempo, global_tempo = calculate_dynamic_tempo(audio, sr, HOP_LENGTH)
+    global_tempo_array = np.full_like(dynamic_tempo, global_tempo)
     emit_progress(socketio, '(4/9) Tempo calculation complete.', 55)
 
     # Smoothing
     loudness_smoothed = smooth_curve_parallel(rms[0], window_size=100)
     pitches_smoothed = smooth_curve_parallel(pitches, filter_type='adaptive', base_window=15, max_window=25)
     pitches_smoothed[loudness_smoothed < 0.01] = 0
+    pitches_smoothed[:10] = 0
+    pitches_smoothed[-10:] = 0
     emit_progress(socketio, '(5/9) Smoothing complete.', 65)
 
     # Articulation Levels
@@ -105,6 +108,7 @@ def process_audio():
         'normalized_pitch_variability': pitch_diff_variability_normalized.tolist(),
         'normalized_articulation_variability': articulation_levels_normalized.tolist(),
         'dynamic_tempo': dynamic_tempo.tolist(),
+        'global_tempo': global_tempo_array.tolist(),
     }
 
     # Ensure all elements in the response are JSON serializable

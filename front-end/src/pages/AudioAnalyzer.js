@@ -337,7 +337,13 @@ const AudioAnalyzer = () => {
             />
 
             {/* Graph Display */}
-            <div className="p-4 bg-blue-50 rounded-r-lg border-2 border-blue-500 border-solid z-30 relative w-full">
+            <div
+              className={`p-4 bg-blue-50 ${
+                activeFeatureTab === "Tempo"
+                  ? "border-y-2 border-l-2"
+                  : "rounded-r-lg border-2"
+              } border-blue-500 border-solid z-30 relative w-full`}
+            >
               {(() => {
                 let title, data, axes, color;
                 const highlightedSectionsData = [];
@@ -354,9 +360,21 @@ const AudioAnalyzer = () => {
                   color = "orange";
                 } else if (activeFeatureTab === "Tempo") {
                   title = "Tempo";
-                  data = features.dynamic_tempo;
+                  data = [
+                    {
+                      data: features.dynamic_tempo,
+                      lineColor: "deepskyblue",
+                      label: "Dynamic Tempo",
+                    },
+                    {
+                      data: features.global_tempo,
+                      lineColor: "navy",
+                      label: "Global Tempo",
+                      dashed: true,
+                    },
+                  ];
                   axes = tempoAxes;
-                  color = "hotpink";
+                  color = "";
                 }
 
                 return (
@@ -370,6 +388,26 @@ const AudioAnalyzer = () => {
                 );
               })()}
             </div>
+            {activeFeatureTab === "Tempo" && (
+              <CollapsibleLegend
+                sections={[
+                  {
+                    data: features.dynamic_tempo,
+                    lineColor: "deepskyblue",
+                    label: "Dynamic Tempo",
+                  },
+                  {
+                    data: features.global_tempo,
+                    lineColor: "navy",
+                    label: "Global Tempo",
+                    dashed: true,
+                  },
+                ]}
+                selectedSections={selectedHighlightedSections}
+                activeTab={activeFeatureTab}
+                startOpen={false}
+              />
+            )}
           </div>
         </div>
       )}

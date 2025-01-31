@@ -23,7 +23,7 @@ const FileUploader = ({
   const [loading, setLoading] = useState(false);
   const [analysisType, setAnalysisType] = useState(null);
   const [progress, setProgress] = useState(0);
-  const [statusMessage, setStatusMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState("Processing audio...");
 
   const noteRegex = useMemo(() => /^[A-Ga-g]#?[0-9]$/, []);
   const socket = useMemo(() => io("http://localhost:8080"), []);
@@ -139,14 +139,14 @@ const FileUploader = ({
             <ButtonNoOutline
               text="Analyze Single Audio"
               fontSize="lg"
-              bgColor="blue-500"
+              bgColor="bg-blue-500"
               bgColorHover="blue-400"
               handleClick={() => setAnalysisType("singleAudio")}
             />
             <ButtonNoOutline
               text="Compare Two Audios"
               fontSize="lg"
-              bgColor="blue-500"
+              bgColor="bg-blue-500"
               bgColorHover="blue-400"
               handleClick={() => setAnalysisType("doubleAudio")}
               disabled={true}
@@ -222,7 +222,7 @@ const FileUploader = ({
                   }
                   handleClick={handleSubmit}
                   fontSize="base"
-                  bgColor="blue-500"
+                  bgColor="bg-blue-500"
                   bgColorHover="blue-400"
                   textColor="white"
                   textColorHover="white"
