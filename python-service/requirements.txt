@@ -4,4 +4,4 @@ flask-cors==5.0.0
 numpy==1.26.4
 scipy==1.12.0
 python-dotenv==1.0.1
-flask_socketio==5.5.1
+Flask-SocketIO==5.5.1
