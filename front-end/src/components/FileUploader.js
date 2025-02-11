@@ -1,8 +1,9 @@
-import React, { useCallback, useState, useEffect } from "react";
-import CircularProgress from "@mui/material/CircularProgress";
+import React, { useCallback, useState, useEffect, useMemo } from "react";
+import io from "socket.io-client";
 import { processAudio, uploadAudio } from "../utils/api";
 import ButtonNoOutline from "./ButtonNoOutline";
 import AudioUploadContainer from "./AudioUploadContainer/AudioUploadContainer";
+import AudioProcessingProgress from "./AudioProcessingProgress/AudioProcessingProgress";
 
 const FileUploader = ({
   audioContextRef,
@@ -21,8 +22,11 @@ const FileUploader = ({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [analysisType, setAnalysisType] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [statusMessage, setStatusMessage] = useState("Processing audio...");
 
-  const noteRegex = /^[A-Ga-g]#?[0-9]$/;
+  const noteRegex = useMemo(() => /^[A-Ga-g]#?[0-9]$/, []);
+  const socket = useMemo(() => io("http://localhost:8080"), []);
 
   const validateNotes = () => {
     return noteRegex.test(minNote) && noteRegex.test(maxNote);
@@ -57,6 +61,7 @@ const FileUploader = ({
     try {
       const processAudioResult = await processAudio(file, minNote, maxNote);
       setFeatures(processAudioResult);
+      setStatusMessage("");
 
       // console.log("PYTHON RESULT");
       // console.log(processAudioResult);
@@ -93,6 +98,17 @@ const FileUploader = ({
   };
 
   useEffect(() => {
+    socket.on("progress", (data) => {
+      setProgress(data.percentage);
+      setStatusMessage(data.message);
+    });
+
+    return () => {
+      socket.off("progress");
+    };
+  }, [socket]);
+
+  useEffect(() => {
     if (file) {
       setError("");
     }
@@ -106,7 +122,7 @@ const FileUploader = ({
     } else {
       setError("");
     }
-  }, [isFormValid, file, minNote, maxNote]);
+  }, [isFormValid, file, minNote, maxNote, noteRegex]);
 
   return (
     <div
@@ -123,14 +139,14 @@ const FileUploader = ({
             <ButtonNoOutline
               text="Analyze Single Audio"
               fontSize="lg"
-              bgColor="blue-500"
+              bgColor="bg-blue-500"
               bgColorHover="blue-400"
               handleClick={() => setAnalysisType("singleAudio")}
             />
             <ButtonNoOutline
               text="Compare Two Audios"
               fontSize="lg"
-              bgColor="blue-500"
+              bgColor="bg-blue-500"
               bgColorHover="blue-400"
               handleClick={() => setAnalysisType("doubleAudio")}
               disabled={true}
@@ -140,10 +156,10 @@ const FileUploader = ({
       ) : (
         <div className="w-1/2">
           {loading ? (
-            <div className="w-full">
-              <p className="text-gray-600 text-lg mb-4">Processing audio</p>
-              <CircularProgress size={50} />
-            </div>
+            <AudioProcessingProgress
+              statusMessage={statusMessage}
+              progress={progress}
+            />
           ) : (
             <div className="w-full">
               <AudioUploadContainer
@@ -206,7 +222,7 @@ const FileUploader = ({
                   }
                   handleClick={handleSubmit}
                   fontSize="base"
-                  bgColor="blue-500"
+                  bgColor="bg-blue-500"
                   bgColorHover="blue-400"
                   textColor="white"
                   textColorHover="white"
