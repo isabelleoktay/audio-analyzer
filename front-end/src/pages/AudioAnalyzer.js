@@ -369,7 +369,7 @@ const AudioAnalyzer = () => {
                     {
                       data: features.global_tempo,
                       lineColor: "navy",
-                      label: "Global Tempo",
+                      label: "Global Tempo:",
                       dashed: true,
                     },
                   ];
@@ -400,6 +400,7 @@ const AudioAnalyzer = () => {
                     data: features.global_tempo,
                     lineColor: "navy",
                     label: "Global Tempo",
+                    subLabel: `(${parseInt(features.global_tempo[0])} BPM)`,
                     dashed: true,
                   },
                 ]}
