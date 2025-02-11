@@ -26,7 +26,10 @@ const FileUploader = ({
   const [statusMessage, setStatusMessage] = useState("Processing audio...");
 
   const noteRegex = useMemo(() => /^[A-Ga-g]#?[0-9]$/, []);
-  const socket = useMemo(() => io("http://localhost:8080"), []);
+  const socket = useMemo(
+    () => io(process.env.REACT_APP_PYTHON_SERVICE_BASE_URL),
+    []
+  );
 
   const validateNotes = () => {
     return noteRegex.test(minNote) && noteRegex.test(maxNote);
