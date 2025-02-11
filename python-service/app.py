@@ -13,7 +13,7 @@ from utils import normalize_array, load_audio
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 # Constants
 WINDOW_SIZE = 100
