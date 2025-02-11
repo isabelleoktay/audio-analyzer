@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import AudioFeaturesGraph from "./AudioFeaturesGraph";
-import CircularProgress from "@mui/material/CircularProgress";
 
 const AudioFeaturesDisplay = ({
   title,

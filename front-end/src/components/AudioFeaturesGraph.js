@@ -8,12 +8,12 @@ const AudioFeaturesGraph = ({
   maxY,
   color = "black",
   highlightedSections = [],
-  onRenderComplete, // Callback to signal rendering completion
+  onRenderComplete,
 }) => {
   const baseCanvasRef = useRef(null);
   const overlayCanvasRef = useRef(null);
   const [resizedWindow, setResizedWindow] = useState(false);
-  const [renderCount, setRenderCount] = useState(0); // Track rendering completionxw
+  const [renderCount, setRenderCount] = useState(0);
 
   // Base layer setup
   useEffect(() => {
@@ -68,8 +68,14 @@ const AudioFeaturesGraph = ({
     const drawData = (context, width, height, padding) => {
       const drawValues = (data, color, dashed = false) => {
         context.strokeStyle = color;
-        context.setLineDash(dashed ? [5, 10] : []);
         context.lineWidth = 2;
+
+        if (dashed) {
+          context.setLineDash([5, 5]);
+        } else {
+          context.setLineDash([]);
+        }
+
         context.beginPath();
         data.forEach((value, index) => {
           const x =
