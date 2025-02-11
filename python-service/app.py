@@ -10,10 +10,12 @@ from smoothing_curves import smooth_curve_parallel
 from variability import detect_variable_sections
 from tempo import calculate_dynamic_tempo
 from utils import normalize_array, load_audio
+import eventlet
+eventlet.monkey_patch()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet") # causing errors that need to be resolved
 
 # Constants
 WINDOW_SIZE = 100
@@ -125,4 +127,4 @@ def home():
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 8080))
-    socketio.run(app, host="0.0.0.0", port=port)
+    socketio.run(app, host="0.0.0.0", port=port, use_reloader=False, debug=True)
