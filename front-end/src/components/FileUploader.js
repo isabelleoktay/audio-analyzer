@@ -31,6 +31,9 @@ const FileUploader = ({
     []
   );
 
+  console.log("socket");
+  console.log(socket);
+
   const validateNotes = () => {
     return noteRegex.test(minNote) && noteRegex.test(maxNote);
   };
@@ -104,6 +107,10 @@ const FileUploader = ({
     socket.on("progress", (data) => {
       setProgress(data.percentage);
       setStatusMessage(data.message);
+      console.log("data received");
+      console.log(data);
+      console.log("socket");
+      console.log(socket);
     });
 
     return () => {
