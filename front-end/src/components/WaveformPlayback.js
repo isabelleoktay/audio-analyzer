@@ -56,7 +56,7 @@ const WaveformPlayback = ({
           text="Remove File"
           handleClick={removeFile}
           fontSize="sm"
-          bgColor="red-500"
+          bgColor="bg-red-500"
           bgColorHover="red-400"
           textColor="white"
         />

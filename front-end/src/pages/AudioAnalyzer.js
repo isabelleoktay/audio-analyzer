@@ -113,17 +113,16 @@ const AudioAnalyzer = () => {
   }, []);
 
   useEffect(() => {
-    const calculateAxes = (data, sampleRate, hopLength, type) => {
+    const calculateAxes = (data, type) => {
       let minY, maxY, duration;
+      duration = audioBuffer.duration;
 
       if (type === "feature") {
         minY = Math.min(...data);
         maxY = Math.max(...data);
-        duration = (data.length * hopLength) / sampleRate;
       } else {
         minY = data.reduce((min, val) => Math.min(min, val), Infinity);
         maxY = data.reduce((max, val) => Math.max(max, val), -Infinity);
-        duration = audioBuffer.duration;
       }
 
       // X-axis time labels based on sample rate and hop length
@@ -182,31 +181,10 @@ const AudioAnalyzer = () => {
     if (audioData && features) {
       console.log("FEATURES");
       console.log(features);
-      setWaveformAxes(calculateAxes(audioData, features.sample_rate));
-      setLoudnessAxes(
-        calculateAxes(
-          features.loudness_smoothed,
-          features.sample_rate,
-          features.hop_length,
-          "feature"
-        )
-      );
-      setPitchAxes(
-        calculateAxes(
-          features.pitches_smoothed,
-          features.sample_rate,
-          features.hop_length,
-          "feature"
-        )
-      );
-      setTempoAxes(
-        calculateAxes(
-          features.dynamic_tempo,
-          features.sample_rate,
-          features.hop_length,
-          "feature"
-        )
-      );
+      setWaveformAxes(calculateAxes(audioData));
+      setLoudnessAxes(calculateAxes(features.loudness_smoothed, "feature"));
+      setPitchAxes(calculateAxes(features.pitches_smoothed, "feature"));
+      setTempoAxes(calculateAxes(features.dynamic_tempo, "feature"));
       setVariabilityAxes(calculateAxes(features.normalized_timbre_variability));
 
       const labeledHighlightedSections = features.variable_sections.reduce(
@@ -312,7 +290,7 @@ const AudioAnalyzer = () => {
 
                 if (activeVisualizationTab === "Highlights") {
                   title = "Highlighted Features";
-                  data = audioBuffer.getChannelData(0);
+                  data = features.audio;
                   highlightedSectionsData = highlightedSections.filter(
                     (section) =>
                       selectedHighlightedSections.includes(section.label)
@@ -359,7 +337,13 @@ const AudioAnalyzer = () => {
             />
 
             {/* Graph Display */}
-            <div className="p-4 bg-blue-50 rounded-r-lg border-2 border-blue-500 border-solid z-30 relative w-full">
+            <div
+              className={`p-4 bg-blue-50 ${
+                activeFeatureTab === "Tempo"
+                  ? "border-y-2 border-l-2"
+                  : "rounded-r-lg border-2"
+              } border-blue-500 border-solid z-30 relative w-full`}
+            >
               {(() => {
                 let title, data, axes, color;
                 const highlightedSectionsData = [];
@@ -376,9 +360,21 @@ const AudioAnalyzer = () => {
                   color = "orange";
                 } else if (activeFeatureTab === "Tempo") {
                   title = "Tempo";
-                  data = features.dynamic_tempo;
+                  data = [
+                    {
+                      data: features.dynamic_tempo,
+                      lineColor: "deepskyblue",
+                      label: "Dynamic Tempo",
+                    },
+                    {
+                      data: features.global_tempo,
+                      lineColor: "navy",
+                      label: "Global Tempo:",
+                      dashed: true,
+                    },
+                  ];
                   axes = tempoAxes;
-                  color = "hotpink";
+                  color = "";
                 }
 
                 return (
@@ -392,6 +388,27 @@ const AudioAnalyzer = () => {
                 );
               })()}
             </div>
+            {activeFeatureTab === "Tempo" && (
+              <CollapsibleLegend
+                sections={[
+                  {
+                    data: features.dynamic_tempo,
+                    lineColor: "deepskyblue",
+                    label: "Dynamic Tempo",
+                  },
+                  {
+                    data: features.global_tempo,
+                    lineColor: "navy",
+                    label: "Global Tempo",
+                    subLabel: `(${parseInt(features.global_tempo[0])} BPM)`,
+                    dashed: true,
+                  },
+                ]}
+                selectedSections={selectedHighlightedSections}
+                activeTab={activeFeatureTab}
+                startOpen={false}
+              />
+            )}
           </div>
         </div>
       )}

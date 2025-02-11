@@ -50,7 +50,14 @@ const LegendItems = ({
                 className="mr-2"
               />
             )}
-            <span className="text-sm text-slate-800">{section.label}</span>
+            <div className="flex flex-col">
+              <span className="text-sm text-slate-800">{section.label}</span>
+              {section.subLabel && (
+                <span className="text-sm text-slate-800">
+                  {section.subLabel}
+                </span>
+              )}
+            </div>
           </div>
         ))}
     </div>
