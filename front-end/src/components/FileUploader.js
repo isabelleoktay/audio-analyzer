@@ -27,12 +27,7 @@ const FileUploader = ({
 
   const noteRegex = useMemo(() => /^[A-Ga-g]#?[0-9]$/, []);
   const socket = useMemo(
-    () =>
-      io(process.env.REACT_APP_PYTHON_SERVICE_BASE_URL, {
-        path: "/socket.io",
-        secure: true,
-        transports: ["websocket"],
-      }),
+    () => io(process.env.REACT_APP_PYTHON_SERVICE_BASE_URL),
     []
   );
 
