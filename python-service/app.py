@@ -1,3 +1,7 @@
+import gevent
+import gevent.monkey
+gevent.monkey.patch_all()
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -10,9 +14,6 @@ from smoothing_curves import smooth_curve_parallel
 from variability import detect_variable_sections
 from tempo import calculate_dynamic_tempo
 from utils import normalize_array, load_audio
-import gevent
-import gevent.monkey
-gevent.monkey.patch_all()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
