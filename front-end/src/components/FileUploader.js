@@ -27,12 +27,17 @@ const FileUploader = ({
 
   const noteRegex = useMemo(() => /^[A-Ga-g]#?[0-9]$/, []);
   const socket = useMemo(
-    () => io(process.env.REACT_APP_PYTHON_SERVICE_BASE_URL),
+    () =>
+      io(process.env.REACT_APP_PYTHON_SERVICE_BASE_URL, {
+        path: "/socket.io/",
+        transports: ["websocket"],
+        withCredentials: true,
+        forceNew: true,
+        upgrade: true,
+        query: { EIO: "4" },
+      }),
     []
   );
-
-  console.log("socket");
-  console.log(socket);
 
   const validateNotes = () => {
     return noteRegex.test(minNote) && noteRegex.test(maxNote);
