@@ -107,10 +107,6 @@ const FileUploader = ({
     socket.on("progress", (data) => {
       setProgress(data.percentage);
       setStatusMessage(data.message);
-      console.log("data received");
-      console.log(data);
-      console.log("socket");
-      console.log(socket);
     });
 
     return () => {

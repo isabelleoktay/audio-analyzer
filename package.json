@@ -5,12 +5,12 @@
     "start": "concurrently \"npm run frontend\" \"npm run backend\" \"npm run python-service\"",
     "frontend": "npm start --prefix front-end",
     "backend": "npm start --prefix back-end",
-    "python-service": "cd python-service && gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b 0.0.0.0:8080 app:app",
+    "python-service": "cd python-service && flask run --host=0.0.0.0 --port=8080",
     "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install && cd ../python-service && pip install -r requirements.txt",
     "create-venv": "cd python-service && python3 -m venv venv && . venv/bin/activate && pip install -r requirements.txt",
     "build": "cd front-end && npm run build",
     "start:prod": "concurrently \"npm run backend\" \"npm run python-service:prod\"",
-    "python-service:prod": "cd python-service && source venv/bin/activate && gunicorn -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b 0.0.0.0:8080 app:app"
+    "python-service:prod": "cd python-service && source venv/bin/activate && flask run --host=0.0.0.0 --port=8080"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

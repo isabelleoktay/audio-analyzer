@@ -1,7 +1,3 @@
-import gevent
-import gevent.monkey
-gevent.monkey.patch_all()
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -17,7 +13,7 @@ from utils import normalize_array, load_audio
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Constants
 WINDOW_SIZE = 100
@@ -129,4 +125,4 @@ def home():
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 8080))
-    socketio.run(app, host="0.0.0.0", port=port)
+    socketio.run(app, debug=True, port=port)
