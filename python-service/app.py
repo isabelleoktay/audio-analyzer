@@ -31,11 +31,11 @@ def emit_progress(socket, message, percentage):
 
 @socketio.on('connect')
 def handle_connect():
-    print('Client connected')
+    print('Client connected:', request.sid)
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    print('Client disconnected')
+    print('Client disconnected:', request.sid)
 
 @app.route('/python-service/process-audio', methods=['POST'])
 def process_audio():

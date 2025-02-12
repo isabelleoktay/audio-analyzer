@@ -34,10 +34,21 @@ const FileUploader = ({
         withCredentials: true,
         forceNew: true,
         upgrade: true,
-        query: { EIO: "4" },
       }),
     []
   );
+
+  socket.on("connect", () => {
+    console.log("WebSocket connected");
+  });
+
+  socket.on("connect_error", (error) => {
+    console.error("WebSocket connection error:", error);
+  });
+
+  socket.on("disconnect", (reason) => {
+    console.log("WebSocket disconnected:", reason);
+  });
 
   const validateNotes = () => {
     return noteRegex.test(minNote) && noteRegex.test(maxNote);
