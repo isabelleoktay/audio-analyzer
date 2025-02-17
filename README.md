@@ -1,5 +1,51 @@
 # SkyNote Audio Analyzer
 
+## Setting Up the Local Application
+
+### 1. Environment Variables
+
+There are three directories that require environment variables:
+
+1. **Frontend Directory:** You should put this .env in the root of the frontend directory. The contents of this file in my configuration look like the following example. Your .env file should contain the same information (unless you change the ports of the Python and Nodejs APIs accordingly):
+
+   ```
+   REACT_APP_API_BASE_URL=http://localhost:8004/
+   REACT_APP_PYTHON_SERVICE_BASE_URL=http://localhost:8080/
+   ```
+
+2. **Backend Directory:** You should put this .env file in the root of the backend directory. The contents of this file in my configuration look like the following example. Your file should not contain the exact same information, as you should fill out the MongoDB URI with your own username and password as well as the VPS private key and username with your own key and name. **NOTE:** MongoDB is not being used in the application yet, so there is no need to actually use the MongoDB URI. The port information should stay the same unless you've changed the API ports accordingly.
+
+   ```
+   PORT=8004
+   PYTHON_SERVICE_URL=http://localhost:8080
+   MONGODB_URI=mongodb://<username>:<password>@127.0.0.1:27017/audioAnalyzerDB?serverSelectionTimeoutMS=5000&connectTimeoutMS=10000&authSource=skynote&authMechanism=SCRAM-SHA-256
+   VPS_PRIVATE_KEY = /Users/<yourname>/.ssh/id_rsa
+   VPS_USERNAME = <yourname>
+   ```
+
+3. **Python Service Directory:** You should put this .env file in the root of the python service directory. The contents of this .env file should look like the following:
+
+   ```
+   FLASK_APP=app.py
+   ```
+
+### 2. Running the application
+
+The commands to run the application are located in `package.json`. You can use `npm start` to run the application. However, you will need to ensure that all dependencies are installed. Since this application used npm and python, you will need to have the node package manager and a python environment installed.
+
+1. **Node dependencies:** You will need to install the node dependencies on both the frontend and backend directories of the application.
+
+   - **To install the frontend dependencies**, `cd` to the root of the frontend directory and use the command `npm i`. This should install the node dependencies. If `npm i` doesn't work, you may need to enable legacy dependencies with `npm i --legacy-peer-deps`.
+   - **To install the backend dependencies**: `cd` to the root of the backend directory and use the command `npm i`. This should install the node dependencies. If `npm i` doesn't work, you may need to enable legacy dependencies with `npm i --legacy-peer-deps`.
+
+2. **Python dependencies**: You will need to have a python environment activated to run this application locally. Once this environment is activated, you should `cd` to the python service directory and run the following command to install the dependencies:
+
+   ```
+   pip install -r requirements.txt
+   ```
+
+Once again, when you have installed all the necessary dependencies, you may `cd` to the root directory of this project and run the command `npm start` to run the application locally.
+
 ## Deploying and Updating the Application
 
 ### 1. Make Code Changes
