@@ -8,7 +8,7 @@ from feature_extraction import extract_features_parallel
 from articulation import calculate_articulation, calculate_min_max_articulation_sections
 from smoothing_curves import smooth_curve_parallel
 from variability import detect_variable_sections
-from tempo import calculate_dynamic_tempo
+from tempo import calculate_dynamic_tempo, calculate_dynamic_tempo_essentia
 from utils import normalize_array, load_audio
 
 app = Flask(__name__)
@@ -63,7 +63,8 @@ def process_audio():
     mfccs, rms, pitches, zcr = extract_features_parallel(audio, sr, min_note, max_note, n_fft=N_FFT, hop_length=HOP_LENGTH)
     emit_progress(socketio, '(3/9) Feature extraction complete.', 45)
 
-    dynamic_tempo, global_tempo = calculate_dynamic_tempo(audio, sr, HOP_LENGTH)
+    # dynamic_tempo, global_tempo = calculate_dynamic_tempo(audio, sr, HOP_LENGTH)
+    dynamic_tempo, global_tempo = calculate_dynamic_tempo_essentia(audio)
     global_tempo_array = np.full_like(dynamic_tempo, global_tempo)
     emit_progress(socketio, '(4/9) Tempo calculation complete.', 55)
 

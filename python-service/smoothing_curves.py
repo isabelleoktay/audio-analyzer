@@ -10,6 +10,8 @@ def smooth_chunk(index, data, start, end, window_size, filter_type, threshold=No
     if filter_type == 'mean':
         smoothed_chunk = np.convolve(chunk, np.ones(window_size) / window_size, mode='same')
     elif filter_type == 'median':
+        if window_size % 2 == 0:
+            window_size += 1  # Ensure window_size is odd
         smoothed_chunk = medfilt(chunk, kernel_size=window_size)
     
     # Handle adaptive smoothing for pitch
