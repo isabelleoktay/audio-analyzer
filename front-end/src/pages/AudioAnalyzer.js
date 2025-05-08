@@ -113,7 +113,7 @@ const AudioAnalyzer = () => {
   }, []);
 
   useEffect(() => {
-    const calculateAxes = (data, type) => {
+    const calculateAxes = (data, type, yMargin = 0) => {
       let minY, maxY, duration;
       duration = audioBuffer.duration;
 
@@ -123,6 +123,11 @@ const AudioAnalyzer = () => {
       } else {
         minY = data.reduce((min, val) => Math.min(min, val), Infinity);
         maxY = data.reduce((max, val) => Math.max(max, val), -Infinity);
+      }
+
+      if (yMargin !== 0) {
+        minY = Math.max(0, minY - yMargin);
+        maxY = maxY + yMargin;
       }
 
       // X-axis time labels based on sample rate and hop length
@@ -184,7 +189,7 @@ const AudioAnalyzer = () => {
       setWaveformAxes(calculateAxes(audioData));
       setLoudnessAxes(calculateAxes(features.loudness_smoothed, "feature"));
       setPitchAxes(calculateAxes(features.pitches_smoothed, "feature"));
-      setTempoAxes(calculateAxes(features.dynamic_tempo, "feature"));
+      setTempoAxes(calculateAxes(features.dynamic_tempo, "feature", 50));
       setVariabilityAxes(calculateAxes(features.normalized_timbre_variability));
 
       const labeledHighlightedSections = features.variable_sections.reduce(
@@ -406,7 +411,7 @@ const AudioAnalyzer = () => {
                 ]}
                 selectedSections={selectedHighlightedSections}
                 activeTab={activeFeatureTab}
-                startOpen={false}
+                startOpen={true}
               />
             )}
           </div>
