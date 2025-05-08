@@ -16,6 +16,7 @@
     "dotenv": "^16.4.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router-dom": "^7.5.3",
     "react-scripts": "^5.0.1",
     "socket.io-client": "^4.5.4",
     "wavesurfer.js": "^7.8.8",
