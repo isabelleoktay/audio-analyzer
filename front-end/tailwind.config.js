@@ -19,7 +19,24 @@ module.exports = {
         lightpink: "#FFD6E8",
         darkpink: "#FF89BB",
       },
+      borderDasharray: {
+        "8-4": "8 4", // Dash length 8px, gap 4px
+        "10-5": "10 5", // Dash length 10px, gap 5px
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        ".border-dash-8-4": {
+          borderStyle: "dashed",
+          borderDasharray: "8 4",
+        },
+        ".border-dash-10-5": {
+          borderStyle: "dashed",
+          borderDasharray: "10 5",
+        },
+      });
+    },
+  ],
 };
