@@ -1,4 +1,3 @@
-//config/analysisButtons.js
 const activeAnalysisButtonClassName =
   "bg-radial from-warmyellow to-darkpink text-blueblack";
 const inactiveAnalysisButtonClassName =
@@ -6,7 +5,10 @@ const inactiveAnalysisButtonClassName =
 
 export const analysisButtonConfig = {
   violin: [
-    { type: "left", label: "dynamics" },
+    {
+      type: "left",
+      label: "dynamics",
+    },
     { type: "center", label: "pitch" },
     { type: "right", label: "tempo" },
   ],

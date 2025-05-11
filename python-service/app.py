@@ -10,6 +10,11 @@ from smoothing_curves import smooth_curve_parallel
 from variability import detect_variable_sections
 from tempo import calculate_dynamic_tempo, calculate_dynamic_tempo_essentia
 from utils import normalize_array, load_audio
+import librosa
+import subprocess
+import tempfile
+import wave
+import hashlib
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  
@@ -21,6 +26,12 @@ HOP_SIZE = 25
 HOP_LENGTH = 512
 N_FFT = 2048
 SEGMENT_PERCENTAGE = 0.1
+
+audio_cache = {
+    'hash': None,
+    'audio': None,
+    'sr': None
+}
 
 def emit_progress(socket, message, percentage):
     """
@@ -36,6 +47,122 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     print('Client disconnected:', request.sid)
+
+def get_file_hash(file_bytes):
+    return hashlib.sha256(file_bytes).hexdigest()
+
+def get_cached_or_loaded_audio(file_bytes):
+    global audio_cache
+    file_hash = get_file_hash(file_bytes)
+
+    if audio_cache['hash'] == file_hash:
+        return audio_cache['audio'], audio_cache['sr'], None
+
+    try:
+        file_stream = convert_to_wav_if_needed(file_bytes)
+        audio, sr = load_audio(file_stream)
+    except Exception as e:
+        return None, None, str(e)
+
+    audio_cache = {
+        'hash': file_hash,
+        'audio': audio,
+        'sr': sr
+    }
+
+    return audio, sr, None
+
+def convert_to_wav_if_needed(input_bytes):
+    # Try reading the file as a WAV
+    try:
+        with wave.open(BytesIO(input_bytes), 'rb') as wav_file:
+            # If this succeeds, the input is already a valid WAV file
+            wav_file.getparams()  # Trigger reading header
+            return BytesIO(input_bytes)
+    except wave.Error:
+        pass  # Not a valid WAV file, proceed to convert with ffmpeg
+
+    # Not a valid WAV file — convert with ffmpeg
+    with tempfile.NamedTemporaryFile(suffix='.input', delete=False) as temp_in, \
+         tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_out:
+        
+        temp_in.write(input_bytes)
+        temp_in.flush()
+
+        try:
+            subprocess.run([
+                'ffmpeg', '-y', '-i', temp_in.name,
+                '-f', 'wav', '-acodec', 'pcm_s16le',
+                temp_out.name
+            ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except subprocess.CalledProcessError:
+            raise RuntimeError("ffmpeg conversion failed")
+
+        with open(temp_out.name, 'rb') as f:
+            return BytesIO(f.read())
+
+@app.route('/python-service/process-dynamics', methods=['POST'])
+def process_dynamics():
+    audio_file = request.files.get('audioFile')
+    if audio_file is None:
+        return jsonify({'error': 'No file uploaded'}), 400
+
+    audio_bytes = audio_file.read()
+    audio, sr, error = get_cached_or_loaded_audio(audio_bytes)
+
+    if error:
+        return jsonify({'error': error}), 400
+
+    rms = librosa.feature.rms(y=audio, frame_length=N_FFT, hop_length=HOP_LENGTH)
+
+    return jsonify({
+        'dynamics': rms[0].tolist(),
+        'sample_rate': sr
+    })
+    
+@app.route('/python-service/process-pitch', methods=['POST'])
+def process_pitch():
+    audio_file = request.files.get('audioFile')
+    min_note = request.form.get('minNote')
+    max_note = request.form.get('maxNote')
+    if audio_file is None:
+        return jsonify({'error': 'No file uploaded'}), 400
+
+    audio_bytes = audio_file.read()
+    audio, sr, error = get_cached_or_loaded_audio(audio_bytes)
+    if error:
+        return jsonify({'error': error}), 400
+
+    pitch = librosa.yin(
+        y=audio,
+        fmin=librosa.note_to_hz(min_note),
+        fmax=librosa.note_to_hz(max_note),
+        sr=sr,
+        hop_length=HOP_LENGTH
+    )
+
+    return jsonify({
+        'pitch': pitch.tolist(),
+        'sample_rate': sr
+    })
+
+@app.route('/python-service/process-tempo', methods=['POST'])
+def process_tempo():
+    audio_file = request.files.get('audioFile')
+    if audio_file is None:
+        return jsonify({'error': 'No file uploaded'}), 400
+
+    audio_bytes = audio_file.read()
+    audio, sr, error = get_cached_or_loaded_audio(audio_bytes)
+    if error:
+        return jsonify({'error': error}), 400
+
+    dynamic_tempo, global_tempo = calculate_dynamic_tempo_essentia(audio)
+
+    return jsonify({
+        'tempo': dynamic_tempo.tolist(),
+        'sample_rate': sr
+    })
 
 @app.route('/python-service/process-audio', methods=['POST'])
 def process_audio():

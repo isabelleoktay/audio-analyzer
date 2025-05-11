@@ -8,11 +8,11 @@ import GraphWithWaveform from "../components/graphs/GraphWithWaveform.jsx";
 import TertiaryButton from "../components/buttons/TertiaryButton.jsx";
 import { instrumentButtons } from "../config/instrumentButtons.js";
 
-const dynamicsData = Array.from({ length: 100 }, (_, i) => {
-  const base = 0.5 + 0.3 * Math.sin(i / 10); // Sine wave to simulate musical phrasing
-  const noise = (Math.random() - 0.5) * 0.1; // Small random variation
-  return Math.min(1, Math.max(0, base + noise)); // Clamp between 0 and 1
-});
+// const dynamicsData = Array.from({ length: 100 }, (_, i) => {
+//   const base = 0.5 + 0.3 * Math.sin(i / 10); // Sine wave to simulate musical phrasing
+//   const noise = (Math.random() - 0.5) * 0.1; // Small random variation
+//   return Math.min(1, Math.max(0, base + noise)); // Clamp between 0 and 1
+// });
 
 const Analyzer = ({
   selectedInstrument,
@@ -29,8 +29,12 @@ const Analyzer = ({
   setAudioURL,
   selectedAnalysisFeature,
   setSelectedAnalysisFeature,
+  audioFeatures,
+  setAudioFeatures,
+  sampleRate,
+  setSampleRate,
 }) => {
-  const highlightedSections = useMemo(() => [{ start: 40, end: 60 }], []);
+  const highlightedSections = useMemo(() => [], []);
 
   const handleInstrumentSelect = (instrument) => {
     startTransition(() => {
@@ -94,6 +98,11 @@ const Analyzer = ({
                     selectedInstrument={selectedInstrument}
                     selectedAnalysisFeature={selectedAnalysisFeature}
                     onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
+                    audioFile={uploadedFile}
+                    audioFeatures={audioFeatures}
+                    setAudioFeatures={setAudioFeatures}
+                    sampleRate={sampleRate}
+                    setSampleRate={setSampleRate}
                   />
                   {selectedAnalysisFeature && (
                     <div className="flex flex-col w-full">
@@ -104,9 +113,12 @@ const Analyzer = ({
                         <GraphWithWaveform
                           key={audioURL}
                           audioURL={audioURL}
-                          featureData={dynamicsData}
+                          featureData={
+                            audioFeatures[selectedAnalysisFeature] || []
+                          }
                           sampleRate={44100}
                           highlightedSections={highlightedSections}
+                          selectedAnalysisFeature={selectedAnalysisFeature}
                         />
                       </div>
                       <TertiaryButton
@@ -116,6 +128,7 @@ const Analyzer = ({
                           setAudioBlob(null);
                           setAudioName("untitled.wav");
                           setAudioURL(null);
+                          setAudioFeatures({});
                         }}
                         className="mt-2 w-1/6 self-end"
                       >

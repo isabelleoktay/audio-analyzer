@@ -18,9 +18,6 @@ const RecordAudioSection = ({
   setAudioURL,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
-  //   const [audioBlob, setAudioBlob] = useState(null);
-  //   const [audioName, setAudioName] = useState("untitled.wav");
-  //   const [audioURL, setAudioURL] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const waveSurferRef = useRef(null);
@@ -54,7 +51,6 @@ const RecordAudioSection = ({
       const url = URL.createObjectURL(blob);
       setAudioBlob(blob);
       setAudioURL(url);
-      setUploadedFile(blob);
       setIsPlaying(false);
       waveSurfer.loadBlob(blob).then(() => {
         waveSurfer.seekTo(0);

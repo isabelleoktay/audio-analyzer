@@ -13,6 +13,8 @@ const App = () => {
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioName, setAudioName] = useState("untitled.wav");
   const [audioURL, setAudioURL] = useState(null);
+  const [audioFeatures, setAudioFeatures] = useState({});
+  const [sampleRate, setSampleRate] = useState(null);
 
   return (
     <div className="min-h-screen bg-radial from-bluegray to-blueblack">
@@ -26,6 +28,8 @@ const App = () => {
             setAudioName={setAudioName}
             setAudioURL={setAudioURL}
             setSelectedAnalysisFeature={setSelectedAnalysisFeature}
+            setAudioFeatures={setAudioFeatures}
+            setSampleRate={setSampleRate}
           />
           <Routes>
             <Route
@@ -46,6 +50,10 @@ const App = () => {
                   audioURL={audioURL}
                   selectedAnalysisFeature={selectedAnalysisFeature}
                   setSelectedAnalysisFeature={setSelectedAnalysisFeature}
+                  audioFeatures={audioFeatures}
+                  setAudioFeatures={setAudioFeatures}
+                  sampleRate={sampleRate}
+                  setSampleRate={setSampleRate}
                 />
               }
             />

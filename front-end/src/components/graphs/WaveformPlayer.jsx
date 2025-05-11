@@ -56,14 +56,13 @@ const WaveformPlayer = ({
 
     return () => {
       if (wavesurferRef.current) {
-        try {
-          wavesurferRef.current.destroy();
-        } catch (e) {
-          // Suppress AbortError caused by destroy during loading
+        // destroy() may be async and throw AbortError, so handle it as a promise
+        Promise.resolve(wavesurferRef.current.destroy()).catch((e) => {
           if (e.name !== "AbortError") {
-            throw e;
+            // Only log unexpected errors
+            console.error(e);
           }
-        }
+        });
         wavesurferRef.current = null;
       }
     };
@@ -76,7 +75,11 @@ const WaveformPlayer = ({
     wavesurferRef,
   ]);
 
-  return <div ref={containerRef} className="w-full" />;
+  return (
+    <>
+      <div ref={containerRef} className="w-full" />
+    </>
+  );
 };
 
 export default WaveformPlayer;
