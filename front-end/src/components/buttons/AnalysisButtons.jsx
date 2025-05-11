@@ -4,18 +4,35 @@ import {
   analysisButtonConfig,
   analysisButtonClassNames,
 } from "../../config/analysisButtons.js";
+import { processFeatures } from "../../utils/api.js";
 
 const AnalysisButtons = ({
   selectedInstrument,
   selectedAnalysisFeature,
   onAnalysisFeatureSelect,
+  audioFile,
+  audioFeatures,
+  setAudioFeatures,
+  sampleRate,
+  setSampleRate,
 }) => {
   if (!analysisButtonConfig[selectedInstrument]) return null;
 
   const buttons = analysisButtonConfig[selectedInstrument].map((btn) => ({
     ...btn,
     asButton: true,
-    onClick: () => onAnalysisFeatureSelect(btn.label),
+    onClick: async () => {
+      onAnalysisFeatureSelect(btn.label);
+      if (!audioFeatures[`${btn.label}`]) {
+        const result = await processFeatures(audioFile, btn.label);
+        if (!sampleRate) setSampleRate(result.sample_rate);
+        setAudioFeatures({
+          ...audioFeatures,
+          [btn.label]: result[`${btn.label}`],
+        });
+        console.log(result);
+      }
+    },
     active: selectedAnalysisFeature === btn.label,
     activeClassName: analysisButtonClassNames.active,
     inactiveClassName: analysisButtonClassNames.inactive,

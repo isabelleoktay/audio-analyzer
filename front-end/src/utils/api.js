@@ -4,6 +4,60 @@ const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL,
 });
 
+const pythonClient = axios.create({
+  baseURL: "http://localhost:8080",
+});
+
+const processFeatures = async (audioFile, feature) => {
+  const formData = new FormData();
+  formData.append("audioFile", audioFile);
+
+  try {
+    if (feature === "dynamics") {
+      const response = await pythonClient.post(
+        "/python-service/process-dynamics",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } else if (feature === "pitch") {
+      formData.append("minNote", "F3");
+      formData.append("maxNote", "B6");
+
+      const response = await pythonClient.post(
+        "/python-service/process-pitch",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } else if (feature === "tempo") {
+      const response = await pythonClient.post(
+        "/python-service/process-tempo",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } else {
+      return [];
+    }
+  } catch (error) {
+    console.error("Error processing dynamics:", error);
+    throw error;
+  }
+};
+
 /**
  * Processes an audio file by sending it to the backend API.
  *
@@ -56,4 +110,4 @@ const uploadAudio = async (audioFile) => {
   }
 };
 
-export { processAudio, uploadAudio };
+export { processAudio, uploadAudio, processFeatures };

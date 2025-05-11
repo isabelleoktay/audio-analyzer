@@ -11,6 +11,8 @@ const NavBar = ({
   setAudioName,
   setAudioURL,
   setSelectedAnalysisFeature,
+  setAudioFeatures,
+  setSampleRate,
 }) => {
   const location = useLocation();
 
@@ -24,6 +26,8 @@ const NavBar = ({
     setAudioName("untitled.wav");
     setAudioURL(null);
     setSelectedAnalysisFeature(null);
+    setAudioFeatures({});
+    setSampleRate(null);
   };
 
   const handleTooltips = () => {};

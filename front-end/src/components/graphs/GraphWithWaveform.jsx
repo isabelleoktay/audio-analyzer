@@ -1,8 +1,9 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import LineGraph from "./LineGraph";
 import WaveformPlayer from "./WaveformPlayer";
 import { FaPlay, FaPause } from "react-icons/fa";
 import IconButton from "../buttons/IconButton";
+import LoadingSpinner from "../LoadingSpinner";
 
 const width = 800;
 const leftMargin = 50;
@@ -16,20 +17,71 @@ const GraphWithWaveform = ({
   featureData,
   sampleRate,
   highlightedSections,
+  selectedAnalysisFeature,
 }) => {
   const wavesurferRef = useRef();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handlePlayPause = () => {
+    if (wavesurferRef.current) {
+      wavesurferRef.current.playPause();
+    }
+    setIsPlaying((prev) => !prev);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Prevent default space bar scrolling
+      if (e.code === "Space" || e.key === " ") {
+        e.preventDefault();
+        handlePlayPause();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const isLoading =
+      !featureData || !Array.isArray(featureData) || featureData.length === 0;
+    setLoading(isLoading);
+  }, [featureData]);
 
   return (
     <div className="flex flex-col items-center" style={{ width }}>
-      <LineGraph
-        data={featureData}
-        width={width}
-        height={graphHeight}
-        xLabel="time (s)"
-        yLabel="feature"
-        highlightedSections={highlightedSections}
-      />
+      <div
+        style={{
+          height: graphHeight,
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {loading ? (
+          <LoadingSpinner />
+        ) : (
+          <LineGraph
+            data={featureData}
+            width={width}
+            height={graphHeight}
+            xLabel="time (s)"
+            yLabel={selectedAnalysisFeature}
+            highlightedSections={highlightedSections}
+            yMin={
+              selectedAnalysisFeature === "tempo"
+                ? Math.max(0, Math.min(...featureData) - 50)
+                : Math.min(...featureData)
+            }
+            yMax={
+              selectedAnalysisFeature === "tempo"
+                ? Math.max(...featureData) + 50
+                : Math.max(...featureData)
+            }
+          />
+        )}
+      </div>
       <div className="flex flex-row items-center w-full">
         <div
           style={{
@@ -40,12 +92,7 @@ const GraphWithWaveform = ({
         >
           <IconButton
             icon={isPlaying ? FaPause : FaPlay}
-            onClick={() => {
-              if (wavesurferRef.current) {
-                wavesurferRef.current.playPause();
-              }
-              setIsPlaying((prev) => !prev);
-            }}
+            onClick={handlePlayPause}
             colorClass="text-darkpink"
             bgClass="bg-transparent"
             sizeClass="w-10 h-10"

@@ -8,6 +8,8 @@ const LineGraph = ({
   xLabel,
   yLabel,
   highlightedSections = [],
+  yMin,
+  yMax,
 }) => {
   const ref = useRef();
 
@@ -25,7 +27,11 @@ const LineGraph = ({
       .range([0, innerWidth]);
 
     const yExtent = d3.extent(data);
-    const yScale = d3.scaleLinear().domain(yExtent).range([innerHeight, 0]);
+    const yDomain = [
+      yMin !== undefined ? yMin : yExtent[0],
+      yMax !== undefined ? yMax : yExtent[1],
+    ];
+    const yScale = d3.scaleLinear().domain(yDomain).range([innerHeight, 0]);
 
     const line = d3
       .line()
@@ -36,7 +42,7 @@ const LineGraph = ({
     const area = d3
       .area()
       .x((d, i) => xScale(i))
-      .y0(yScale(yExtent[0]))
+      .y0(yScale(yDomain[0]))
       .y1((d) => yScale(d))
       .curve(d3.curveMonotoneX);
 
@@ -129,7 +135,7 @@ const LineGraph = ({
       .attr("stroke", "#FF89BB")
       .attr("stroke-width", 2)
       .attr("d", line);
-  }, [data, width, height, highlightedSections, xLabel, yLabel]);
+  }, [data, width, height, highlightedSections, xLabel, yLabel, yMin, yMax]);
 
   return <svg ref={ref} width={width} height={height} />;
 };
