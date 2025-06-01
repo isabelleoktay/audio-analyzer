@@ -4,17 +4,18 @@ import {
   analysisButtonConfig,
   analysisButtonClassNames,
 } from "../../config/analysisButtons.js";
-import { processFeatures } from "../../utils/api.js";
+import { processFeatures, uploadAudio } from "../../utils/api.js";
 
 const AnalysisButtons = ({
   selectedInstrument,
   selectedAnalysisFeature,
   onAnalysisFeatureSelect,
-  audioFile,
+  uploadedFile,
   audioFeatures,
   setAudioFeatures,
-  sampleRate,
-  setSampleRate,
+  audioUuid,
+  setAudioUuid,
+  uploadsEnabled,
 }) => {
   if (!analysisButtonConfig[selectedInstrument]) return null;
 
@@ -23,14 +24,38 @@ const AnalysisButtons = ({
     asButton: true,
     onClick: async () => {
       onAnalysisFeatureSelect(btn.label);
-      if (!audioFeatures[`${btn.label}`]) {
-        const result = await processFeatures(audioFile, btn.label);
-        if (!sampleRate) setSampleRate(result.sample_rate);
-        setAudioFeatures({
-          ...audioFeatures,
-          [btn.label]: result[`${btn.label}`],
-        });
-        console.log(result);
+      if (!audioFeatures[btn.label]) {
+        console.log("AUDIO FILE");
+        console.log(uploadedFile);
+        const featureResult = await processFeatures(uploadedFile, btn.label);
+        const featureData = {
+          data: featureResult[btn.label], // this must match the key in `result`
+          xAxis: featureResult.x_axis || [],
+          sampleRate: featureResult.sample_rate,
+          audioUrl: featureResult.audio_url || "",
+          highlightedDataSection:
+            featureResult?.highlighted_section?.frame || {},
+          highlightedAudioSection:
+            { ...featureResult?.highlighted_section?.sample } || {},
+        };
+
+        setAudioFeatures((prev) => ({
+          ...prev,
+          [btn.label]: featureData,
+        }));
+
+        console.log(featureResult);
+
+        if (uploadsEnabled) {
+          console.log("Uploading audio...");
+          const uploadResult = await uploadAudio(
+            uploadedFile,
+            audioUuid,
+            selectedInstrument,
+            { ...audioFeatures, [btn.label]: featureData }
+          );
+          setAudioUuid(uploadResult.id);
+        }
       }
     },
     active: selectedAnalysisFeature === btn.label,

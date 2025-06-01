@@ -1,18 +1,13 @@
-import { useMemo, startTransition } from "react";
+import { startTransition, useEffect } from "react";
 import InstrumentSelectionCards from "../components/cards/InstrumentSelectionCards.jsx";
 import InstrumentButton from "../components/buttons/InstrumentButton.jsx";
 import RecordAudioSection from "../components/sections/RecordAudioSection.jsx";
 import FileUploadSection from "../components/sections/FileUploadSection.jsx";
 import AnalysisButtons from "../components/buttons/AnalysisButtons.jsx";
-import GraphWithWaveform from "../components/graphs/GraphWithWaveform.jsx";
+import GraphWithWaveform from "../components/visualizations/GraphWithWaveform.jsx";
 import TertiaryButton from "../components/buttons/TertiaryButton.jsx";
+import Tooltip from "../text/Tooltip.jsx";
 import { instrumentButtons } from "../config/instrumentButtons.js";
-
-// const dynamicsData = Array.from({ length: 100 }, (_, i) => {
-//   const base = 0.5 + 0.3 * Math.sin(i / 10); // Sine wave to simulate musical phrasing
-//   const noise = (Math.random() - 0.5) * 0.1; // Small random variation
-//   return Math.min(1, Math.max(0, base + noise)); // Clamp between 0 and 1
-// });
 
 const Analyzer = ({
   selectedInstrument,
@@ -31,14 +26,31 @@ const Analyzer = ({
   setSelectedAnalysisFeature,
   audioFeatures,
   setAudioFeatures,
-  sampleRate,
-  setSampleRate,
+  audioUuid,
+  setAudioUuid,
+  uploadsEnabled,
+  testingEnabled,
+  setTestingEnabled,
+  subjectAnalysisCount,
+  setSubjectAnalysisCount,
+  subjectId,
+  testingPart,
+  setSubjectAnalyses,
+  tooltipMode,
 }) => {
-  const highlightedSections = useMemo(() => [], []);
-
   const handleInstrumentSelect = (instrument) => {
     startTransition(() => {
       setSelectedInstrument(instrument);
+      if (Object.keys(audioFeatures).length > 0) {
+        console.log("Resetting audio features");
+        setUploadedFile(null);
+        setAudioBlob(null);
+        setAudioName("untitled.wav");
+        setAudioURL(null);
+        setAudioFeatures({});
+        setSelectedAnalysisFeature(null);
+        setAudioUuid(null);
+      }
     });
   };
 
@@ -56,21 +68,82 @@ const Analyzer = ({
     setSelectedAnalysisFeature(feature);
   };
 
+  const handleDownloadRecording = () => {
+    const link = document.createElement("a");
+    link.href = audioURL;
+    link.download = audioName;
+    link.click();
+  };
+
+  const handleChangeFile = () => {
+    if (testingEnabled) {
+      setSubjectAnalyses((prev) => ({
+        ...prev,
+        [testingPart]: {
+          ...((prev && prev[testingPart]) || {}),
+          [audioName]: {
+            instrument: selectedInstrument,
+            audioUuid: audioUuid,
+            audioFeatures: audioFeatures,
+          },
+        },
+      }));
+    }
+    setSelectedAnalysisFeature(null);
+    setUploadedFile(null);
+    setAudioBlob(null);
+    const newsubjectAnalysisCount = subjectAnalysisCount + 1;
+    setSubjectAnalysisCount(newsubjectAnalysisCount);
+
+    let newAudioName;
+    if (testingEnabled) {
+      newAudioName = `subject-${subjectId}-${testingPart}-${newsubjectAnalysisCount}.wav`;
+    } else {
+      newAudioName = "untitled.wav";
+    }
+    setAudioName(newAudioName);
+
+    setAudioURL(null);
+    setAudioFeatures({});
+    if (testingEnabled) {
+      setInRecordMode(true);
+    } else {
+      setInRecordMode(false);
+    }
+  };
+
+  useEffect(() => {
+    console.log("Audio features updated:");
+    console.log(audioFeatures);
+  }, [audioFeatures]);
+
+  // useEffect(() => {
+  //   const newAudioName = `subject-${subjectId}-${testingPart}-${subjectAnalysisCount}.wav`;
+  //   setAudioName(newAudioName);
+  // }, [subjectAnalysisCount, setAudioName, subjectId, testingPart]);
+
   return (
     <div className="flex flex-col items-center min-h-[calc(100vh-4rem)]">
       {selectedInstrument ? (
         <div className="mt-28">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
-            {instrumentButtons.map((inst) => (
-              <InstrumentButton
-                key={inst.label}
-                onClick={() => handleInstrumentSelect(inst.label)}
-                selected={selectedInstrument === inst.label}
-              >
-                {inst.label}
-              </InstrumentButton>
-            ))}
-          </div>
+          <Tooltip
+            text="select an instrument to analyze"
+            show={tooltipMode === "global"}
+            tooltipMode={tooltipMode}
+            className="w-full"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
+              {instrumentButtons.map((inst) => (
+                <InstrumentButton
+                  key={inst.label}
+                  onClick={() => handleInstrumentSelect(inst.label)}
+                  selected={selectedInstrument === inst.label}
+                >
+                  {inst.label}
+                </InstrumentButton>
+              ))}
+            </div>
+          </Tooltip>
           {inRecordMode ? (
             <RecordAudioSection
               setUploadedFile={setUploadedFile}
@@ -81,29 +154,49 @@ const Analyzer = ({
               setAudioName={setAudioName}
               audioURL={audioURL}
               setAudioURL={setAudioURL}
+              handleDownloadRecording={handleDownloadRecording}
+              testingEnabled={testingEnabled}
+              setTestingEnabled={setTestingEnabled}
             />
           ) : (
             <div className="flex flex-col items-center w-full">
               {!selectedAnalysisFeature && (
-                <FileUploadSection
-                  handleSwitchToRecordMode={handleSwitchToRecordMode}
-                  handleFileUpload={handleFileUpload}
-                  uploadedFile={uploadedFile}
-                  className="mb-8 w-full"
-                />
+                <Tooltip
+                  text="upload an audio file (monophonic for violin or voice)"
+                  show={tooltipMode === "global"}
+                  tooltipMode={tooltipMode}
+                  className="w-full"
+                >
+                  <FileUploadSection
+                    handleSwitchToRecordMode={handleSwitchToRecordMode}
+                    handleFileUpload={handleFileUpload}
+                    uploadedFile={uploadedFile}
+                    className="mb-8 w-full"
+                    testingEnabled={testingEnabled}
+                  />
+                </Tooltip>
               )}
               {uploadedFile && (
                 <div className="flex flex-col items-center w-full space-y-8">
-                  <AnalysisButtons
-                    selectedInstrument={selectedInstrument}
-                    selectedAnalysisFeature={selectedAnalysisFeature}
-                    onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
-                    audioFile={uploadedFile}
-                    audioFeatures={audioFeatures}
-                    setAudioFeatures={setAudioFeatures}
-                    sampleRate={sampleRate}
-                    setSampleRate={setSampleRate}
-                  />
+                  <Tooltip
+                    text="select an analysis feature"
+                    show={tooltipMode === "global"}
+                    tooltipMode={tooltipMode}
+                    position="bottom"
+                    className="w-full justify-center"
+                  >
+                    <AnalysisButtons
+                      selectedInstrument={selectedInstrument}
+                      selectedAnalysisFeature={selectedAnalysisFeature}
+                      onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
+                      uploadedFile={uploadedFile}
+                      audioFeatures={audioFeatures}
+                      setAudioFeatures={setAudioFeatures}
+                      audioUuid={audioUuid}
+                      setAudioUuid={setAudioUuid}
+                      uploadsEnabled={uploadsEnabled}
+                    />
+                  </Tooltip>
                   {selectedAnalysisFeature && (
                     <div className="flex flex-col w-full">
                       <div className="text-xl font-semibold text-lightpink mb-1">
@@ -111,29 +204,37 @@ const Analyzer = ({
                       </div>
                       <div className="bg-lightgray/25 rounded-3xl w-full p-8">
                         <GraphWithWaveform
-                          key={audioURL}
-                          audioURL={audioURL}
-                          featureData={
-                            audioFeatures[selectedAnalysisFeature] || []
+                          key={audioFeatures[selectedAnalysisFeature]?.audioUrl}
+                          audioURL={
+                            audioFeatures[selectedAnalysisFeature]?.audioUrl
                           }
-                          sampleRate={44100}
-                          highlightedSections={highlightedSections}
+                          featureData={
+                            audioFeatures[selectedAnalysisFeature]?.data || []
+                          }
+                          xLabels={
+                            audioFeatures[selectedAnalysisFeature]?.xAxis || []
+                          }
+                          highlightedDataSection={
+                            audioFeatures[selectedAnalysisFeature]
+                              ?.highlightedDataSection
+                          }
+                          highlightedAudioSection={
+                            audioFeatures[selectedAnalysisFeature]
+                              ?.highlightedAudioSection
+                          }
                           selectedAnalysisFeature={selectedAnalysisFeature}
                         />
                       </div>
-                      <TertiaryButton
-                        onClick={() => {
-                          setSelectedAnalysisFeature(null);
-                          setUploadedFile(null);
-                          setAudioBlob(null);
-                          setAudioName("untitled.wav");
-                          setAudioURL(null);
-                          setAudioFeatures({});
-                        }}
-                        className="mt-2 w-1/6 self-end"
-                      >
-                        change file
-                      </TertiaryButton>
+                      <div className="flex flex-row justify-end gap-2 items-center mt-2">
+                        <TertiaryButton onClick={handleDownloadRecording}>
+                          download file
+                        </TertiaryButton>
+                        <TertiaryButton onClick={handleChangeFile}>
+                          {testingEnabled
+                            ? "submit and analyze next"
+                            : "change file"}
+                        </TertiaryButton>
+                      </div>
                     </div>
                   )}
                 </div>

@@ -4,21 +4,23 @@ const FileUploadSection = ({
   handleSwitchToRecordMode,
   handleFileUpload,
   uploadedFile,
+  testingEnabled,
   className = "",
 }) => {
   return (
-    <div className={`flex flex-col ${className}`}>
-      <div className="flex flex-row justify-end align-bottom mb-1">
+    <div className={`flex flex-col ${className} w-full`}>
+      <div className="flex flex-row justify-end align-bottom mb-1 w-full">
         <div
           onClick={handleSwitchToRecordMode}
-          className="text-sm text-lightgray opacity-75 hover:opacity-100 cursor-pointer"
+          className="text-sm text-lightgray opacity-75 hover:opacity-100 cursor-pointer w-full text-right"
         >
-          record audio instead
+          {testingEnabled ? "record audio" : "record audio instead"}
         </div>
       </div>
       <FileUploadCard
         onFileUpload={handleFileUpload}
         uploadedFile={uploadedFile}
+        testingEnabled={testingEnabled}
       />
     </div>
   );
