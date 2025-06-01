@@ -2,7 +2,7 @@ from scipy.signal import medfilt
 import numpy as np
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-def smooth_chunk(index, data, start, end, window_size, filter_type, threshold=None, base_window=None, max_window=None):
+def smooth_chunk(index, data, start, end, window_size=5, filter_type='median', threshold=0.05, base_window=3, max_window=10):
     """Smooth a chunk and return its index with the result. Can handle both adaptive and regular smoothing."""
     chunk = data[start:end]
 

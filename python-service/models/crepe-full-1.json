@@ -1,0 +1,53 @@
+{
+    "name": "CREPE",
+    "type": "Monophonic pitch tracker",
+    "link": "https://essentia.upf.edu/models/pitch/crepe/crepe-full-1.pb",
+    "version": "1",
+    "description": "This model outputs a sigmoid with 360 dimensions corresponding to pitch values ranging from C1 (32.70Hz) to B7(1975.5Hz) divided with 20-cent steps. This is the full version of the model (85MB).",
+    "author": "Pablo Alonso",
+    "email": "pablo.alonso@upf.edu",
+    "release_date": "10/08/2021",
+    "framework": "TensorFlow",
+    "framework_version": "2.5.0",
+    "programming_env": {
+        "language": "Python",
+        "version": "3.8"
+    },
+    "model_types": [
+        "frozen_model"
+    ],
+    "dataset": {
+        "name": "RWC-synth, MDB-stem-synth",
+        "size": "6.16 hours, 15.56 hours of audio",
+        "link": [
+            "https://staff.aist.go.jp/m.goto/RWC-MDB/",
+            "https://medleydb.weebly.com/"
+        ]
+    },
+    "schema": {
+        "inputs": [
+            {
+                "name": "frames",
+                "type": "float",
+                "shape": [
+                    1024
+                ]
+            }
+        ],
+        "outputs": [
+            {
+                "name": "model/classifier/Sigmoid",
+                "op": "Sigmoid",
+                "shape": [
+                    360
+                ],
+                "output_purpose": "predictions"
+            }
+        ]
+    },
+    "citation": "@inproceedings{kim2018crepe,\ntitle={Crepe: A convolutional representation for pitch estimation},\nauthor={Kim, Jong Wook and Salamon, Justin and Li, Peter and Bello, Juan Pablo},\nbooktitle={2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},\npages={161--165},\nyear={2018},\norganization={IEEE}\n}",
+    "inference": {
+        "sample_rate": 16000,
+        "algorithm": "PitchCREPE"
+    }
+}
