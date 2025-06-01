@@ -14,14 +14,53 @@ const RecordAudioSection = ({
   setAudioBlob,
   audioName,
   setAudioName,
-  audioURL,
   setAudioURL,
+  handleDownloadRecording,
+  testingEnabled,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const waveSurferRef = useRef(null);
   const recordRef = useRef(null);
+
+  const handleStartRecording = async () => {
+    await recordRef.current.startRecording();
+    setIsRecording(true);
+  };
+
+  const handleStopRecording = async () => {
+    await recordRef.current.stopRecording();
+    setIsRecording(false);
+  };
+
+  const handleResetRecording = () => {
+    setAudioBlob(null);
+    setAudioURL(null);
+    if (!testingEnabled) setAudioName("untitled.wav");
+    waveSurferRef.current.empty();
+  };
+
+  const handlePlayPause = () => {
+    if (isPlaying) {
+      waveSurferRef.current.pause();
+    } else {
+      waveSurferRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleRename = (e) => {
+    setAudioName(e.target.value);
+  };
+
+  const handleAnalyze = () => {
+    if (audioBlob) {
+      const file = new File([audioBlob], audioName, { type: "audio/wav" });
+      setUploadedFile(file);
+    }
+    setInRecordMode(false);
+  };
 
   useEffect(() => {
     const waveSurfer = WaveSurfer.create({
@@ -67,70 +106,29 @@ const RecordAudioSection = ({
     };
   }, [setUploadedFile, setAudioBlob, setAudioURL, audioBlob]);
 
-  const handleStartRecording = async () => {
-    await recordRef.current.startRecording();
-    setIsRecording(true);
-  };
-
-  const handleStopRecording = async () => {
-    await recordRef.current.stopRecording();
-    setIsRecording(false);
-  };
-
-  const handleResetRecording = () => {
-    setAudioBlob(null);
-    setAudioURL(null);
-    setAudioName("untitled.wav");
-    waveSurferRef.current.empty();
-  };
-
-  const handleDownloadRecording = () => {
-    const link = document.createElement("a");
-    link.href = audioURL;
-    link.download = audioName;
-    link.click();
-  };
-
-  const handlePlayPause = () => {
-    if (isPlaying) {
-      waveSurferRef.current.pause();
-    } else {
-      waveSurferRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleRename = (e) => {
-    setAudioName(e.target.value);
-  };
-
-  const handleAnalyze = () => {
-    if (audioBlob) {
-      const file = new File([audioBlob], audioName, { type: "audio/wav" });
-      setUploadedFile(file);
-    }
-    setInRecordMode(false);
-  };
-
   return (
-    <div className="flex flex-col pointer-events-auto">
-      <div className="flex flex-row justify-between items-center align-bottom mb-1">
+    <div className="flex flex-col pointer-events-auto w-full">
+      <div className="flex flex-row justify-between items-center align-bottom mb-1 w-full">
         <div>
-          {audioBlob && (
+          {(audioBlob || testingEnabled) && (
             <input
               type="text"
               value={audioName}
               onChange={handleRename}
+              style={{ width: `${Math.max(audioName.length, 10)}ch` }}
+              disabled={testingEnabled}
               className="text-lightgray text-lg font-semibold bg-transparent focus:outline-none"
             />
           )}
         </div>
-        <div
-          onClick={handleAnalyze}
-          className="text-sm text-lightgray opacity-75 hover:opacity-100 cursor-pointer"
-        >
-          return to file upload
-        </div>
+        {!testingEnabled && (
+          <div
+            onClick={handleAnalyze}
+            className="text-sm text-lightgray opacity-75 hover:opacity-100 cursor-pointer"
+          >
+            return to file upload
+          </div>
+        )}
       </div>
       <div
         id="waveform"

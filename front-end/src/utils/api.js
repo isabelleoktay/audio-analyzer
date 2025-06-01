@@ -93,9 +93,16 @@ const processAudio = async (audioFile, minNote, maxNote) => {
  * @returns {Promise<Object>} The response data from the server.
  * @throws Will throw an error if the upload fails.
  */
-const uploadAudio = async (audioFile) => {
+const uploadAudio = async (audioFile, id, instrument, features) => {
   const formData = new FormData();
   formData.append("audioFile", audioFile);
+  formData.append("instrument", instrument);
+
+  if (id) {
+    formData.append("id", id);
+  }
+
+  formData.append("features", JSON.stringify(features));
 
   try {
     const response = await apiClient.post("/api/upload-audio", formData, {
