@@ -49,6 +49,28 @@ const processFeatures = async (audioFile, feature) => {
         }
       );
       return response.data;
+    } else if (feature === "vibrato") {
+      const response = await pythonClient.post(
+        "/python-service/process-vibrato",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } else if (feature === "phonation") {
+      const response = await pythonClient.post(
+        "/python-service/process-phonation",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
     } else {
       return [];
     }

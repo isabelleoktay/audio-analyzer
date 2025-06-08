@@ -12,7 +12,17 @@ audio_cache = {
     'hash': None,
     'audio': None,
     'sr': None,
-    'audio_url': None
+    'audio_url': None,
+    'pitch': {
+        'audio': None,  
+        'audio_url': None,
+        'sr': None,  
+        'pitch': None,  
+        'smoothed_pitch': None,  
+        'highlighted_section': None,
+        'x_axis': None,
+        'hop_sec_duration': None
+    }
 }
 
 def load_audio(file_path, sample_rate=44100):
@@ -36,28 +46,84 @@ def get_cached_or_loaded_audio(file_bytes, sample_rate=44100, return_path=True):
     global audio_cache
     file_hash = get_file_hash(file_bytes)
 
-    if audio_cache["hash"] == file_hash and audio_cache["sr"] == sample_rate:
-        return audio_cache["audio"], audio_cache["sr"], audio_cache["audio_url"], None
+    if audio_cache["hash"] != file_hash:
+        print("Cache miss or hash mismatch, reloading audio...")  # <--- debug
+        audio_cache['hash'] = file_hash
+        audio_cache['audio'] = None
+        audio_cache['sr'] = None
+        audio_cache['audio_url'] = None
+        audio_cache['pitch'] = {
+            'audio': None,
+            'audio_url': None,
+            'sr': None,
+            'pitch': None,
+            'smoothed_pitch': None,
+            'highlighted_section': None,
+            'x_axis': None,
+            'hop_sec_duration': None
+        }
 
-    try:
-        file_stream = convert_to_wav_if_needed(file_bytes, return_path=return_path)
-        audio, sr = load_audio(file_stream, sample_rate=sample_rate)
-        audio, _ = librosa.effects.trim(audio, top_db=20)
+        audio_cache['hash'] = file_hash
+    
+    if audio_cache["sr"] == None or audio_cache["sr"] != sample_rate:
+        try:
+            file_stream = convert_to_wav_if_needed(file_bytes, return_path=return_path)
+            audio, sr = load_audio(file_stream, sample_rate=sample_rate)
+            audio, _ = librosa.effects.trim(audio, top_db=20)
 
-        audio_url = get_audio_url(audio, file_hash, sr=sr)
+            audio_url = get_audio_url(audio, file_hash, sr=sr)
 
-    except Exception as e:
-        print(f"Error loading audio: {e}")
-        return None, None, None, str(e)
+        except Exception as e:
+            print(f"Error loading audio: {e}")
+            return None, None, None, str(e)
 
-    audio_cache = {
-        'hash': file_hash,
-        'audio': audio,
-        'sr': sr,
-        'audio_url': audio_url
-    }
+        audio_cache['audio'] = audio
+        audio_cache['sr'] = sr
+        audio_cache['audio_url'] = audio_url
 
-    return audio, sr, audio_url, None
+    return audio_cache["audio"], audio_cache["sr"], audio_cache["audio_url"], None
+
+
+# def get_cached_or_loaded_audio(file_bytes, sample_rate=44100, return_path=True):
+#     global audio_cache
+#     file_hash = get_file_hash(file_bytes)
+
+#     if audio_cache["hash"] == file_hash and audio_cache["sr"] == sample_rate:
+#         return audio_cache["audio"], audio_cache["sr"], audio_cache["audio_url"], None
+    
+#     audio_cache = {
+#         'hash': None,
+#         'audio': None,
+#         'sr': None,
+#         'audio_url': None,
+#         'pitch': {
+#             'audio': None,
+#             'audio_url': None,
+#             'sr': None,
+#             'pitch': None,
+#             'smoothed_pitch': None,
+#             'highlighted_section': None,
+#             'x_axis': None
+#         }
+#     }
+
+#     try:
+#         file_stream = convert_to_wav_if_needed(file_bytes, return_path=return_path)
+#         audio, sr = load_audio(file_stream, sample_rate=sample_rate)
+#         audio, _ = librosa.effects.trim(audio, top_db=20)
+
+#         audio_url = get_audio_url(audio, file_hash, sr=sr)
+
+#     except Exception as e:
+#         print(f"Error loading audio: {e}")
+#         return None, None, None, str(e)
+
+#     audio_cache['hash'] = file_hash
+#     audio_cache['audio'] = audio
+#     audio_cache['sr'] = sr
+#     audio_cache['audio_url'] = audio_url
+
+#     return audio, sr, audio_url, None
 
 def convert_to_wav_if_needed(input_bytes, return_path=False):
     # Try reading the file as a WAV

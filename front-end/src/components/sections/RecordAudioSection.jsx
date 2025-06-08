@@ -17,6 +17,10 @@ const RecordAudioSection = ({
   setAudioURL,
   handleDownloadRecording,
   testingEnabled,
+  onSubmitRecording,
+  onChangeAttemptCount,
+  updateSubjectData,
+  attemptCount = 0,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -25,6 +29,9 @@ const RecordAudioSection = ({
   const recordRef = useRef(null);
 
   const handleStartRecording = async () => {
+    if (testingEnabled) {
+      onChangeAttemptCount();
+    }
     await recordRef.current.startRecording();
     setIsRecording(true);
   };
@@ -35,6 +42,9 @@ const RecordAudioSection = ({
   };
 
   const handleResetRecording = () => {
+    if (testingEnabled) {
+      updateSubjectData();
+    }
     setAudioBlob(null);
     setAudioURL(null);
     if (!testingEnabled) setAudioName("untitled.wav");
@@ -55,11 +65,15 @@ const RecordAudioSection = ({
   };
 
   const handleAnalyze = () => {
-    if (audioBlob) {
-      const file = new File([audioBlob], audioName, { type: "audio/wav" });
-      setUploadedFile(file);
+    if (testingEnabled) {
+      onSubmitRecording();
+    } else {
+      if (audioBlob) {
+        const file = new File([audioBlob], audioName, { type: "audio/wav" });
+        setUploadedFile(file);
+      }
+      setInRecordMode(false);
     }
-    setInRecordMode(false);
   };
 
   useEffect(() => {
@@ -115,7 +129,7 @@ const RecordAudioSection = ({
               type="text"
               value={audioName}
               onChange={handleRename}
-              style={{ width: `${Math.max(audioName.length, 10)}ch` }}
+              style={{ width: `${Math.max(audioName?.length, 10)}ch` }}
               disabled={testingEnabled}
               className="text-lightgray text-lg font-semibold bg-transparent focus:outline-none"
             />
@@ -140,14 +154,20 @@ const RecordAudioSection = ({
             <SecondaryButton onClick={handlePlayPause}>
               {isPlaying ? "pause" : "play"}
             </SecondaryButton>
-            <SecondaryButton onClick={handleResetRecording}>
-              redo
-            </SecondaryButton>
-            <SecondaryButton onClick={handleDownloadRecording}>
-              download
-            </SecondaryButton>
+            {attemptCount < 3 && (
+              <SecondaryButton onClick={handleResetRecording}>
+                redo
+              </SecondaryButton>
+            )}
+            {!testingEnabled && (
+              <SecondaryButton onClick={handleDownloadRecording}>
+                download
+              </SecondaryButton>
+            )}
           </div>
-          <TertiaryButton onClick={handleAnalyze}>analyze</TertiaryButton>
+          <TertiaryButton onClick={handleAnalyze}>
+            {testingEnabled ? "submit recording" : "analyze"}
+          </TertiaryButton>
         </div>
       ) : (
         <div className="flex items-center space-x-2">

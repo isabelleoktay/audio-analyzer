@@ -1,7 +1,7 @@
 
 from utils.audio_loader import get_cached_or_loaded_audio
 from utils.smoothing import smooth_data
-from variability import calculate_variability, get_high_variability_section
+from feature_extraction.variability import calculate_high_variability_sections
 import librosa
 from config import *
 def process_dynamics(audio_bytes):
@@ -19,16 +19,22 @@ def process_dynamics(audio_bytes):
     window_size = min(window_size, data_len)       
 
     audio_duration_sec = len(audio) / sr
-    variability = calculate_variability(rms[0], window_size=window_size, hop_size=hop_size)
-    highlighted_section = get_high_variability_section(variability, HOP_LENGTH, sr, percentage=SEGMENT_PERCENTAGE, audio_duration_sec=audio_duration_sec)
+    highlighted_section = calculate_high_variability_sections(
+        rms[0], window_size=window_size, hop_size=hop_size, 
+        hop_duration_sec=HOP_LENGTH / sr, audio_duration_sec=audio_duration_sec, is_pitch=False
+    )
 
     rms = smooth_data(rms[0], filter_type='mean', window_percentage=0.1)
 
     result = {
-        'x_axis': time,
-        'dynamics': rms.tolist(),
+        'data': [
+            {
+                'data': rms.tolist(),
+                'highlighted': highlighted_section,
+                'label': 'dynamics'
+            }
+        ],
         'sample_rate': sr,
-        'highlighted_section': highlighted_section,
         'audio_url': audio_url
     }
 
