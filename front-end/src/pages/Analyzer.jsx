@@ -211,17 +211,17 @@ const Analyzer = ({
                           featureData={
                             audioFeatures[selectedAnalysisFeature]?.data || []
                           }
-                          xLabels={
-                            audioFeatures[selectedAnalysisFeature]?.xAxis || []
-                          }
-                          highlightedDataSection={
-                            audioFeatures[selectedAnalysisFeature]
-                              ?.highlightedDataSection
-                          }
-                          highlightedAudioSection={
-                            audioFeatures[selectedAnalysisFeature]
-                              ?.highlightedAudioSection
-                          }
+                          // xLabels={
+                          //   audioFeatures[selectedAnalysisFeature]?.xAxis || []
+                          // }
+                          // highlightedDataSection={
+                          //   audioFeatures[selectedAnalysisFeature]
+                          //     ?.highlightedDataSection
+                          // }
+                          // highlightedAudioSection={
+                          //   audioFeatures[selectedAnalysisFeature]
+                          //     ?.highlightedAudioSection
+                          // }
                           selectedAnalysisFeature={selectedAnalysisFeature}
                         />
                       </div>

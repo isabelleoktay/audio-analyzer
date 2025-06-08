@@ -5,7 +5,7 @@ from utils.json_utils import convert_to_builtin_types
 tempo_blueprint = Blueprint('tempo', __name__)
 
 @tempo_blueprint.route('/python-service/process-tempo', methods=['POST'])
-def handle_dynamics():
+def handle_tempo():
     audio_file = request.files.get('audioFile')
     if not audio_file:
         return jsonify({'error': 'No file uploaded'}), 400

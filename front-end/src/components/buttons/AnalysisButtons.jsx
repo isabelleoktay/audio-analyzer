@@ -29,14 +29,13 @@ const AnalysisButtons = ({
         console.log(uploadedFile);
         const featureResult = await processFeatures(uploadedFile, btn.label);
         const featureData = {
-          data: featureResult[btn.label], // this must match the key in `result`
-          xAxis: featureResult.x_axis || [],
+          data: featureResult.data, // this must match the key in `result`
           sampleRate: featureResult.sample_rate,
           audioUrl: featureResult.audio_url || "",
-          highlightedDataSection:
-            featureResult?.highlighted_section?.frame || {},
-          highlightedAudioSection:
-            { ...featureResult?.highlighted_section?.sample } || {},
+          // highlightedDataSection:
+          //   featureResult?.highlighted_section?.frame || [],
+          // highlightedAudioSection:
+          //   featureResult?.highlighted_section?.sample || [],
         };
 
         setAudioFeatures((prev) => ({

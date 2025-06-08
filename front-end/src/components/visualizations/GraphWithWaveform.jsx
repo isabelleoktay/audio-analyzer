@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import LineGraph from "./LineGraph";
 import WaveformPlayer from "./WaveformPlayer";
 import LoadingSpinner from "../LoadingSpinner";
@@ -13,86 +13,128 @@ const graphHeight = 400;
 const GraphWithWaveform = ({
   audioURL,
   featureData,
-  highlightedDataSection,
-  highlightedAudioSection,
   selectedAnalysisFeature,
-  xLabels,
 }) => {
-  const [loading, setLoading] = useState(false);
+  const [selectedDataIndex, setSelectedDataIndex] = useState(0);
 
-  console.log(audioURL);
+  const handleButtonClick = (index) => {
+    setSelectedDataIndex(index);
+  };
 
   useEffect(() => {
-    const isLoading =
-      !featureData || !Array.isArray(featureData) || featureData.length === 0;
-    setLoading(isLoading);
-  }, [featureData]);
+    setSelectedDataIndex(0);
+  }, [selectedAnalysisFeature]);
 
   return (
-    <div className="flex flex-col items-center" style={{ width }}>
-      <div
-        style={{
-          height: graphHeight,
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {loading ? (
-          <LoadingSpinner />
-        ) : (
-          <LineGraph
-            feature={selectedAnalysisFeature}
-            data={featureData}
-            width={width}
-            height={graphHeight}
-            xLabel="time (s)"
-            yLabel={
-              selectedAnalysisFeature === "pitch"
-                ? "pitch (note)"
-                : selectedAnalysisFeature
-            }
-            highlightedSections={
-              highlightedDataSection &&
-              highlightedDataSection.start !== undefined &&
-              highlightedDataSection.end !== undefined
-                ? [highlightedDataSection]
-                : []
-            }
-            yMin={
-              selectedAnalysisFeature === "tempo" ||
-              selectedAnalysisFeature === "pitch"
-                ? Math.max(0, Math.min(...featureData) - 50)
-                : Math.min(...featureData)
-            }
-            yMax={
-              selectedAnalysisFeature === "tempo" ||
-              selectedAnalysisFeature === "pitch"
-                ? Math.max(...featureData) + 50
-                : Math.max(...featureData)
-            }
-            xLabels={xLabels || []}
-          />
-        )}
-      </div>
-      <WaveformPlayer
-        key={audioURL}
-        audioUrl={audioURL}
-        // width={width - leftMargin - rightMargin}
-        // height={waveformHeight}
-        highlightedSections={
-          highlightedAudioSection &&
-          highlightedAudioSection.start !== undefined &&
-          highlightedAudioSection.end !== undefined
-            ? [highlightedAudioSection]
-            : []
-        }
-        // wavesurferRef={wavesurferRef}
-        // setIsPlaying={setIsPlaying}
-        waveColor="#E0E0E0"
-        progressColor="#90F1EF"
-      />
+    <div
+      className="flex flex-col items-center justify-center"
+      style={{ width, height: graphHeight + 100 }}
+    >
+      {featureData.length === 0 ? (
+        <LoadingSpinner />
+      ) : (
+        featureData &&
+        featureData[selectedDataIndex] && (
+          <>
+            {/* Render buttons for each data object */}
+            <div className="flex space-x-4 self-end">
+              {featureData?.map((d, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleButtonClick(index)}
+                  className={`text-sm cursor-pointer ${
+                    selectedDataIndex === index
+                      ? "text-electricblue"
+                      : "text-lightgray/50"
+                  }`}
+                >
+                  {d.label}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col items-center" style={{ width }}>
+              <div
+                style={{
+                  height: graphHeight,
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <LineGraph
+                  feature={featureData[selectedDataIndex]?.label}
+                  data={featureData[selectedDataIndex]?.data}
+                  lineColor={
+                    featureData[selectedDataIndex].label === "extents" ||
+                    featureData[selectedDataIndex].label === "rates"
+                      ? "#E0E0E0"
+                      : "#FF89BB"
+                  }
+                  width={width}
+                  height={graphHeight}
+                  xLabel="time (s)"
+                  yLabel={
+                    featureData[selectedDataIndex]?.label === "pitch" ||
+                    featureData[selectedDataIndex]?.label === "vibrato"
+                      ? "pitch (note)"
+                      : featureData[selectedDataIndex]?.label === "dynamics"
+                      ? "amplitude (dB)"
+                      : featureData[selectedDataIndex]?.label === "rates" ||
+                        featureData[selectedDataIndex]?.label === "extents"
+                      ? "hz"
+                      : featureData[selectedDataIndex]?.label === "tempo"
+                      ? "beats per minute (bpm)"
+                      : selectedAnalysisFeature
+                  }
+                  highlightedSections={
+                    featureData[selectedDataIndex]?.highlighted?.data &&
+                    featureData[selectedDataIndex]?.highlighted.data.length > 0
+                      ? featureData[selectedDataIndex]?.highlighted?.data
+                      : []
+                  }
+                  yMin={
+                    featureData[selectedDataIndex]?.label === "tempo" ||
+                    featureData[selectedDataIndex]?.label === "pitch" ||
+                    featureData[selectedDataIndex]?.label === "vibrato"
+                      ? Math.max(
+                          0,
+                          Math.min(...featureData[selectedDataIndex].data) - 50
+                        )
+                      : selectedAnalysisFeature === "phonation"
+                      ? 0
+                      : Math.min(...featureData[selectedDataIndex].data)
+                  }
+                  yMax={
+                    featureData[selectedDataIndex]?.label === "tempo" ||
+                    featureData[selectedDataIndex]?.label === "pitch" ||
+                    featureData[selectedDataIndex]?.label === "vibrato"
+                      ? Math.max(...featureData[selectedDataIndex].data) + 50
+                      : selectedAnalysisFeature === "phonation"
+                      ? 1
+                      : Math.max(...featureData[selectedDataIndex].data)
+                  }
+                />
+              </div>
+              <WaveformPlayer
+                key={audioURL}
+                audioUrl={audioURL}
+                // width={width - leftMargin - rightMargin}
+                // height={waveformHeight}
+                highlightedSections={
+                  featureData[selectedDataIndex]?.highlighted?.audio &&
+                  featureData[selectedDataIndex].highlighted.audio.length > 0
+                    ? featureData[selectedDataIndex]?.highlighted?.audio
+                    : []
+                }
+                waveColor="#E0E0E0"
+                progressColor="#90F1EF"
+              />
+            </div>
+          </>
+        )
+      )}
     </div>
   );
 };

@@ -1,35 +1,44 @@
 import numpy as np
+import librosa
 from essentia.standard import PitchCREPE
-from config import CREPE_MODEL_PATH, WINDOW_PERCENTAGE, HOP_PERCENTAGE, SEGMENT_PERCENTAGE
+from config import CREPE_MODEL_PATH
 
-from utils.smoothing import smooth_data
-from utils.data_utils import replace_edge_zeros
-from variability import calculate_variability, get_high_variability_pitch_section
+class PitchExtractorBase:
+    def extract_pitch(self, audio, **kwargs):
+        raise NotImplementedError("Subclasses must implement extract_pitch")
 
-def compute_dynamic_params_crepe(duration_sec):
-    max_hop_ms, max_batch = 50, 256
-    hop_ms = min(max_hop_ms, 10 + int(duration_sec / 10))
-    hop_sec = hop_ms / 1000.0
-    batch = min(max_batch, 64 + int(duration_sec / 5))
-    return hop_ms, hop_sec, batch
+class CrepePitchExtractor(PitchExtractorBase):
+    def extract_pitch(self, audio, hop_ms, batch):
+        extractor = PitchCREPE(
+            graphFilename=CREPE_MODEL_PATH,
+            hopSize=hop_ms,
+            batchSize=batch
+        )
+        times, pitch, conf, _ = extractor(audio)
+        return np.array(times), np.array(pitch), np.array(conf)
 
-def extract_raw_pitch_crepe(audio, hop_ms, batch):
-    extractor = PitchCREPE(
-        graphFilename=CREPE_MODEL_PATH,
-        hopSize=hop_ms,
-        batchSize=batch
-    )
-    times, pitch, conf, _ = extractor(audio)
-    return np.array(times), np.array(pitch), np.array(conf)
-
-def smooth_and_segment_crepe(pitch, hop_sec):
-    n = pitch.size
-    # compute smoothing windows
-    b = max(1, int(n * WINDOW_PERCENTAGE))
-    h = max(1, int(n * HOP_PERCENTAGE))
-    v = calculate_variability(pitch, window_size=b, hop_size=h, is_pitch=True)
-    seg = get_high_variability_pitch_section(v, SEGMENT_PERCENTAGE, hop_sec, n * hop_sec)
-    # smooth + clean edges
-    p2 = smooth_data(pitch, filter_type='adaptive', threshold=0.05, base_window=b, max_window=b*2)
-    p2 = replace_edge_zeros(p2)
-    return p2, seg
+class LibrosaPitchExtractor(PitchExtractorBase):
+    def extract_pitch(self, audio, sr, hop_length):
+        # use librosa.pyin for pitch estimation
+        pitch, _, conf = librosa.pyin(
+            y=audio,
+            sr=sr,
+            hop_length=hop_length,
+            fmin=librosa.note_to_hz('C2'),  # minimum frequency (e.g., C2 ~ 65 Hz)
+            fmax=librosa.note_to_hz('C7')   # maximum frequency (e.g., C7 ~ 2093 Hz)
+        )
+        times = librosa.frames_to_time(np.arange(len(pitch)), sr=sr, hop_length=hop_length)
+        
+        # interpolate NaN values with the nearest valid pitch value
+        if np.any(np.isnan(pitch)):
+            valid_indices = np.where(~np.isnan(pitch))[0]
+            if valid_indices.size > 0:
+                pitch = np.interp(
+                    np.arange(len(pitch)),  # indices of all frames
+                    valid_indices,          # indices of valid frames
+                    pitch[valid_indices]    # valid pitch values
+                )
+            else:
+                pitch = np.zeros_like(pitch)  # if no valid pitch values exist, set all to zero
+        
+        return np.array(times), np.array(pitch), np.array(conf)

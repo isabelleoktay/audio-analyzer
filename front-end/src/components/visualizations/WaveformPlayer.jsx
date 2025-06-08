@@ -3,6 +3,7 @@ import IconButton from "../buttons/IconButton";
 import { FaPlay, FaPause } from "react-icons/fa";
 import { useWavesurfer } from "@wavesurfer/react";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions";
+import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline";
 
 const width = 800;
 const leftMargin = 50;
@@ -17,8 +18,19 @@ const WaveformPlayer = ({
   progressColor = "#FF89BB",
 }) => {
   const containerRef = useRef();
+  const timelineRef = useRef();
   const regionsPlugin = useMemo(() => RegionsPlugin.create(), []);
-  const plugins = useMemo(() => [regionsPlugin], [regionsPlugin]);
+  const timelinePlugin = useMemo(
+    () =>
+      TimelinePlugin.create({
+        container: timelineRef.current, // Attach the timeline to this container
+      }),
+    []
+  );
+  const plugins = useMemo(
+    () => [regionsPlugin, timelinePlugin],
+    [regionsPlugin, timelinePlugin]
+  );
 
   const { wavesurfer, isReady, isPlaying } = useWavesurfer({
     container: containerRef,
@@ -57,9 +69,9 @@ const WaveformPlayer = ({
         region.play(true);
       });
 
-      regionsPlugin.on("region-out", (region, e) => {
+      regionsPlugin.on("region-out", (region) => {
         // region.play();
-        // region.setOptions({ color: "rgba(255, 203, 107, 0.25)" });
+        region.setOptions({ color: "rgba(255, 203, 107, 0.25)" });
       });
     }
 
@@ -109,6 +121,7 @@ const WaveformPlayer = ({
         }}
       >
         <div ref={containerRef} className="w-full" />
+        <div ref={timelineRef} className="w-full mt-2" />
       </div>
     </div>
   );

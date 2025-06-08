@@ -1,6 +1,8 @@
 import { useRef, useEffect } from "react";
 import * as d3 from "d3";
 
+import { createVerticalBackgroundGradient } from "../../utils/createVerticalBackgroundGradient";
+
 const LineGraph = ({
   feature = "pitch",
   data,
@@ -12,6 +14,7 @@ const LineGraph = ({
   yMin,
   yMax,
   xLabels,
+  lineColor = "#FF89BB",
 }) => {
   const ref = useRef();
 
@@ -21,7 +24,7 @@ const LineGraph = ({
     const svg = d3.select(ref.current);
     svg.selectAll("*").remove();
 
-    const margin = { top: 20, right: 20, bottom: 50, left: 50 };
+    const margin = { top: 20, right: 20, bottom: 20, left: 50 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
@@ -56,27 +59,29 @@ const LineGraph = ({
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Gradient definition
     const defs = svg.append("defs");
-    const gradient = defs
-      .append("linearGradient")
-      .attr("id", "line-gradient")
-      .attr("x1", "0%")
-      .attr("y1", "0%")
-      .attr("x2", "0%")
-      .attr("y2", "100%");
+    // Gradient definition
+    if (feature !== "rates" && feature !== "extents") {
+      const gradient = defs
+        .append("linearGradient")
+        .attr("id", "line-gradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%");
 
-    gradient
-      .append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", "#FF89BB")
-      .attr("stop-opacity", 0.4);
+      gradient
+        .append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#FF89BB")
+        .attr("stop-opacity", 0.4);
 
-    gradient
-      .append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", "#90F1EF")
-      .attr("stop-opacity", 0);
+      gradient
+        .append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#90F1EF")
+        .attr("stop-opacity", 0);
+    }
 
     // Highlighted sections (drawn below the graph)
     highlightedSections.forEach(({ start, end }) => {
@@ -91,7 +96,7 @@ const LineGraph = ({
 
     // Setup yAxis
     let yAxis;
-    if (feature === "pitch") {
+    if (feature === "pitch" || feature === "vibrato") {
       const frequencyToNoteName = (frequency) => {
         const noteNames = [
           "C",
@@ -151,40 +156,152 @@ const LineGraph = ({
       yAxis = d3.axisLeft(yScale).ticks(5);
     }
 
+    if (feature === "extents" || feature === "rates") {
+      const colorStops =
+        feature === "extents"
+          ? [
+              { value: Infinity, color: "#FFCB6B" }, // Everything above 10
+              { value: 7, color: "#7aff6b" },
+              { value: 2, color: "#7aff6b" },
+              { value: -Infinity, color: "#FFCB6B" },
+            ]
+          : [
+              { value: Infinity, color: "#ff6b6b" }, // Everything above 10
+              { value: 10, color: "#ff6b6b" },
+              { value: 9, color: "#ffb36b" },
+              { value: 7, color: "#FFCB6B" },
+              { value: 5, color: "#7aff6b" },
+              { value: 3, color: "#FFCB6B" },
+              { value: 2, color: "#ffb36b" },
+              { value: 0, color: "#ff6b6b" },
+              { value: -Infinity, color: "#ff6b6b" }, // Everything below 0
+            ];
+
+      const gradientFill = createVerticalBackgroundGradient({
+        svgDefs: defs,
+        id: "extent-gradient",
+        yDomain,
+        colorStops,
+        // colorStops: [
+        //   { value: yMax, color: "yellow" },
+        //   { value: 7, color: "yellow" },
+        //   { value: 7, color: "green" },
+        //   { value: 2, color: "green" },
+        //   { value: 2, color: "yellow" },
+        //   { value: yMin, color: "yellow" },
+        // ],
+      });
+
+      g.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", innerWidth)
+        .attr("height", innerHeight)
+        .attr("fill", gradientFill)
+        .attr("opacity", 0.25)
+        .lower();
+    }
+
+    // if (feature === "rates" || feature === "extents") {
+    //   const [yMin, yMax] = yDomain;
+
+    //   // Clamp the band around y=6 only if it's within the visible domain
+    //   const bandHalfSize = (yMax - yMin) / 6; // control how much color banding you want
+
+    //   const rateGradient = defs
+    //     .append("linearGradient")
+    //     .attr("id", "rate-gradient")
+    //     .attr("x1", "0%")
+    //     .attr("y1", "0%")
+    //     .attr("x2", "0%")
+    //     .attr("y2", "100%");
+
+    //   const getOffset = (value) => {
+    //     // Clamp offset to [0, 100]
+    //     return Math.max(
+    //       0,
+    //       Math.min(100, ((yMax - value) / (yMax - yMin)) * 100)
+    //     );
+    //   };
+
+    //   const gradientStops = [
+    //     { offset: 0, color: "#ff776b" },
+    //     { offset: getOffset(6 + 2 * bandHalfSize), color: "#ffb36b" },
+    //     { offset: getOffset(6 + bandHalfSize), color: "#FFCB6B" },
+    //     { offset: getOffset(6), color: "#7fff6b" }, // target line
+    //     { offset: getOffset(6 - bandHalfSize), color: "#FFCB6B" },
+    //     { offset: getOffset(6 - 2 * bandHalfSize), color: "#ffb36b" },
+    //     { offset: 100, color: "#ff776b" },
+    //   ];
+
+    //   gradientStops.forEach(({ offset, color }) => {
+    //     rateGradient
+    //       .append("stop")
+    //       .attr("offset", `${offset}%`)
+    //       .attr("stop-color", color);
+    //   });
+
+    //   g.append("rect")
+    //     .attr("x", 0)
+    //     .attr("y", 0)
+    //     .attr("width", innerWidth)
+    //     .attr("height", innerHeight)
+    //     .attr("fill", "url(#rate-gradient)")
+    //     .attr("opacity", 0.5)
+    //     .lower();
+    // }
+
+    // const xAxisGroup = g
+    //   .append("g")
+    //   .attr("transform", `translate(0,${innerHeight})`)
+    //   .call(
+    //     hasXLabels
+    //       ? d3
+    //           .axisBottom(xScale)
+    //           .tickValues(
+    //             Array.from({ length: 10 }, (_, i) =>
+    //               i === 9
+    //                 ? xLabels[xLabels.length - 1]
+    //                 : xLabels[Math.floor(i * ((xLabels.length - 1) / 9))]
+    //             )
+    //           )
+    //       : d3.axisBottom(xScale).ticks(10)
+    //   );
+
     const xAxisGroup = g
       .append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(
-        hasXLabels
-          ? d3
-              .axisBottom(xScale)
-              .tickValues(
-                Array.from({ length: 10 }, (_, i) =>
-                  i === 9
-                    ? xLabels[xLabels.length - 1]
-                    : xLabels[Math.floor(i * ((xLabels.length - 1) / 9))]
-                )
-              )
-          : d3.axisBottom(xScale).ticks(10)
-      );
+      .call(d3.axisBottom(xScale).ticks(0));
 
     const yAxisGroup = g.append("g").call(yAxis);
+
+    // [xAxisGroup, yAxisGroup].forEach((axis) => {
+    //   axis
+    //     .selectAll("path, line")
+    //     .attr("stroke", "#E0E0E0")
+    //     .attr("stroke-opacity", 0.25);
+    //   axis.selectAll("text").attr("fill", "#E0E0E0").attr("fill-opacity", 0.7);
+    // });
 
     [xAxisGroup, yAxisGroup].forEach((axis) => {
       axis
         .selectAll("path, line")
         .attr("stroke", "#E0E0E0")
         .attr("stroke-opacity", 0.25);
-      axis.selectAll("text").attr("fill", "#E0E0E0").attr("fill-opacity", 0.7);
     });
 
-    g.append("text")
-      .attr("x", innerWidth / 2)
-      .attr("y", innerHeight + 40)
-      .attr("text-anchor", "middle")
+    yAxisGroup
+      .selectAll("text")
       .attr("fill", "#E0E0E0")
-      .attr("opacity", 0.7)
-      .text(xLabel);
+      .attr("fill-opacity", 0.7);
+
+    // g.append("text")
+    //   .attr("x", innerWidth / 2)
+    //   .attr("y", innerHeight + 40)
+    //   .attr("text-anchor", "middle")
+    //   .attr("fill", "#E0E0E0")
+    //   .attr("opacity", 0.7)
+    //   .text(xLabel);
 
     g.append("text")
       .attr("transform", "rotate(-90)")
@@ -203,7 +320,7 @@ const LineGraph = ({
     g.append("path")
       .datum(data)
       .attr("fill", "none")
-      .attr("stroke", "#FF89BB")
+      .attr("stroke", lineColor)
       .attr("stroke-width", 2)
       .attr("d", line);
 
@@ -307,6 +424,7 @@ const LineGraph = ({
     yMax,
     xLabels,
     feature,
+    lineColor,
   ]);
 
   return <svg ref={ref} width={width} height={height} />;
