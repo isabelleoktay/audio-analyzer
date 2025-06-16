@@ -1,4 +1,5 @@
 import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
 
 const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL,
@@ -81,29 +82,70 @@ const processFeatures = async (audioFile, feature) => {
 };
 
 /**
- * Processes an audio file by sending it to the backend API.
+ * Uploads an audio file to the Python backend.
  *
- * @param {File} audioFile - The audio file to be processed.
- * @param {string} minNote - The minimum note to be considered in the processing.
- * @param {string} maxNote - The maximum note to be considered in the processing.
- * @returns {Promise<Object>} The response data from the backend containing the processing result.
- * @throws {Error} If there is an error during the processing.
+ * @param {File} audioFile - The audio file to be uploaded.
+ * @param {string} [group] - The group for the audio file (e.g., "feedback", "none").
+ * @param {string} [stage] - The stage for the audio file (e.g., "before", "during", "after").
+ * @returns {Promise<Object>} The response data from the Python backend.
+ * @throws Will throw an error if the upload fails.
  */
-const processAudio = async (audioFile, minNote, maxNote) => {
+const uploadAudioToPythonService = async (
+  audioFile,
+  group = null,
+  stage = null,
+  feature = null
+) => {
   const formData = new FormData();
-  formData.append("audioFile", audioFile);
-  formData.append("minNote", minNote);
-  formData.append("maxNote", maxNote);
+  formData.append("file", audioFile);
+
+  if (group) {
+    formData.append("group", group);
+  }
+
+  if (stage) {
+    formData.append("stage", stage);
+  }
+
+  if (feature) {
+    console.log("Feature to upload:", feature);
+    formData.append("feature", feature);
+  }
 
   try {
-    const response = await apiClient.post("/api/process-audio", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    return response.data; // This will contain the full result from the backend
+    const response = await pythonClient.post(
+      "/python-service/audio/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
   } catch (error) {
-    console.error("Error processing audio:", error);
+    console.error("Error uploading audio to Python backend:", error);
+    throw error;
+  }
+};
+
+/**
+ * Uploads a test subject to the backend.
+ *
+ * @param {string} subjectId - The unique ID of the test subject.
+ * @param {Object} data - The data associated with the test subject.
+ * @returns {Promise<Object>} The response data from the backend.
+ * @throws Will throw an error if the upload fails.
+ */
+const uploadTestSubject = async (subjectId, data) => {
+  try {
+    const response = await apiClient.post("/api/upload-test-subject", {
+      subjectId,
+      data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading test subject:", error);
     throw error;
   }
 };
@@ -116,27 +158,70 @@ const processAudio = async (audioFile, minNote, maxNote) => {
  * @throws Will throw an error if the upload fails.
  */
 const uploadAudio = async (audioFile, id, instrument, features) => {
-  const formData = new FormData();
-  formData.append("audioFile", audioFile);
-  formData.append("instrument", instrument);
-
-  if (id) {
-    formData.append("id", id);
-  }
-
-  formData.append("features", JSON.stringify(features));
-
   try {
-    const response = await apiClient.post("/api/upload-audio", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+    const uuid = uuidv4();
+    const originalName = audioFile.name;
+    const modifiedFileName = `${uuid}_${originalName}`;
+    const modifiedFile = new File([audioFile], modifiedFileName, {
+      type: audioFile.type,
     });
-    return response.data;
+
+    const pythonResponse = await uploadAudioToPythonService(modifiedFile);
+    const pythonFilePath = pythonResponse.path;
+
+    const formData = new FormData();
+    formData.append("audioPath", pythonFilePath);
+    formData.append("instrument", instrument);
+
+    if (id) {
+      formData.append("id", id);
+    }
+
+    formData.append("features", JSON.stringify(features));
+
+    const backendResponse = await apiClient.post(
+      "/api/upload-audio",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return backendResponse.data;
   } catch (error) {
     console.error("Error uploading audio:", error);
     throw error;
   }
 };
+// const uploadAudio = async (audioFile, id, instrument, features) => {
+//   const formData = new FormData();
+//   formData.append("audioFile", audioFile);
+//   formData.append("instrument", instrument);
 
-export { processAudio, uploadAudio, processFeatures };
+//   if (id) {
+//     formData.append("id", id);
+//   }
+
+//   formData.append("features", JSON.stringify(features));
+
+//   try {
+//     const response = await apiClient.post("/api/upload-audio", formData, {
+//       headers: {
+//         "Content-Type": "multipart/form-data",
+//       },
+//     });
+//     return response.data;
+//   } catch (error) {
+//     console.error("Error uploading audio:", error);
+//     throw error;
+//   }
+// };
+
+export {
+  uploadAudio,
+  processFeatures,
+  uploadAudioToPythonService,
+  uploadTestSubject,
+};

@@ -30,7 +30,9 @@ const GraphWithWaveform = ({
       className="flex flex-col items-center justify-center"
       style={{ width, height: graphHeight + 100 }}
     >
-      {featureData.length === 0 ? (
+      {!selectedAnalysisFeature ? (
+        <div>select an analysis feature above to start analyzing audio </div>
+      ) : featureData.length === 0 && selectedAnalysisFeature ? (
         <LoadingSpinner />
       ) : (
         featureData &&

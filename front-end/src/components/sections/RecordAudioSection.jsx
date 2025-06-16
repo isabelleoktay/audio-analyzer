@@ -17,6 +17,7 @@ const RecordAudioSection = ({
   setAudioURL,
   handleDownloadRecording,
   testingEnabled,
+  feedbackStage,
   onSubmitRecording,
   onChangeAttemptCount,
   updateSubjectData,
@@ -122,7 +123,7 @@ const RecordAudioSection = ({
 
   return (
     <div className="flex flex-col pointer-events-auto w-full">
-      <div className="flex flex-row justify-between items-center align-bottom mb-1 w-full">
+      <div className="flex flex-row justify-between items-center align-bottom mb-2 w-full">
         <div>
           {(audioBlob || testingEnabled) && (
             <input
@@ -131,7 +132,7 @@ const RecordAudioSection = ({
               onChange={handleRename}
               style={{ width: `${Math.max(audioName?.length, 10)}ch` }}
               disabled={testingEnabled}
-              className="text-lightgray text-lg font-semibold bg-transparent focus:outline-none"
+              className="text-lightgray text-xl font-semibold bg-transparent focus:outline-none"
             />
           )}
         </div>
@@ -166,7 +167,9 @@ const RecordAudioSection = ({
             )}
           </div>
           <TertiaryButton onClick={handleAnalyze}>
-            {testingEnabled ? "submit recording" : "analyze"}
+            {testingEnabled && feedbackStage !== "during"
+              ? "submit recording"
+              : "analyze"}
           </TertiaryButton>
         </div>
       ) : (

@@ -6,7 +6,7 @@ import FileUploadSection from "../components/sections/FileUploadSection.jsx";
 import AnalysisButtons from "../components/buttons/AnalysisButtons.jsx";
 import GraphWithWaveform from "../components/visualizations/GraphWithWaveform.jsx";
 import TertiaryButton from "../components/buttons/TertiaryButton.jsx";
-import Tooltip from "../text/Tooltip.jsx";
+import Tooltip from "../components/text/Tooltip.jsx";
 import { instrumentButtons } from "../config/instrumentButtons.js";
 
 const Analyzer = ({
@@ -211,17 +211,6 @@ const Analyzer = ({
                           featureData={
                             audioFeatures[selectedAnalysisFeature]?.data || []
                           }
-                          // xLabels={
-                          //   audioFeatures[selectedAnalysisFeature]?.xAxis || []
-                          // }
-                          // highlightedDataSection={
-                          //   audioFeatures[selectedAnalysisFeature]
-                          //     ?.highlightedDataSection
-                          // }
-                          // highlightedAudioSection={
-                          //   audioFeatures[selectedAnalysisFeature]
-                          //     ?.highlightedAudioSection
-                          // }
                           selectedAnalysisFeature={selectedAnalysisFeature}
                         />
                       </div>

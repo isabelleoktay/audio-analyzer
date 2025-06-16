@@ -16,10 +16,9 @@ const uploadAudio = async (req, res) => {
       return res.status(500).json({ error: "Error uploading file" });
     }
 
-    const audioFile = req.file;
-    const { id, features, instrument } = req.body; // Extract `id` and `features` from the request body
+    const { id, features, instrument, audioPath } = req.body;
 
-    if (!audioFile && !id) {
+    if (!audioPath && !id) {
       return res
         .status(400)
         .json({ error: "No file uploaded or audio ID provided" });
@@ -35,11 +34,8 @@ const uploadAudio = async (req, res) => {
         }
 
         // Update features and optionally replace the audio buffer if a new file is uploaded
-        if (audioFile) {
-          existingAudio.filename = audioFile.originalname;
-          existingAudio.mimetype = audioFile.mimetype;
-          existingAudio.size = audioFile.size;
-          existingAudio.audioBuffer = audioFile.buffer;
+        if (audioPath) {
+          existingAudio.path = audioPath;
         }
 
         if (features) {
@@ -58,17 +54,12 @@ const uploadAudio = async (req, res) => {
       } else {
         // Create a new audio entry
         const audio = new Audio({
-          filename: audioFile.originalname,
-          mimetype: audioFile.mimetype,
-          size: audioFile.size,
-          audioBuffer: audioFile.buffer,
+          path: audioPath || "unknown",
           instrument: instrument || "unknown",
           features: features ? JSON.parse(features) : {},
         });
 
         await audio.save();
-
-        console.log("Audio saved:", audio);
 
         return res.status(200).json({
           message: "File uploaded and saved to database",

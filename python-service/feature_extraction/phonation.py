@@ -10,7 +10,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 logging.info("Loading VGGish model...")
-VGGISH = hub.load(PHONATION_VGGISH_URL)
+VGGISH = hub.load('https://tfhub.dev/google/vggish/1')
 logging.info("Successfully loaded VGGish model.")
 
 def extract_phonation(audio):
