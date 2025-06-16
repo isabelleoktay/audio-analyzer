@@ -2,7 +2,7 @@
 import { useLocation } from "react-router-dom";
 import ButtonGroup from "./buttons/ButtonGroup";
 import SecondaryButton from "./buttons/SecondaryButton";
-import Tooltip from "../text/Tooltip";
+import Tooltip from "./text/Tooltip";
 
 const NavBar = ({
   handleReset,

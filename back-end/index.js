@@ -6,6 +6,8 @@ import "express-async-errors";
 import morgan from "morgan";
 import processAudioRouter from "./routes/processAudioRoutes.js";
 import uploadAudioRouter from "./routes/uploadAudioRoutes.js";
+import uploadTestSubjectRouter from "./routes/uploadTestSubjectRoutes.js";
+
 import connectDB from "./db.js";
 
 dotenv.config();
@@ -29,6 +31,7 @@ app.get("/api/", (_, res) => {
 
 app.use("/api", processAudioRouter);
 app.use("/api", uploadAudioRouter);
+app.use("/api", uploadTestSubjectRouter);
 
 const port = process.env.PORT || 5000;
 

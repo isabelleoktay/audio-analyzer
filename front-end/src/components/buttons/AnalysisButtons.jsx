@@ -53,6 +53,7 @@ const AnalysisButtons = ({
             selectedInstrument,
             { ...audioFeatures, [btn.label]: featureData }
           );
+          console.log(uploadResult);
           setAudioUuid(uploadResult.id);
         }
       }

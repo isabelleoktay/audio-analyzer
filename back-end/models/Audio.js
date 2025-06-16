@@ -1,10 +1,7 @@
 import mongoose from "mongoose";
 
 const audioSchema = new mongoose.Schema({
-  filename: { type: String, required: true },
-  mimetype: { type: String, required: true },
-  size: { type: Number, required: true },
-  audioBuffer: { type: Buffer, required: true },
+  path: { type: String, required: true },
   instrument: { type: String, required: true },
   features: {
     type: Object,

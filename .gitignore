@@ -41,3 +41,7 @@ docker-compose.override.yml
 *.swp
 *~
 .history/
+
+# Exclude static audio files
+python-service/static/audio/
+python-service/testing/

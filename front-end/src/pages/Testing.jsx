@@ -1,42 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-import ConsentCard from "../components/cards/ConsentCard";
+import ConsentCard from "../components/testing/ConsentCard";
 import IntroductionSection from "../components/testing/IntroductionSection";
 import InstructionsSection from "../components/testing/InstructionsSection";
 import RecordAudioSection from "../components/sections/RecordAudioSection";
-import ResponsiveWaveformPlayer from "../components/visualizations/ResponsiveWaveformPlayer";
 import AnalysisButtons from "../components/buttons/AnalysisButtons";
+import GraphWithWaveform from "../components/visualizations/GraphWithWaveform";
+import SecondaryButton from "../components/buttons/SecondaryButton";
+import TertiaryButton from "../components/buttons/TertiaryButton";
+import TestingCompleted from "../components/testing/TestingCompleted";
+import TestingSection from "../components/testing/TestingSection";
+import ResponsiveWaveformPlayer from "../components/visualizations/ResponsiveWaveformPlayer";
+
+import { uploadAudioToPythonService, uploadTestSubject } from "../utils/api";
 
 const TEST_FEATURES = ["pitch", "dynamics", "tempo"];
 
-const Testing = ({
-  testingEnabled,
-  setTestingEnabled,
-  subjectId,
-  setSubjectId,
-  testingPart,
-  setTestingPart,
-  audioName,
-  setAudioName,
-  subjectAnalysisCount,
-  setSubjectAnalysisCount,
-  setInRecordMode,
-
-  resetAudioData,
-}) => {
+const Testing = () => {
   const [currentStep, setCurrentStep] = useState("consent");
-  const [testGroup, setTestGroup] = useState("none");
+  const [testGroup, setTestGroup] = useState("feedback");
   const [subjectData, setSubjectData] = useState({});
   const [attemptCount, setAttemptCount] = useState(0);
   const [completedGroups, setCompletedGroups] = useState([]);
   const [currentTestFeatureIndex, setCurrentTestFeatureIndex] = useState(0);
   const [feedbackStage, setFeedbackStage] = useState("before");
-
-  console.log("attemptCount", attemptCount);
+  const [selectedAnalysisFeature, setSelectedAnalysisFeature] = useState(null);
+  const [audioFeatures, setAudioFeatures] = useState({});
+  const [analyzeMode, setAnalyzeMode] = useState(false);
+  console.log(audioFeatures);
+  const [remainingTime, setRemainingTime] = useState(600); // 10 minutes in seconds
+  const [isProceedButtonEnabled, setIsProceedButtonEnabled] = useState(false); // Tracks button state
 
   const [currentAudioName, setCurrentAudioName] = useState(null);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  console.log(audioBlob);
+  console.log(uploadedFile);
 
   const handleConsent = (consentGiven) => {
     if (consentGiven) {
@@ -46,7 +46,7 @@ const Testing = ({
 
       const fileName = `subject-${newSubjectId}-${randomizedGroup}-${TEST_FEATURES[currentTestFeatureIndex]}-${attemptCount}.wav`;
       setCurrentAudioName(fileName);
-      // setTestGroup(randomizedGroup);
+      setTestGroup(randomizedGroup);
 
       setSubjectData((prevData) => ({
         ...prevData,
@@ -63,16 +63,18 @@ const Testing = ({
     }
   };
 
-  const handleNextStep = (nextStep) => {
-    setCurrentStep(nextStep);
-  };
-
   const handleChangeAttemptCount = () => {
     let fileName;
     if (testGroup === "feedback") {
-      fileName = `subject-${subjectData.subjectId}-${testGroup}-${
-        TEST_FEATURES[currentTestFeatureIndex]
-      }-${feedbackStage}-${attemptCount + 1}.wav`;
+      if (feedbackStage === "during") {
+        fileName = `subject-${
+          subjectData.subjectId
+        }-${testGroup}-${feedbackStage}-${attemptCount + 1}.wav`;
+      } else {
+        fileName = `subject-${subjectData.subjectId}-${testGroup}-${
+          TEST_FEATURES[currentTestFeatureIndex]
+        }-${feedbackStage}-${attemptCount + 1}.wav`;
+      }
     } else {
       fileName = `subject-${subjectData.subjectId}-${testGroup}-${
         TEST_FEATURES[currentTestFeatureIndex]
@@ -83,41 +85,130 @@ const Testing = ({
     setAttemptCount(attemptCount + 1);
   };
 
-  const updateSubjectData = () => {
-    if (testGroup === "none") {
-      setSubjectData((prevData) => ({
-        ...prevData,
-        [testGroup]: {
-          ...(prevData[testGroup] || {}),
-          [TEST_FEATURES[currentTestFeatureIndex]]: {
-            ...(prevData[testGroup]?.[TEST_FEATURES[currentTestFeatureIndex]] ||
-              {}),
-            [currentAudioName]: audioBlob,
-          },
-        },
-      }));
-    } else if (testGroup === "feedback") {
-      setSubjectData((prevData) => ({
-        ...prevData,
-        [testGroup]: {
-          ...(prevData[testGroup] || {}), // Ensure `testGroup` exists
-          [feedbackStage]: {
-            ...(prevData[testGroup]?.[feedbackStage] || {}), // Ensure `feedbackGroup` exists
-            [TEST_FEATURES[currentTestFeatureIndex]]: {
-              ...(prevData[testGroup]?.[feedbackStage]?.[
-                TEST_FEATURES[currentTestFeatureIndex]
-              ] || {}),
-              [currentAudioName]: audioBlob, // Add or update the current audio blob
+  const updateSubjectData = async () => {
+    let file;
+    if (audioBlob) {
+      file = new File([audioBlob], currentAudioName, {
+        type: "audio/wav",
+      });
+      setUploadedFile(file);
+
+      const response = await uploadAudioToPythonService(
+        file,
+        testGroup,
+        testGroup === "feedback" ? feedbackStage : null,
+        feedbackStage !== "during"
+          ? TEST_FEATURES[currentTestFeatureIndex]
+          : null
+      );
+      console.log(response);
+
+      const updatedData = (() => {
+        if (testGroup === "none") {
+          return {
+            ...subjectData,
+            [testGroup]: {
+              ...(subjectData[testGroup] || {}),
+              [TEST_FEATURES[currentTestFeatureIndex]]: {
+                ...(subjectData[testGroup]?.[
+                  TEST_FEATURES[currentTestFeatureIndex]
+                ] || {}),
+                [currentAudioName]: {
+                  filePath: response.path,
+                },
+              },
             },
-          },
-        },
-      }));
+          };
+        } else if (testGroup === "feedback") {
+          if (feedbackStage === "during") {
+            return {
+              ...subjectData,
+              [testGroup]: {
+                ...(subjectData[testGroup] || {}),
+                [feedbackStage]: {
+                  ...(subjectData[testGroup]?.[feedbackStage] || {}),
+                  [currentAudioName]: {
+                    filePath: response.path,
+                    audioFeatures: audioFeatures,
+                  },
+                },
+              },
+            };
+          } else {
+            return {
+              ...subjectData,
+              [testGroup]: {
+                ...(subjectData[testGroup] || {}),
+                [feedbackStage]: {
+                  ...(subjectData[testGroup]?.[feedbackStage] || {}),
+                  [TEST_FEATURES[currentTestFeatureIndex]]: {
+                    ...(subjectData[testGroup]?.[feedbackStage]?.[
+                      TEST_FEATURES[currentTestFeatureIndex]
+                    ] || {}),
+                    [currentAudioName]: {
+                      filePath: response.path,
+                    },
+                  },
+                },
+              },
+            };
+          }
+        }
+      })();
+
+      setSubjectData(updatedData);
+
+      const uploadTestSubjectRes = await uploadTestSubject(
+        updatedData.subjectId,
+        updatedData
+      );
+      console.log(uploadTestSubjectRes);
     }
+  };
+
+  const handleAnalyzeNewRecording = () => {
+    setAnalyzeMode(false);
+    updateSubjectData();
+    setAudioBlob(null);
+    setAudioUrl(null);
+    setUploadedFile(null);
+    setSelectedAnalysisFeature(null);
+    setAudioFeatures({});
+  };
+
+  const handleAnalysisFeatureSelect = (feature) => {
+    setSelectedAnalysisFeature(feature);
+    setAnalyzeMode(true);
+  };
+
+  const handleFinishTestingTool = () => {
+    updateSubjectData();
+    setFeedbackStage("after");
+    setCurrentStep("instructions");
+    setCurrentTestFeatureIndex(0);
+    setAttemptCount(0);
+    setAudioBlob(null);
+    setAudioUrl(null);
+
+    const fileName = `subject-${subjectData.subjectId}-feedback-after-${
+      TEST_FEATURES[currentTestFeatureIndex]
+    }-${0}.wav`;
+    setCurrentAudioName(fileName);
+    setSelectedAnalysisFeature(null);
+    setAudioFeatures({});
   };
 
   const handleSubmitRecording = () => {
     updateSubjectData();
-    if (currentTestFeatureIndex < TEST_FEATURES.length - 1) {
+    if (currentStep === "feedback" && feedbackStage === "during") {
+      console.log(":D subject data already updated.");
+      // if (audioBlob) {
+      //   const file = new File([audioBlob], currentAudioName, {
+      //     type: "audio/wav",
+      //   });
+      //   setUploadedFile(file);
+      // }
+    } else if (currentTestFeatureIndex < TEST_FEATURES.length - 1) {
       // Move to the next feature
       setAttemptCount(0); // Reset attempts for the next feature
       const newTestFeatureIndex = currentTestFeatureIndex + 1;
@@ -137,13 +228,19 @@ const Testing = ({
         const testAnalyzer = feedbackStage === "before" ? true : false;
 
         let newAudioName;
-        if (updatedGroups.includes("feedback")) {
+        if (
+          updatedGroups.includes("none") &&
+          updatedGroups.includes("feedback") &&
+          feedbackStage === "after"
+        ) {
+          setCurrentStep("completed");
+        } else if (updatedGroups.includes("feedback")) {
           if (testAnalyzer) {
-            setFeedbackStage("after");
-            setCurrentStep("feedback");
+            setFeedbackStage("during");
+            setCurrentStep("instructions");
             newAudioName = `subject-${
               subjectData.subjectId
-            }-feedback-after-${0}.wav`;
+            }-feedback-during-${0}.wav`;
           } else {
             setTestGroup("none");
             setCurrentStep("instructions");
@@ -165,8 +262,6 @@ const Testing = ({
             subjectData.subjectId
           }-feedback-${feedbackStage}-${0}.wav`;
           setCurrentAudioName(newAudioName);
-        } else {
-          setCurrentStep("completed");
         }
 
         return updatedGroups;
@@ -174,39 +269,43 @@ const Testing = ({
     }
   };
 
-  console.log(subjectData);
-
-  const handleGenerateSubjectId = () => {
-    // const newSubjectId = Math.random().toString(36).substring(2, 10);
-    // setSubjectId(newSubjectId);
-    // const newTestingPart = Math.random() < 0.5 ? "partA" : "partB";
-    // setTestingPart(newTestingPart);
-    // const newAudioName = `subject-${newSubjectId}-${newTestingPart}-${subjectAnalysisCount}.wav`;
-    // setAudioName(newAudioName);
-    // setInRecordMode(true);
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs < 10 ? `0${secs}` : secs}`;
   };
 
-  const handleSetTestingPart = (part) => {
-    setTestingPart(part);
-    setSubjectAnalysisCount(1);
-    const newAudioName = `subject-${subjectId}-${part}-${1}.wav`;
-    setAudioName(newAudioName);
-    resetAudioData();
-    setInRecordMode(true);
-  };
+  useEffect(() => {
+    let timer;
 
-  const handleSetTestingEnabled = () => {
-    const newValue = !testingEnabled;
-    if (!newValue) {
-      setSubjectId(null);
-      setTestingPart("partA");
-      setSubjectAnalysisCount(1);
-      setAudioName("untitled.wav");
+    if (currentStep === "feedback") {
+      // Start the timer when currentStep is "feedback"
+      timer = setInterval(() => {
+        setRemainingTime((prevTime) => {
+          if (prevTime <= 1) {
+            clearInterval(timer); // Stop the timer when it reaches 0
+            handleFinishTestingTool();
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
     }
-    setTestingEnabled(newValue);
-    resetAudioData();
-    setInRecordMode(true);
-  };
+
+    // Cleanup the interval when the component unmounts or currentStep changes
+    return () => {
+      clearInterval(timer);
+    };
+  }, [currentStep]);
+
+  useEffect(() => {
+    // Enable the button once when 480 seconds have passed
+    if (!isProceedButtonEnabled && remainingTime <= 480) {
+      setIsProceedButtonEnabled(true);
+    }
+  }, [remainingTime, isProceedButtonEnabled]);
+
+  console.log(subjectData);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen text-lightgray">
@@ -216,50 +315,37 @@ const Testing = ({
 
       {currentStep === "introduction" && (
         <IntroductionSection
-          handleNextStep={() => handleNextStep("instructions")}
+          handleNextStep={() => setCurrentStep("instructions")}
         />
       )}
 
       {currentStep === "instructions" && (
         <InstructionsSection
           testGroup={testGroup}
-          handleNextStep={() => setCurrentStep("testing")}
+          feedbackStage={feedbackStage}
+          handleNextStep={() => {
+            setUploadedFile(null);
+            if (testGroup === "feedback" && feedbackStage === "during") {
+              setCurrentStep("feedback");
+            } else {
+              setCurrentStep("testing");
+            }
+          }}
         />
       )}
 
+      {currentStep === "completed" && (
+        <TestingCompleted subjectData={subjectData} />
+      )}
+
       {currentStep === "testing" && (
-        <div className="flex flex-col items-center justify-center h-screen text-lightgray w-1/2 space-y-8">
-          <div className="flex flex-col self-start mb-8 space-y-2">
-            <div className="text-4xl text-electricblue font-bold">
-              {TEST_FEATURES[currentTestFeatureIndex] === "pitch"
-                ? "Pitch Accuracy"
-                : TEST_FEATURES[currentTestFeatureIndex] === "dynamics"
-                ? "Constant Dynamics"
-                : "Constant Tempo"}
-            </div>
-            <div>
-              {TEST_FEATURES[currentTestFeatureIndex] === "pitch"
-                ? "Sing the phrase as closely as possible to the correct pitch shown in the reference audio."
-                : TEST_FEATURES[currentTestFeatureIndex] === "dynamics"
-                ? "Sing the phrase with consistent loudness (volume) from start to finish."
-                : "Sing the phrase at a steady speed, matching the tempo of the reference audio."}
-            </div>
-          </div>
-          <div className="flex flex-col items-start w-full space-y-2">
-            <div className="flex flex-row items-end justify-between w-full">
-              <div className="text-xl font-semibold">Reference Audio</div>
-              <div className="text-sm text-warmyellow bg-bluegray rounded-2xl px-4 py-2 w-fit">
-                <span className="font-bold">attempts remaining:</span>{" "}
-                {3 - attemptCount}
-              </div>
-            </div>
-            <div className="h-[100px] w-full bg-lightgray/25 p-4 rounded-3xl">
-              <ResponsiveWaveformPlayer highlightedSections={[]} />
-            </div>
-          </div>
+        <TestingSection
+          currentTestFeature={TEST_FEATURES[currentTestFeatureIndex]}
+          attemptCount={attemptCount}
+        >
           <RecordAudioSection
             testingEnabled={true}
-            audioName={currentAudioName}
+            audioName="Your Recording"
             audioBlob={audioBlob}
             setAudioBlob={setAudioBlob}
             setAudioURL={setAudioUrl}
@@ -268,124 +354,101 @@ const Testing = ({
             onSubmitRecording={handleSubmitRecording}
             updateSubjectData={updateSubjectData}
           />
-        </div>
+        </TestingSection>
       )}
 
       {currentStep === "feedback" && (
-        <div className="flex flex-col items-center justify-center h-screen text-lightgray w-1/2 space-y-8">
-          <div className="flex flex-col self-start space-y-2">
+        <div className="flex flex-col items-center justify-start h-screen text-lightgray w-full space-y-6">
+          <div className="flex flex-col items-center justify-self-start space-y-2 mt-20 w-1/2">
             <div className="text-4xl text-electricblue font-bold">
-              Visual Feedback Tool
+              Visualization Tool
             </div>
-            <div>Try out our feedback visualization tool.</div>
+            <div>
+              You may record yourself and visualize your audio recordings as
+              many times as you want within the next 10 minutes, but you must
+              use the tool for at least 2 minutes.
+            </div>
           </div>
-          <RecordAudioSection
-            testingEnabled={true}
-            audioName={currentAudioName}
-            audioBlob={audioBlob}
-            setAudioBlob={setAudioBlob}
-            setAudioURL={setAudioUrl}
-            attemptCount={attemptCount}
-            onChangeAttemptCount={handleChangeAttemptCount}
-            onSubmitRecording={handleSubmitRecording}
-            updateSubjectData={updateSubjectData}
-          />
-          <AnalysisButtons selectedInstrument="violin" />
+
+          <div className="flex flex-col items-center justify-center w-1/2 space-y-8">
+            <div className="flex flex-col items-start w-full space-y-2">
+              <div className="flex flex-row items-end justify-between w-full">
+                <div className="text-xl font-semibold">Reference Audio</div>
+                <div className="flex flex-row space-x-2 items-end">
+                  <div
+                    className={`font-semibold text-sm px-4 py-2 bg-lightgray/25 rounded-2xl transition duration-200 ease-in-out ${
+                      remainingTime <= 60 ? "text-rose-300" : "text-warmyellow"
+                    }`}
+                  >
+                    Time Remaining: {formatTime(remainingTime)}
+                  </div>
+                  <TertiaryButton
+                    onClick={handleFinishTestingTool}
+                    className="whitespace-nowrap text-sm"
+                    disabled={!isProceedButtonEnabled}
+                  >
+                    proceed to next task
+                  </TertiaryButton>
+                </div>
+              </div>
+              <div className="h-[100px] w-full bg-lightgray/25 p-4 rounded-3xl">
+                <ResponsiveWaveformPlayer highlightedSections={[]} />
+              </div>
+            </div>
+            {!analyzeMode && !uploadedFile && (
+              <RecordAudioSection
+                feedbackStage={feedbackStage}
+                testingEnabled={true}
+                audioName="Your Recording"
+                audioBlob={audioBlob}
+                setAudioBlob={setAudioBlob}
+                setAudioURL={setAudioUrl}
+                attemptCount={attemptCount}
+                onChangeAttemptCount={handleChangeAttemptCount}
+                onSubmitRecording={handleSubmitRecording}
+                updateSubjectData={updateSubjectData}
+              />
+            )}
+          </div>
+
+          {uploadedFile && (
+            <div className="flex flex-col items-center justify-center w-full space-y-6">
+              <AnalysisButtons
+                selectedInstrument="violin"
+                uploadedFile={uploadedFile}
+                selectedAnalysisFeature={selectedAnalysisFeature}
+                onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
+                uploadsEnabled={false}
+                audioFeatures={audioFeatures}
+                setAudioFeatures={setAudioFeatures}
+                audioUuid={null}
+                setAudioUuid={() => {}}
+              />
+              <div className="flex flex-col justify-center items-center w-fit space-y-2">
+                <div className="text-xl font-semibold text-lightpink mb-1 self-start">
+                  Your Recording
+                </div>
+                <div className="bg-lightgray/25 rounded-3xl w-fit p-8">
+                  <GraphWithWaveform
+                    key={audioFeatures[selectedAnalysisFeature]?.audioUrl}
+                    audioURL={audioFeatures[selectedAnalysisFeature]?.audioUrl}
+                    featureData={
+                      audioFeatures[selectedAnalysisFeature]?.data || []
+                    }
+                    selectedAnalysisFeature={selectedAnalysisFeature}
+                  />
+                </div>
+                <div className="flex flex-row self-end space-x-2">
+                  <SecondaryButton onClick={handleAnalyzeNewRecording}>
+                    analyze new recording
+                  </SecondaryButton>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
-    // <div className="flex flex-col items-center justify-start h-screen py-32 text-lightgray">
-    //   <div className="flex flex-col gap-2 items-center">
-    //     <SecondaryButton
-    //       onClick={handleSetTestingEnabled}
-    //       isActive={testingEnabled}
-    //     >
-    //       {`testing ${testingEnabled ? "enabled" : "disabled"}`}
-    //     </SecondaryButton>
-    //     {testingEnabled && (
-    //       <div className="flex flex-col items-center gap-2 justify-center w-full">
-    //         <TertiaryButton onClick={handleGenerateSubjectId}>
-    //           generate subject id
-    //         </TertiaryButton>
-
-    //         {subjectId && (
-    //           <div className="mt-20 flex flex-col items-center gap-2">
-    //             <div className="mb-4">
-    //               <LeftButton
-    //                 onClick={() => handleSetTestingPart("partA")}
-    //                 active={testingPart === "partA"}
-    //                 asButton={true}
-    //                 label="part a"
-    //               />
-
-    //               <RightButton
-    //                 onClick={() => handleSetTestingPart("partB")}
-    //                 active={testingPart === "partB"}
-    //                 asButton={true}
-    //                 label="part b"
-    //               />
-    //             </div>
-    //             <div className="text-xl font-medium">
-    //               <span className="font-bold text-warmyellow">subject: </span>
-    //               {subjectId}
-    //             </div>
-    //             <div className="text-xl font-medium">
-    //               <span className="font-bold text-electricblue">
-    //                 current audio name:{" "}
-    //               </span>
-    //               {audioName}
-    //             </div>
-    //           </div>
-    //         )}
-
-    //         {subjectAnalyses && (
-    //           <>
-    //             {Object.keys(subjectAnalyses).map((part) => {
-    //               const partData = subjectAnalyses[part];
-    //               if (!partData || Object.keys(partData).length === 0)
-    //                 return null;
-    //               return (
-    //                 <div key={part} className="mt-8 w-full">
-    //                   <h2 className="text-lg font-semibold mb-2">
-    //                     Subject Analyses - {part}
-    //                   </h2>
-    //                   <table className="min-w-full border-collapse">
-    //                     <thead>
-    //                       <tr>
-    //                         <th className="p-2 border">Audio Name</th>
-    //                         <th className="p-2 border">Instrument</th>
-    //                         <th className="p-2 border">Features</th>
-    //                       </tr>
-    //                     </thead>
-    //                     <tbody>
-    //                       {Object.entries(partData).map(
-    //                         ([audioName, analysis]) => (
-    //                           <tr key={audioName}>
-    //                             <td className="p-2 border">{audioName}</td>
-    //                             <td className="p-2 border">
-    //                               {analysis.instrument}
-    //                             </td>
-    //                             <td className="p-2 border">
-    //                               {typeof analysis.audioFeatures === "object"
-    //                                 ? Object.keys(analysis.audioFeatures).join(
-    //                                     ", "
-    //                                   )
-    //                                 : analysis.audioFeatures}
-    //                             </td>
-    //                           </tr>
-    //                         )
-    //                       )}
-    //                     </tbody>
-    //                   </table>
-    //                 </div>
-    //               );
-    //             })}
-    //           </>
-    //         )}
-    //       </div>
-    //     )}
-    //   </div>
-    // </div>
   );
 };
 
