@@ -10,7 +10,7 @@ def handle_pitch():
     if not audio_file:
         return jsonify({'error': 'No file uploaded'}), 400
 
-    result, error = process_pitch(audio_file.read(), method="librosa")
+    result, error = process_pitch(audio_file.read(), method="crepe")
     result = convert_to_builtin_types(result)
     if error:
         return jsonify({'error': error}), 400
