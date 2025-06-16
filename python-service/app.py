@@ -21,6 +21,11 @@ logging.info("Successfully loaded VGGish model.")
 app = Flask(__name__)
 CORS(app)
 
+if os.getenv("FLASK_ENV") == "production":
+    app.config["ENV"] = "production"
+else:
+    app.config["ENV"] = "development"
+
 # Create directory to store audio files
 AUDIO_FOLDER = os.path.join(os.getcwd(), 'static', 'audio')
 os.makedirs(AUDIO_FOLDER, exist_ok=True)
