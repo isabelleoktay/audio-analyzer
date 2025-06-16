@@ -42,8 +42,10 @@ def get_audio_url(audio, hash, sr=44100):
 
     # Determine the protocol based on the environment
     if current_app.config.get("ENV") == "production":
+        print("using https protocol")  # <--- debug
         protocol = "https"
     else:
+        print("using http protocol")  # <--- debug
         protocol = "http"
 
     return f"{protocol}://{request.host}{request.script_root}/python-service/audio/{filename}"
