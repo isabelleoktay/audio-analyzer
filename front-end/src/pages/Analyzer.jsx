@@ -1,4 +1,4 @@
-import { startTransition, useEffect } from "react";
+import { startTransition } from "react";
 import InstrumentSelectionCards from "../components/cards/InstrumentSelectionCards.jsx";
 import InstrumentButton from "../components/buttons/InstrumentButton.jsx";
 import RecordAudioSection from "../components/sections/RecordAudioSection.jsx";
@@ -29,13 +29,6 @@ const Analyzer = ({
   audioUuid,
   setAudioUuid,
   uploadsEnabled,
-  testingEnabled,
-  setTestingEnabled,
-  subjectAnalysisCount,
-  setSubjectAnalysisCount,
-  subjectId,
-  testingPart,
-  setSubjectAnalyses,
   tooltipMode,
 }) => {
   const handleInstrumentSelect = (instrument) => {
@@ -76,51 +69,17 @@ const Analyzer = ({
   };
 
   const handleChangeFile = () => {
-    if (testingEnabled) {
-      setSubjectAnalyses((prev) => ({
-        ...prev,
-        [testingPart]: {
-          ...((prev && prev[testingPart]) || {}),
-          [audioName]: {
-            instrument: selectedInstrument,
-            audioUuid: audioUuid,
-            audioFeatures: audioFeatures,
-          },
-        },
-      }));
-    }
     setSelectedAnalysisFeature(null);
     setUploadedFile(null);
     setAudioBlob(null);
-    const newsubjectAnalysisCount = subjectAnalysisCount + 1;
-    setSubjectAnalysisCount(newsubjectAnalysisCount);
 
-    let newAudioName;
-    if (testingEnabled) {
-      newAudioName = `subject-${subjectId}-${testingPart}-${newsubjectAnalysisCount}.wav`;
-    } else {
-      newAudioName = "untitled.wav";
-    }
+    const newAudioName = "untitled.wav";
     setAudioName(newAudioName);
 
     setAudioURL(null);
     setAudioFeatures({});
-    if (testingEnabled) {
-      setInRecordMode(true);
-    } else {
-      setInRecordMode(false);
-    }
+    setInRecordMode(false);
   };
-
-  useEffect(() => {
-    console.log("Audio features updated:");
-    console.log(audioFeatures);
-  }, [audioFeatures]);
-
-  // useEffect(() => {
-  //   const newAudioName = `subject-${subjectId}-${testingPart}-${subjectAnalysisCount}.wav`;
-  //   setAudioName(newAudioName);
-  // }, [subjectAnalysisCount, setAudioName, subjectId, testingPart]);
 
   return (
     <div className="flex flex-col items-center min-h-[calc(100vh-4rem)]">
@@ -155,8 +114,6 @@ const Analyzer = ({
               audioURL={audioURL}
               setAudioURL={setAudioURL}
               handleDownloadRecording={handleDownloadRecording}
-              testingEnabled={testingEnabled}
-              setTestingEnabled={setTestingEnabled}
             />
           ) : (
             <div className="flex flex-col items-center w-full">
@@ -172,7 +129,6 @@ const Analyzer = ({
                     handleFileUpload={handleFileUpload}
                     uploadedFile={uploadedFile}
                     className="mb-8 w-full"
-                    testingEnabled={testingEnabled}
                   />
                 </Tooltip>
               )}
@@ -219,9 +175,7 @@ const Analyzer = ({
                           download file
                         </TertiaryButton>
                         <TertiaryButton onClick={handleChangeFile}>
-                          {testingEnabled
-                            ? "submit and analyze next"
-                            : "change file"}
+                          change file
                         </TertiaryButton>
                       </div>
                     </div>

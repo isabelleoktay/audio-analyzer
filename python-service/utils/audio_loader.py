@@ -38,7 +38,7 @@ def get_audio_url(audio, hash, sr=44100):
     filename = f"{hash}.wav"
     outpath = os.path.join(current_app.config['AUDIO_FOLDER'], filename)
     sf.write(outpath, audio, sr)
-    print(">>> Written trimmed audio to", outpath)  # Debugging
+    print(">>> Written trimmed audio to", outpath)  
 
     # Determine the protocol based on the environment
     if current_app.config.get("ENV") == "production":
@@ -53,7 +53,7 @@ def get_cached_or_loaded_audio(file_bytes, sample_rate=44100, return_path=True):
     file_hash = get_file_hash(file_bytes)
 
     if audio_cache["hash"] != file_hash:
-        print("Cache miss or hash mismatch, reloading audio...")  # <--- debug
+        print("Cache miss or hash mismatch, reloading audio...")  
         audio_cache['hash'] = file_hash
         audio_cache['audio'] = None
         audio_cache['sr'] = None

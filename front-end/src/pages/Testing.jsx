@@ -202,12 +202,6 @@ const Testing = () => {
     updateSubjectData();
     if (currentStep === "feedback" && feedbackStage === "during") {
       console.log(":D subject data already updated.");
-      // if (audioBlob) {
-      //   const file = new File([audioBlob], currentAudioName, {
-      //     type: "audio/wav",
-      //   });
-      //   setUploadedFile(file);
-      // }
     } else if (currentTestFeatureIndex < TEST_FEATURES.length - 1) {
       // Move to the next feature
       setAttemptCount(0); // Reset attempts for the next feature
