@@ -1,5 +1,4 @@
 import axios from "axios";
-import { v4 as uuidv4 } from "uuid";
 
 const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL,
@@ -76,7 +75,7 @@ const processFeatures = async (audioFile, feature) => {
       return [];
     }
   } catch (error) {
-    console.error("Error processing dynamics:", error);
+    console.error("Error processing data:", error);
     throw error;
   }
 };
@@ -159,9 +158,8 @@ const uploadTestSubject = async (subjectId, data) => {
  */
 const uploadAudio = async (audioFile, id, instrument, features) => {
   try {
-    const uuid = uuidv4();
     const originalName = audioFile.name;
-    const modifiedFileName = `${uuid}_${originalName}`;
+    const modifiedFileName = `${id}_${originalName}`;
     const modifiedFile = new File([audioFile], modifiedFileName, {
       type: audioFile.type,
     });
@@ -195,33 +193,22 @@ const uploadAudio = async (audioFile, id, instrument, features) => {
     throw error;
   }
 };
-// const uploadAudio = async (audioFile, id, instrument, features) => {
-//   const formData = new FormData();
-//   formData.append("audioFile", audioFile);
-//   formData.append("instrument", instrument);
 
-//   if (id) {
-//     formData.append("id", id);
-//   }
-
-//   formData.append("features", JSON.stringify(features));
-
-//   try {
-//     const response = await apiClient.post("/api/upload-audio", formData, {
-//       headers: {
-//         "Content-Type": "multipart/form-data",
-//       },
-//     });
-//     return response.data;
-//   } catch (error) {
-//     console.error("Error uploading audio:", error);
-//     throw error;
-//   }
-// };
+const cleanupTempFiles = async () => {
+  try {
+    const response = await pythonClient.post(
+      "/python-service/audio/cleanup-temp-files"
+    );
+    console.log("Cleanup response:", response.data);
+  } catch (error) {
+    console.error("Error cleaning up temporary files:", error);
+  }
+};
 
 export {
   uploadAudio,
   processFeatures,
   uploadAudioToPythonService,
   uploadTestSubject,
+  cleanupTempFiles,
 };
