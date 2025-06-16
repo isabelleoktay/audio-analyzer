@@ -22,6 +22,15 @@ audio_cache = {
         'highlighted_section': None,
         'x_axis': None,
         'hop_sec_duration': None
+    },
+    'dynamics': {
+        'audio': None,
+        'audio_url': None,
+        'sr': None,
+        'dynamics': None,
+        'smoothed_dynamics': None,
+        'highlighted_section': None,
+        'x_axis': None
     }
 }
 
@@ -67,6 +76,15 @@ def get_cached_or_loaded_audio(file_bytes, sample_rate=44100, return_path=True):
             'highlighted_section': None,
             'x_axis': None,
             'hop_sec_duration': None
+        }
+        audio_cache['dynamics'] = {
+            'audio': None,
+            'audio_url': None,
+            'sr': None,
+            'dynamics': None,
+            'smoothed_dynamics': None,
+            'highlighted_section': None,
+            'x_axis': None
         }
 
         audio_cache['hash'] = file_hash

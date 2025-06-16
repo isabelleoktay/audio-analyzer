@@ -23,3 +23,34 @@ def smooth_and_segment_crepe(pitch, hop_sec):
     p2 = smooth_data(pitch, filter_type='adaptive', threshold=0.05, base_window=b, max_window=b*2)
     p2 = replace_edge_zeros(p2)
     return p2, seg
+
+import numpy as np
+
+def filter_pitch_by_rms(pitch, rms, rms_threshold = 0.01):
+    """
+    Filters pitch values based on RMS threshold. If RMS and pitch arrays are not the same length,
+    RMS values are interpolated to match the pitch array length.
+
+    Args:
+        pitch (numpy.ndarray): Array of pitch values.
+        rms (numpy.ndarray): Array of RMS values.
+        rms_threshold (float): Threshold below which pitch values are set to 0.
+        pitch_length (int): Length of the pitch array.
+
+    Returns:
+        numpy.ndarray: Filtered pitch values.
+    """
+    # Interpolate RMS to match the length of the pitch array if needed
+    pitch_length = len(pitch)
+
+    if len(rms) != pitch_length:
+        rms = np.interp(
+            np.linspace(0, len(rms) - 1, pitch_length),  # Target indices
+            np.arange(len(rms)),  # Original indices
+            rms  # Original RMS values
+        )
+
+    # Apply RMS threshold to filter pitch values
+    pitch = np.where(rms >= rms_threshold, pitch, 0)
+
+    return pitch
