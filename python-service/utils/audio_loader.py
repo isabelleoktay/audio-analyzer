@@ -7,7 +7,6 @@ import wave
 import subprocess
 from essentia.standard import MonoLoader 
 import librosa
-import logging
 
 audio_cache = {
     'hash': None,
