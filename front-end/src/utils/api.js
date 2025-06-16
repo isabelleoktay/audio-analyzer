@@ -6,7 +6,7 @@ const apiClient = axios.create({
 });
 
 const pythonClient = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: process.env.REACT_APP_PYTHON_SERVICE_BASE_URL,
 });
 
 const processFeatures = async (audioFile, feature) => {
