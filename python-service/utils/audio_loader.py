@@ -38,9 +38,15 @@ def get_audio_url(audio, hash, sr=44100):
     filename = f"{hash}.wav"
     outpath = os.path.join(current_app.config['AUDIO_FOLDER'], filename)
     sf.write(outpath, audio, sr)
-    print(">>> Written trimmed audio to", outpath)   # <--- debug
-    base = request.host_url.rstrip('/')
-    return f"{base}/python-service/audio/{filename}"
+    print(">>> Written trimmed audio to", outpath)  # Debugging
+
+    # Determine the protocol based on the environment
+    if current_app.config.get("ENV") == "production":
+        protocol = "https"
+    else:
+        protocol = "http"
+
+    return f"{protocol}://{request.host}{request.script_root}/python-service/audio/{filename}"
 
 def get_cached_or_loaded_audio(file_bytes, sample_rate=44100, return_path=True):
     global audio_cache
