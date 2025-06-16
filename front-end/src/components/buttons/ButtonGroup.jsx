@@ -1,7 +1,7 @@
-// src/components/buttons/ButtonGroup.jsx
 import LeftButton from "./LeftButton";
 import CenterButton from "./CenterButton";
 import RightButton from "./RightButton";
+
 const ButtonGroup = ({ buttons, className = "" }) => {
   /**
    * buttons: array of { type: 'left' | 'center' | 'right', label: string, to: string, active?: boolean, external?: boolean }

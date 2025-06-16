@@ -18,42 +18,41 @@ const uploadAudio = async (req, res) => {
 
     const { id, features, instrument, audioPath } = req.body;
 
-    if (!audioPath && !id) {
-      return res
-        .status(400)
-        .json({ error: "No file uploaded or audio ID provided" });
+    if (!id) {
+      return res.status(400).json({ error: "ID is required" });
     }
 
     try {
-      if (id) {
-        // Update an existing audio entry
-        const existingAudio = await Audio.findById(id);
+      // Check if an audio entry with the given ID exists
+      let audio = await Audio.findById(id);
 
-        if (!existingAudio) {
-          return res.status(404).json({ error: "Audio entry not found" });
-        }
-
-        // Update features and optionally replace the audio buffer if a new file is uploaded
+      if (audio) {
+        // Update the existing audio entry
         if (audioPath) {
-          existingAudio.path = audioPath;
+          audio.path = audioPath;
         }
 
         if (features) {
-          existingAudio.features = {
-            ...existingAudio.features,
+          audio.features = {
+            ...audio.features,
             ...JSON.parse(features),
           };
         }
 
-        await existingAudio.save();
+        if (instrument) {
+          audio.instrument = instrument;
+        }
+
+        await audio.save();
 
         return res.status(200).json({
           message: "Audio entry updated successfully",
-          id: existingAudio._id,
+          id: audio._id,
         });
       } else {
-        // Create a new audio entry
-        const audio = new Audio({
+        // Create a new audio entry if it doesn't exist
+        audio = new Audio({
+          _id: id, // Use the provided ID for the new entry
           path: audioPath || "unknown",
           instrument: instrument || "unknown",
           features: features ? JSON.parse(features) : {},
@@ -61,14 +60,14 @@ const uploadAudio = async (req, res) => {
 
         await audio.save();
 
-        return res.status(200).json({
-          message: "File uploaded and saved to database",
+        return res.status(201).json({
+          message: "New audio entry created successfully",
           id: audio._id,
         });
       }
     } catch (error) {
-      console.error("Error saving audio:", error);
-      res.status(500).send("Error saving audio to database");
+      console.error("Error processing audio:", error);
+      res.status(500).send("Error processing audio");
     }
   });
 };

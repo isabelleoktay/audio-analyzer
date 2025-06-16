@@ -32,7 +32,7 @@ def upload_audio():
         testing_folder = os.path.join(base_folder, 'testing')
         target_folder = os.path.join(testing_folder, group)
     else:
-        target_folder = base_folder  # Default to normal /static/audio folder
+        target_folder = os.path.join(base_folder, 'collected')  # Default to normal /static/audio folder
 
     # Add feature to the path if it exists
     if audio_feature:
@@ -58,3 +58,27 @@ def upload_audio():
         f.write(wav_bytes.getvalue())
 
     return jsonify({'message': f'File uploaded successfully to {target_folder}', 'path': file_path}), 200
+
+@audio_blueprint.route('/cleanup-temp-files', methods=['POST'])
+def cleanup_temp_files():
+    base_folder = current_app.config['AUDIO_FOLDER']
+    protected_folders = {"testing", "collected"}  # Add any other protected folders here
+
+    try:
+        # Iterate through the files and folders in the base folder
+        for item in os.listdir(base_folder):
+            item_path = os.path.join(base_folder, item)
+
+            # Skip protected folders
+            if os.path.isdir(item_path) and item in protected_folders:
+                continue
+
+            # Delete files or non-protected folders
+            if os.path.isfile(item_path):
+                os.remove(item_path)
+            elif os.path.isdir(item_path):
+                os.rmdir(item_path)  # Only removes empty directories
+
+        return jsonify({"message": "Temporary files cleaned up successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to clean up temporary files: {str(e)}"}), 500
