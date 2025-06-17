@@ -26,8 +26,9 @@ const NavBar = ({
     // Optionally also call setEnableTooltips for your child tooltip components.
   };
 
-  const handleFeedback = () => {};
-
+  const handleFeedback = () => {
+    window.open("https://forms.gle/WF8g6WrMVsrokqyK6", "_blank");
+  };
   return (
     <nav className="fixed top-0 left-0 w-full h-16 flex items-center justify-between px-6 py-4 bg-transparent text-white z-50">
       {/* Left Section */}

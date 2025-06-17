@@ -205,10 +205,20 @@ const cleanupTempFiles = async () => {
   }
 };
 
+const cleanupSession = async () => {
+  try {
+    const response = await pythonClient.post("/python-service/cleanup-session");
+    console.log("Session cleanup response:", response.data);
+  } catch (error) {
+    console.error("Error cleaning up session:", error);
+  }
+};
+
 export {
   uploadAudio,
   processFeatures,
   uploadAudioToPythonService,
   uploadTestSubject,
   cleanupTempFiles,
+  cleanupSession,
 };

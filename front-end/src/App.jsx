@@ -5,7 +5,7 @@ import Layout from "./components/Layout.jsx";
 import NavBar from "./components/NavBar.jsx";
 import Analyzer from "./pages/Analyzer.jsx";
 import Testing from "./pages/Testing.jsx";
-import { cleanupTempFiles } from "./utils/api.js";
+import { cleanupTempFiles, cleanupSession } from "./utils/api.js";
 
 /**
  * The main application component for the Audio Analyzer frontend.
@@ -47,6 +47,33 @@ const App = () => {
   useEffect(() => {
     return () => {
       cleanupTempFiles();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Clean up when user closes tab/browser
+      cleanupSession();
+    };
+
+    const handleVisibilityChange = () => {
+      // Clean up when user switches to another tab for extended period
+      if (document.visibilityState === "hidden") {
+        setTimeout(() => {
+          if (document.visibilityState === "hidden") {
+            cleanupSession();
+          }
+        }, 300000); // 5 minutes
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      cleanupSession(); // Clean up when component unmounts
     };
   }, []);
 
