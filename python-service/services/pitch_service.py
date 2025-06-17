@@ -16,9 +16,15 @@ def get_cached_or_calculated_pitch(audio, sr, audio_url, method="crepe"):
     audio_cache = get_user_cache()
 
     if audio_cache["pitch"]["pitch"] is not None and audio_cache["pitch"]["smoothed_pitch"] is not None:
-        return (audio_cache["pitch"]["audio"], audio_cache["pitch"]["audio_url"], audio_cache["pitch"]["sr"], 
-                audio_cache["pitch"]["pitch"], audio_cache["pitch"]["smoothed_pitch"],
-                audio_cache["pitch"]["highlighted_section"], audio_cache["pitch"]["x_axis"], audio_cache["pitch"]["hop_sec_duration"])
+        # Convert cached lists back to numpy arrays when returning
+        cached_audio = np.array(audio_cache["pitch"]["audio"]) if audio_cache["pitch"]["audio"] is not None else None
+        cached_pitch = np.array(audio_cache["pitch"]["pitch"]) if audio_cache["pitch"]["pitch"] is not None else None
+        cached_smoothed = np.array(audio_cache["pitch"]["smoothed_pitch"]) if audio_cache["pitch"]["smoothed_pitch"] is not None else None
+        
+        return (cached_audio, audio_cache["pitch"]["audio_url"], audio_cache["pitch"]["sr"], 
+                cached_pitch, cached_smoothed,
+                audio_cache["pitch"]["highlighted_section"], audio_cache["pitch"]["x_axis"], 
+                audio_cache["pitch"]["hop_sec_duration"])
     
     # Get dynamics to filter out low-energy segments
     _, _, _, rms, _, _, _ = get_cached_or_calculated_dynamics(audio, sr, audio_url)
