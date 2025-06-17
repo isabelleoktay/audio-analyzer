@@ -1,7 +1,7 @@
 import numpy as np
 
 from feature_extraction.dynamics import get_cached_or_calculated_dynamics
-from utils.audio_loader import audio_cache
+from utils.audio_loader import get_user_cache, get_cached_or_loaded_audio
 from utils.audio_loader import get_cached_or_loaded_audio
 from utils.extraction_utils import filter_low_confidence
 from feature_extraction.pitch import CrepePitchExtractor, LibrosaPitchExtractor
@@ -10,9 +10,10 @@ from feature_extraction.pitch_utils import (
     smooth_and_segment_crepe,
     filter_pitch_by_rms
 )
+from flask import session
 
 def get_cached_or_calculated_pitch(audio, sr, audio_url, method="crepe"):
-    global audio_cache
+    audio_cache = get_user_cache()
 
     if audio_cache["pitch"]["pitch"] is not None and audio_cache["pitch"]["smoothed_pitch"] is not None:
         return (audio_cache["pitch"]["audio"], audio_cache["pitch"]["audio_url"], audio_cache["pitch"]["sr"], 
@@ -49,14 +50,17 @@ def get_cached_or_calculated_pitch(audio, sr, audio_url, method="crepe"):
     smoothed_pitch, highlighted = smooth_and_segment_crepe(pitch, hop_sec)
     x_axis = [round(float(t), 2) for t in times]
 
-    audio_cache["pitch"]["audio"] = audio
+    audio_cache["pitch"]["audio"] = audio.tolist()
     audio_cache["pitch"]["sr"] = sr
-    audio_cache["pitch"]["pitch"] = pitch
-    audio_cache["pitch"]["smoothed_pitch"] = smoothed_pitch
+    audio_cache["pitch"]["pitch"] = pitch.tolist()
+    audio_cache["pitch"]["smoothed_pitch"] = smoothed_pitch.tolist()
     audio_cache["pitch"]["highlighted_section"] = highlighted
     audio_cache["pitch"]["x_axis"] = x_axis
     audio_cache["pitch"]["audio_url"] = audio_url
     audio_cache["pitch"]["hop_sec_duration"] = hop_sec
+
+    # Update the session cache
+    session['audio_cache'] = audio_cache
 
     return audio, audio_url, sr, pitch, smoothed_pitch, highlighted, x_axis, hop_sec
 

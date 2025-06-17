@@ -25,6 +25,18 @@ const GraphWithWaveform = ({
     setSelectedDataIndex(0);
   }, [selectedAnalysisFeature]);
 
+  const calculatePitchYMin = (data) => {
+    // Filter out values that are 0 or negative
+    const positiveValues = data.filter((value) => value > 0);
+
+    if (positiveValues.length === 0) {
+      return 0; // Fallback if no positive values
+    }
+
+    const minPositiveValue = Math.min(...positiveValues);
+    return Math.max(0, minPositiveValue - 10);
+  };
+
   return (
     <div
       className="flex flex-col items-center justify-center"
@@ -97,9 +109,10 @@ const GraphWithWaveform = ({
                       : []
                   }
                   yMin={
-                    featureData[selectedDataIndex]?.label === "tempo" ||
-                    featureData[selectedDataIndex]?.label === "pitch" ||
-                    featureData[selectedDataIndex]?.label === "vibrato"
+                    featureData[selectedDataIndex]?.label === "pitch"
+                      ? calculatePitchYMin(featureData[selectedDataIndex].data)
+                      : featureData[selectedDataIndex]?.label === "tempo" ||
+                        featureData[selectedDataIndex]?.label === "vibrato"
                       ? Math.max(
                           0,
                           Math.min(...featureData[selectedDataIndex].data) - 50

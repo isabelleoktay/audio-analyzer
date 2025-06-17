@@ -1,9 +1,7 @@
-from utils.audio_loader import audio_cache
 from utils.audio_loader import get_cached_or_loaded_audio
 from feature_extraction.phonation import extract_phonation
 
 def process_phonation(audio_bytes):
-    global audio_cache
 
     # 1) Load & trim audio + get URL
     audio, sr, audio_url, error = get_cached_or_loaded_audio(audio_bytes, sample_rate=16000, return_path=True)

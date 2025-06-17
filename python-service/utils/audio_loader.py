@@ -1,5 +1,6 @@
-from flask import current_app, request
+from flask import current_app, request, session
 import os, soundfile as sf, tempfile
+import numpy as np
 
 from io import BytesIO
 import hashlib
@@ -8,31 +9,35 @@ import subprocess
 from essentia.standard import MonoLoader 
 import librosa
 
-audio_cache = {
-    'hash': None,
-    'audio': None,
-    'sr': None,
-    'audio_url': None,
-    'pitch': {
-        'audio': None,  
-        'audio_url': None,
-        'sr': None,  
-        'pitch': None,  
-        'smoothed_pitch': None,  
-        'highlighted_section': None,
-        'x_axis': None,
-        'hop_sec_duration': None
-    },
-    'dynamics': {
-        'audio': None,
-        'audio_url': None,
-        'sr': None,
-        'dynamics': None,
-        'smoothed_dynamics': None,
-        'highlighted_section': None,
-        'x_axis': None
-    }
-}
+def get_user_cache():
+    """Get or create a cache for the current user session."""
+    if 'audio_cache' not in session:
+        session['audio_cache'] = {
+            'hash': None,
+            'audio': None,
+            'sr': None,
+            'audio_url': None,
+            'pitch': {
+                'audio': None,  
+                'audio_url': None,
+                'sr': None,  
+                'pitch': None,  
+                'smoothed_pitch': None,  
+                'highlighted_section': None,
+                'x_axis': None,
+                'hop_sec_duration': None
+            },
+            'dynamics': {
+                'audio': None,
+                'audio_url': None,
+                'sr': None,
+                'dynamics': None,
+                'smoothed_dynamics': None,
+                'highlighted_section': None,
+                'x_axis': None
+            }
+        }
+    return session['audio_cache']
 
 def load_audio(file_path, sample_rate=44100):
     """Load audio file using librosa."""
@@ -58,7 +63,7 @@ def get_audio_url(audio, hash, sr=44100):
     return f"{protocol}://{request.host}{request.script_root}/python-service/audio/{filename}"
 
 def get_cached_or_loaded_audio(file_bytes, sample_rate=44100, return_path=True):
-    global audio_cache
+    audio_cache = get_user_cache()
     file_hash = get_file_hash(file_bytes)
 
     if audio_cache["hash"] != file_hash:
@@ -88,6 +93,9 @@ def get_cached_or_loaded_audio(file_bytes, sample_rate=44100, return_path=True):
         }
 
         audio_cache['hash'] = file_hash
+
+        # Update session cache
+        session['audio_cache'] = audio_cache
     
     if audio_cache["sr"] == None or audio_cache["sr"] != sample_rate:
         try:
@@ -101,11 +109,15 @@ def get_cached_or_loaded_audio(file_bytes, sample_rate=44100, return_path=True):
             print(f"Error loading audio: {e}")
             return None, None, None, str(e)
 
-        audio_cache['audio'] = audio
+        audio_cache['audio'] = audio.tolist() 
         audio_cache['sr'] = sr
         audio_cache['audio_url'] = audio_url
 
-    return audio_cache["audio"], audio_cache["sr"], audio_cache["audio_url"], None
+        # Update session cache
+        session['audio_cache'] = audio_cache
+
+    cached_audio = np.array(audio_cache["audio"]) if audio_cache["audio"] is not None else None
+    return cached_audio, audio_cache["sr"], audio_cache["audio_url"], None
 
 def convert_to_wav_if_needed(input_bytes, return_path=False):
     # Try reading the file as a WAV
@@ -146,3 +158,9 @@ def convert_to_wav_if_needed(input_bytes, return_path=False):
     else:
         with open(temp_out.name, 'rb') as f:
             return BytesIO(f.read())
+        
+def clear_user_cache():
+    """Clear the current user's audio cache."""
+    if 'audio_cache' in session:
+        del session['audio_cache']
+        print("User audio cache cleared")
