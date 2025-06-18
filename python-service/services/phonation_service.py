@@ -1,10 +1,11 @@
-from utils.audio_loader import get_cached_or_loaded_audio
+from utils.audio_loader import load_and_process_audio, clear_cache_if_new_file
 from feature_extraction.phonation import extract_phonation
 
 def process_phonation(audio_bytes):
+    clear_cache_if_new_file(audio_bytes)
 
     # 1) Load & trim audio + get URL
-    audio, sr, audio_url, error = get_cached_or_loaded_audio(audio_bytes, sample_rate=16000, return_path=True)
+    audio, sr, audio_url, error = load_and_process_audio(audio_bytes, sample_rate=16000)
     if error:
         return None, error
         

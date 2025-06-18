@@ -1,3 +1,4 @@
+from utils.jwt_manager import get_jwt_manager
 from flask import current_app, request, session
 import os, soundfile as sf, tempfile
 import numpy as np
@@ -10,34 +11,38 @@ from essentia.standard import MonoLoader
 import librosa
 
 def get_user_cache():
-    """Get or create a cache for the current user session."""
-    if 'audio_cache' not in session:
-        session['audio_cache'] = {
-            'hash': None,
-            'audio': None,
-            'sr': None,
-            'audio_url': None,
-            'pitch': {
-                'audio': None,  
-                'audio_url': None,
-                'sr': None,  
-                'pitch': None,  
-                'smoothed_pitch': None,  
-                'highlighted_section': None,
-                'x_axis': None,
-                'hop_sec_duration': None
-            },
-            'dynamics': {
-                'audio': None,
-                'audio_url': None,
-                'sr': None,
-                'dynamics': None,
-                'smoothed_dynamics': None,
-                'highlighted_section': None,
-                'x_axis': None
-            }
-        }
-    return session['audio_cache']
+    """Get user cache from JWT token"""
+    jwt_manager = get_jwt_manager()
+    
+    # Get token from Authorization header
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return None
+    
+    token = auth_header.split(' ')[1]
+    user_id = jwt_manager.verify_token(token)
+    
+    if not user_id:
+        return None
+    
+    return jwt_manager.get_user_cache(user_id)
+
+def update_user_cache(user_id: str, cache_data: dict):
+    """Update user cache data"""
+    jwt_manager = get_jwt_manager()
+    if user_id in jwt_manager.user_cache:
+        jwt_manager.user_cache[user_id].update(cache_data)
+
+def get_user_id_from_token():
+    """Extract user_id from JWT token"""
+    jwt_manager = get_jwt_manager()
+    
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return None
+    
+    token = auth_header.split(' ')[1]
+    return jwt_manager.verify_token(token)
 
 def load_audio(file_path, sample_rate=44100):
     """Load audio file using librosa."""
@@ -62,62 +67,106 @@ def get_audio_url(audio, hash, sr=44100):
 
     return f"{protocol}://{request.host}{request.script_root}/python-service/audio/{filename}"
 
-def get_cached_or_loaded_audio(file_bytes, sample_rate=44100, return_path=True):
-    audio_cache = get_user_cache()
-    file_hash = get_file_hash(file_bytes)
-
-    if audio_cache["hash"] != file_hash:
-        print("Cache miss or hash mismatch, reloading audio...")  
-        audio_cache['hash'] = file_hash
-        audio_cache['audio'] = None
-        audio_cache['sr'] = None
-        audio_cache['audio_url'] = None
-        audio_cache['pitch'] = {
-            'audio': None,
-            'audio_url': None,
-            'sr': None,
-            'pitch': None,
-            'smoothed_pitch': None,
-            'highlighted_section': None,
-            'x_axis': None,
-            'hop_sec_duration': None
-        }
-        audio_cache['dynamics'] = {
-            'audio': None,
-            'audio_url': None,
-            'sr': None,
-            'dynamics': None,
-            'smoothed_dynamics': None,
-            'highlighted_section': None,
-            'x_axis': None
-        }
-
-        audio_cache['hash'] = file_hash
-
-        # Update session cache
-        session['audio_cache'] = audio_cache
+def load_and_process_audio(file_bytes, sample_rate=44100, return_path=True):
+    """
+    Simple function to load audio from file bytes and return processed audio data.
+    No caching logic - just loads, trims, and returns audio with URL.
+    """
+    try:
+        file_stream = convert_to_wav_if_needed(file_bytes, return_path=return_path)
+        audio, sr = load_audio(file_stream, sample_rate=sample_rate)
+        audio, _ = librosa.effects.trim(audio, top_db=20)
+        
+        file_hash = get_file_hash(file_bytes)
+        audio_url = get_audio_url(audio, file_hash, sr=sr)
+        
+        return audio, sr, audio_url, None
+        
+    except Exception as e:
+        print(f"Error loading audio: {e}")
+        return None, None, None, str(e)
     
-    if audio_cache["sr"] == None or audio_cache["sr"] != sample_rate:
-        try:
-            file_stream = convert_to_wav_if_needed(file_bytes, return_path=return_path)
-            audio, sr = load_audio(file_stream, sample_rate=sample_rate)
-            audio, _ = librosa.effects.trim(audio, top_db=20)
+def clear_cache_if_new_file(file_bytes):
+    """
+    Check if this is a new file and clear all feature caches if so.
+    """
+    audio_cache = get_user_cache()
+    user_id = get_user_id_from_token()
+    
+    if not audio_cache or not user_id:
+        return
+    
+    file_hash = get_file_hash(file_bytes)
+    jwt_manager = get_jwt_manager()
+    current_hash = jwt_manager.user_cache[user_id].get('current_file_hash')
+    
+    if current_hash != file_hash:
+        print("New file detected, clearing all feature caches...")
+        # Clear all feature caches
+        for feature in ['pitch', 'dynamics', 'tempo', 'vibrato', 'phonation']:
+            if feature in jwt_manager.user_cache[user_id]:
+                for key in jwt_manager.user_cache[user_id][feature]:
+                    jwt_manager.user_cache[user_id][feature][key] = None
+        
+        # Store the new file hash
+        jwt_manager.user_cache[user_id]['current_file_hash'] = file_hash
 
-            audio_url = get_audio_url(audio, file_hash, sr=sr)
+# def get_cached_or_loaded_audio(file_bytes, sample_rate=44100, return_path=True):
+#     audio_cache = get_user_cache()
+#     file_hash = get_file_hash(file_bytes)
 
-        except Exception as e:
-            print(f"Error loading audio: {e}")
-            return None, None, None, str(e)
+#     if audio_cache["hash"] != file_hash:
+#         print("Cache miss or hash mismatch, reloading audio...")  
+#         audio_cache['hash'] = file_hash
+#         audio_cache['audio'] = None
+#         audio_cache['sr'] = None
+#         audio_cache['audio_url'] = None
+#         audio_cache['pitch'] = {
+#             'audio': None,
+#             'audio_url': None,
+#             'sr': None,
+#             'pitch': None,
+#             'smoothed_pitch': None,
+#             'highlighted_section': None,
+#             'x_axis': None,
+#             'hop_sec_duration': None
+#         }
+#         audio_cache['dynamics'] = {
+#             'audio': None,
+#             'audio_url': None,
+#             'sr': None,
+#             'dynamics': None,
+#             'smoothed_dynamics': None,
+#             'highlighted_section': None,
+#             'x_axis': None
+#         }
 
-        audio_cache['audio'] = audio.tolist() 
-        audio_cache['sr'] = sr
-        audio_cache['audio_url'] = audio_url
+#         audio_cache['hash'] = file_hash
 
-        # Update session cache
-        session['audio_cache'] = audio_cache
+#         # Update session cache
+#         session['audio_cache'] = audio_cache
+    
+#     if audio_cache["sr"] == None or audio_cache["sr"] != sample_rate:
+#         try:
+#             file_stream = convert_to_wav_if_needed(file_bytes, return_path=return_path)
+#             audio, sr = load_audio(file_stream, sample_rate=sample_rate)
+#             audio, _ = librosa.effects.trim(audio, top_db=20)
 
-    cached_audio = np.array(audio_cache["audio"]) if audio_cache["audio"] is not None else None
-    return cached_audio, audio_cache["sr"], audio_cache["audio_url"], None
+#             audio_url = get_audio_url(audio, file_hash, sr=sr)
+
+#         except Exception as e:
+#             print(f"Error loading audio: {e}")
+#             return None, None, None, str(e)
+
+#         audio_cache['audio'] = audio.tolist() 
+#         audio_cache['sr'] = sr
+#         audio_cache['audio_url'] = audio_url
+
+#         # Update session cache
+#         session['audio_cache'] = audio_cache
+
+#     cached_audio = np.array(audio_cache["audio"]) if audio_cache["audio"] is not None else None
+#     return cached_audio, audio_cache["sr"], audio_cache["audio_url"], None
 
 def convert_to_wav_if_needed(input_bytes, return_path=False):
     # Try reading the file as a WAV
@@ -158,9 +207,3 @@ def convert_to_wav_if_needed(input_bytes, return_path=False):
     else:
         with open(temp_out.name, 'rb') as f:
             return BytesIO(f.read())
-        
-def clear_user_cache():
-    """Clear the current user's audio cache."""
-    if 'audio_cache' in session:
-        del session['audio_cache']
-        print("User audio cache cleared")
