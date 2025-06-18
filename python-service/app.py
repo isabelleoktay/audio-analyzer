@@ -10,19 +10,24 @@ from flask_cors import CORS
 from flask_session import Session
 import redis
 
+from utils.jwt_manager import init_jwt_manager 
+
 from routes.pitch_route import pitch_blueprint
 from routes.dynamics_route import dynamics_blueprint
 from routes.tempo_route import tempo_blueprint
 from routes.audio_route import audio_blueprint
 from routes.vibrato_route import vibrato_blueprint
 from routes.phonation_route import phonation_blueprint
-from routes.session_route import session_blueprint
+from routes.auth_route import auth_blueprint
 
 logging.info("Loading VGGish model...")
 VGGISH = hub.load("https://tfhub.dev/google/vggish/1")
 logging.info("Successfully loaded VGGish model.")
 
 app = Flask(__name__)
+
+jwt_secret = os.environ.get('FLASK_SECRET_KEY', 'your_jwt_secret_key_here')
+init_jwt_manager(jwt_secret)
 
 # Environment-specific Redis configuration
 if os.getenv("FLASK_ENV") == "production":
@@ -74,7 +79,7 @@ app.register_blueprint(tempo_blueprint)
 app.register_blueprint(audio_blueprint)
 app.register_blueprint(vibrato_blueprint)
 app.register_blueprint(phonation_blueprint)
-app.register_blueprint(session_blueprint)
+app.register_blueprint(auth_blueprint)
 
 @app.before_request
 def make_session_permanent():

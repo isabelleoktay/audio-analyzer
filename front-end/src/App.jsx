@@ -5,7 +5,8 @@ import Layout from "./components/Layout.jsx";
 import NavBar from "./components/NavBar.jsx";
 import Analyzer from "./pages/Analyzer.jsx";
 import Testing from "./pages/Testing.jsx";
-import { cleanupTempFiles, cleanupSession } from "./utils/api.js";
+import { cleanupTempFiles } from "./utils/api.js";
+import { tokenManager } from "./utils/tokenManager.js";
 
 /**
  * The main application component for the Audio Analyzer frontend.
@@ -51,30 +52,17 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Clean up when user closes tab/browser
-      cleanupSession();
-    };
-
-    const handleVisibilityChange = () => {
-      // Clean up when user switches to another tab for extended period
-      if (document.visibilityState === "hidden") {
-        setTimeout(() => {
-          if (document.visibilityState === "hidden") {
-            cleanupSession();
-          }
-        }, 300000); // 5 minutes
+    // Initialize token when app starts
+    const initializeToken = async () => {
+      try {
+        await tokenManager.ensureValidToken();
+        console.log("App initialized with valid token");
+      } catch (error) {
+        console.error("Error initializing token:", error);
       }
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      cleanupSession(); // Clean up when component unmounts
-    };
+    initializeToken();
   }, []);
 
   return (

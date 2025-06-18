@@ -1,4 +1,4 @@
-from utils.audio_loader import get_cached_or_loaded_audio
+from utils.audio_loader import clear_cache_if_new_file
 from services.pitch_service import get_cached_or_calculated_pitch
 from feature_extraction.vibrato_utils import frequencies_to_piano_notes
 from feature_extraction.vibrato import (
@@ -8,13 +8,12 @@ from feature_extraction.vibrato import (
 )
 
 def process_vibrato(audio_bytes, method="crepe"):
+    clear_cache_if_new_file(audio_bytes)
 
-    # 1) Load & trim audio + get URL
-    audio, sr, audio_url, error = get_cached_or_loaded_audio(audio_bytes, sample_rate=16000, return_path=True)
+    # 1) Load & trim audio + get URL    
+    _, audio_url, sr, pitches, smoothed_pitches, _, x_axis, hop_sec_duration, error = get_cached_or_calculated_pitch(audio_bytes, method=method)
     if error:
-        return None, error
-    
-    audio, audio_url, sr, pitches, smoothed_pitches, _, x_axis, hop_sec_duration = get_cached_or_calculated_pitch(audio, sr, audio_url, method=method)
+        return None, None, None, None, None, None, error
 
     pitch_piano_notes = frequencies_to_piano_notes(smoothed_pitches)
     vibrato_data = extract_vibrato(pitches, smoothed_pitches, pitch_piano_notes)
