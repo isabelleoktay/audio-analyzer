@@ -1,4 +1,6 @@
 import numpy as np
+from flask import current_app
+import os
 
 from feature_extraction.dynamics import get_cached_or_calculated_dynamics
 from utils.audio_loader import get_user_cache, get_user_id_from_token, update_user_cache, load_and_process_audio, clear_cache_if_new_file
@@ -19,21 +21,33 @@ def get_cached_or_calculated_pitch(audio_bytes, sample_rate=16000, method="crepe
     user_id = get_user_id_from_token()
     
     if (audio_cache and audio_cache["pitch"]["pitch"] is not None and 
-        audio_cache["pitch"]["sr"] == sample_rate):
-        print("Cache hit for pitch")
-        # Convert cached lists back to numpy arrays when returning
-        cached_audio = np.array(audio_cache["pitch"]["audio"]) if audio_cache["pitch"]["audio"] is not None else None
-        cached_pitch = np.array(audio_cache["pitch"]["pitch"]) if audio_cache["pitch"]["pitch"] is not None else None
-        cached_smoothed = np.array(audio_cache["pitch"]["smoothed_pitch"]) if audio_cache["pitch"]["smoothed_pitch"] is not None else None
-        
-        return (cached_audio, audio_cache["pitch"]["audio_url"], audio_cache["pitch"]["sr"], 
-                cached_pitch, cached_smoothed,
-                audio_cache["pitch"]["highlighted_section"], audio_cache["pitch"]["x_axis"], 
-                audio_cache["pitch"]["hop_sec_duration"], None)  # No error
-    
+        audio_cache["pitch"]["sr"] == sample_rate and audio_cache["pitch"]["audio_url"] is not None):
+
+        audio_url = audio_cache["pitch"]["audio_url"]
+        if '/audio/' in audio_url:
+            filename = audio_url.split('/audio/')[-1]
+            file_path = os.path.join(current_app.config['AUDIO_FOLDER'], filename)
+            
+            if not os.path.exists(file_path):
+                print(f"Cached audio file {file_path} no longer exists, recalculating...")
+            else:
+                print("Cache hit for pitch")
+                # Convert cached lists back to numpy arrays when returning
+                cached_audio = np.array(audio_cache["pitch"]["audio"]) if audio_cache["pitch"]["audio"] is not None else None
+                cached_pitch = np.array(audio_cache["pitch"]["pitch"]) if audio_cache["pitch"]["pitch"] is not None else None
+                cached_smoothed = np.array(audio_cache["pitch"]["smoothed_pitch"]) if audio_cache["pitch"]["smoothed_pitch"] is not None else None
+                
+                return (cached_audio, audio_cache["pitch"]["audio_url"], audio_cache["pitch"]["sr"], 
+                        cached_pitch, cached_smoothed,
+                        audio_cache["pitch"]["highlighted_section"], audio_cache["pitch"]["x_axis"], 
+                        audio_cache["pitch"]["hop_sec_duration"], None)  # No error
+            
     # Need to calculate - get dynamics first (this will cache dynamics if not already cached)
     _, _, _, rms, _, _, _ = get_cached_or_calculated_dynamics(audio_bytes, sample_rate=44100)
+
+    audio_cache = get_user_cache()
     
+    print(f"Loading audio for pitch at {sample_rate}Hz")
     # Load audio at 16000 Hz for pitch extraction
     audio, sr, audio_url, error = load_and_process_audio(audio_bytes, sample_rate=16000)
     if error:
@@ -77,7 +91,7 @@ def get_cached_or_calculated_pitch(audio_bytes, sample_rate=16000, method="crepe
         audio_cache["pitch"]["audio_url"] = audio_url
         audio_cache["pitch"]["hop_sec_duration"] = hop_sec
 
-        update_user_cache(user_id, {"pitch": audio_cache["pitch"]})
+        update_user_cache(user_id, audio_cache)
 
     return audio, audio_url, sr, pitch, smoothed_pitch, highlighted, x_axis, hop_sec, None  
 

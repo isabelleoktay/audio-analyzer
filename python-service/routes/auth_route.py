@@ -5,18 +5,13 @@ auth_blueprint = Blueprint('auth', __name__)
 
 @auth_blueprint.route('/python-service/auth/token', methods=['POST'])
 def generate_token():
-    """Generate a new JWT token for a user session"""
     jwt_manager = get_jwt_manager()
-    
+
     if not jwt_manager:
         return jsonify({'error': 'JWT manager not initialized'}), 500
-    
-    token = jwt_manager.generate_token()
-    
-    return jsonify({
-        'token': token,
-        'message': 'Token generated successfully'
-    }), 200
+
+    token = jwt_manager.generate_new_user()
+    return jsonify({'token': token, 'message': 'Token generated successfully'}), 200
 
 @auth_blueprint.route('/python-service/auth/verify', methods=['POST'])
 def verify_token():
@@ -27,6 +22,7 @@ def verify_token():
         return jsonify({'error': 'Token is required'}), 400
     
     token = data.get('token')
+    print(f"Generated token: {token}")
     jwt_manager = get_jwt_manager()
     
     if not jwt_manager:

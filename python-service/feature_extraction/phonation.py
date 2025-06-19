@@ -1,17 +1,11 @@
-from config import PHONATION_DIMENSION, PHONATION_VGGISH_URL, PHONATION_MODEL_PATH
+from config import PHONATION_DIMENSION, VGGISH, PHONATION_MODEL
 
-import librosa
 import numpy as np
-import tensorflow_hub as hub
 from keras.models import load_model
 from keras.preprocessing.sequence import pad_sequences
 import logging
 
 logging.basicConfig(level=logging.INFO)
-
-logging.info("Loading VGGish model...")
-VGGISH = hub.load('https://tfhub.dev/google/vggish/1')
-logging.info("Successfully loaded VGGish model.")
 
 def extract_phonation(audio):
 
@@ -26,13 +20,6 @@ def extract_phonation(audio):
     
     window_size = PHONATION_DIMENSION
     hop_size = window_size // 2 
-
-    # 2) Load phonation classifier
-    try:
-        logging.info("Loading phonation model...")
-        phonation_model = load_model(PHONATION_MODEL_PATH)
-    except Exception as e:
-        raise RuntimeError(f"Failed to load phonation model from path '{PHONATION_MODEL_PATH}': {e}")
     
     if window_size > audio_embeddings.shape[0]:
         raise ValueError("Window size exceeds the dimensions of audio embeddings.")
@@ -50,7 +37,7 @@ def extract_phonation(audio):
         window_feats_padded = np.expand_dims(window_feats_padded, -1)  # add channel dim
 
         logging.info("Predicting window...")
-        preds = phonation_model.predict(window_feats_padded)  # shape: (1, num_classes)
+        preds = PHONATION_MODEL.predict(window_feats_padded)  # shape: (1, num_classes)
         all_preds.append(preds[0])  # collect the prediction vector
         logging.info("Successfully predicted window...")
 
