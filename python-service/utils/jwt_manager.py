@@ -1,109 +1,77 @@
-import jwt
-import uuid
+import os
+import json
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
+import jwt
+
 
 class JWTManager:
-    def __init__(self, secret_key: str, expiration_hours: int = 24):
+    def __init__(self, secret_key=None, redis_client=None, expiration_hours=24):
         self.secret_key = secret_key
         self.expiration_hours = expiration_hours
-        # In-memory cache that clears on restart
-        self.user_cache: Dict[str, Dict] = {}
-    
-    def generate_token(self) -> str:
-        """Generate a new JWT token with a unique user ID"""
-        user_id = str(uuid.uuid4())
+        self.redis_client = redis_client
+        self.user_cache = {}  # fallback in-memory cache
+
+    def generate_token(self, user_id: str) -> str:
         payload = {
             'user_id': user_id,
             'exp': datetime.utcnow() + timedelta(hours=self.expiration_hours),
             'iat': datetime.utcnow()
         }
-        
-        token = jwt.encode(payload, self.secret_key, algorithm='HS256')
-        
-        # Initialize cache for this user
-        self.user_cache[user_id] = {
-            'current_file_hash': None,
-            'pitch': {
-                'audio': None,
-                'sr': None,
-                'pitch': None,
-                'smoothed_pitch': None,
-                'highlighted_section': None,
-                'x_axis': None,
-                'audio_url': None,
-                'hop_sec_duration': None
-            },
-            'dynamics': {
-                'audio': None,
-                'sr': None,
-                'audio_url': None,
-                'dynamics': None,
-                'smoothed_dynamics': None,
-                'highlighted_section': None,
-                'x_axis': None,
-            },
-            'tempo': {
-                'audio': None,
-                'sr': None,
-                'audio_url': None,
-                'tempo': None,
-                'beats': None
-            },
-            'vibrato': {
-                'audio': None,
-                'sr': None,
-                'audio_url': None,
-                'vibrato_rate': None,
-                'vibrato_extent': None,
-                'highlighted_section': None,
-            },
-            'phonation': {
-                'audio': None,
-                'sr': None,
-                'audio_url': None,
-                'jitter': None,
-                'shimmer': None,
-                'hnr': None
-            }
-        }
-        
-        return token
-    
-    def verify_token(self, token: str) -> Optional[str]:
-        """Verify JWT token and return user_id if valid"""
+        return jwt.encode(payload, self.secret_key, algorithm='HS256')
+
+    def verify_token(self, token: str) -> str | None:
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=['HS256'])
-            user_id = payload['user_id']
-            
-            # Check if user exists in cache
-            if user_id not in self.user_cache:
-                return None
-                
-            return user_id
+            return payload.get('user_id')
         except jwt.ExpiredSignatureError:
-            return None
+            print("Token expired")
         except jwt.InvalidTokenError:
-            return None
-    
-    def get_user_cache(self, user_id: str) -> Optional[Dict]:
-        """Get user's cache data"""
+            print("Invalid token")
+        return None
+
+    def _get_cache_key(self, user_id: str) -> str:
+        return f"user_cache:{user_id}"
+
+    def get_user_cache(self, user_id: str) -> dict | None:
+        cache_key = self._get_cache_key(user_id)
+        # print(f"Fetching cache for user_id: {user_id}, cache_key: {cache_key}")
+        if self.redis_client:
+            data = self.redis_client.get(cache_key)
+            return json.loads(data) if data else None
         return self.user_cache.get(user_id)
-    
-    def clear_expired_users(self):
-        """Clean up expired tokens (optional background task)"""
-        # This would require storing expiration times separately
-        # For now, we rely on restart to clear everything
-        pass
 
-# Global JWT manager instance
-jwt_manager = None
+    def update_user_cache(self, user_id: str, cache_data: dict) -> None:
+        cache_key = self._get_cache_key(user_id)
+        if self.redis_client:
+            print(f"Updating cache for user_id: {user_id}, cache_key: {cache_key}")
+            self.redis_client.setex(
+                cache_key,
+                timedelta(hours=self.expiration_hours),
+                json.dumps(cache_data, default=str)
+            )
+        else:
+            self.user_cache[user_id] = cache_data
 
-def init_jwt_manager(secret_key: str):
-    global jwt_manager
-    jwt_manager = JWTManager(secret_key)
-    return jwt_manager
 
-def get_jwt_manager():
-    global jwt_manager
-    return jwt_manager
+# --- Singleton pattern to store shared instance ---
+_jwt_manager = None
+
+def init_jwt_manager(secret_key=None, redis_client=None, expiration_hours=24):
+    """
+    Initializes the singleton JWT manager with optional overrides.
+    Should be called during app startup (e.g., inside create_app()).
+    """
+    global _jwt_manager
+    if _jwt_manager is None:
+        if not secret_key:
+            secret_key = os.getenv("JWT_SECRET_KEY", "dev-secret-key")
+        _jwt_manager = JWTManager(secret_key=secret_key, redis_client=redis_client, expiration_hours=expiration_hours)
+
+def get_jwt_manager() -> JWTManager:
+    """
+    Returns the singleton instance of JWTManager.
+    Assumes `init_jwt_manager()` was already called.
+    """
+    if _jwt_manager is None:
+        raise RuntimeError("JWTManager not initialized. Call init_jwt_manager() first.")
+    return _jwt_manager
