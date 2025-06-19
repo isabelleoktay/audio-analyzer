@@ -22,7 +22,8 @@ def process_tempo(audio_bytes):
             }
         ],
         'sample_rate': sr,
-        'audio_url': audio_url
+        'audio_url': audio_url,
+        'duration': audio_duration_sec
     }
 
     return result, None

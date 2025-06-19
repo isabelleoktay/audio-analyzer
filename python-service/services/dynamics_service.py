@@ -4,7 +4,8 @@ from feature_extraction.dynamics import get_cached_or_calculated_dynamics
 def process_dynamics(audio_bytes):
     clear_cache_if_new_file(audio_bytes)
 
-    _, audio_url, sr, _, smoothed_rms, highlighted_section, _ = get_cached_or_calculated_dynamics(audio_bytes, sample_rate=44100, return_path=True)
+    audio, audio_url, sr, _, smoothed_rms, highlighted_section, _ = get_cached_or_calculated_dynamics(audio_bytes, sample_rate=44100, return_path=True)
+    audio_duration = len(audio) / sr
 
     result = {
         'data': [
@@ -15,7 +16,8 @@ def process_dynamics(audio_bytes):
             }
         ],
         'sample_rate': sr,
-        'audio_url': audio_url
+        'audio_url': audio_url,
+        'duration': audio_duration 
     }
 
     return result, None

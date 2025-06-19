@@ -32,6 +32,7 @@ const AnalysisButtons = ({
           data: featureResult.data,
           sampleRate: featureResult.sample_rate,
           audioUrl: featureResult.audio_url || "",
+          duration: featureResult.duration || 0,
         };
 
         setAudioFeatures((prev) => ({

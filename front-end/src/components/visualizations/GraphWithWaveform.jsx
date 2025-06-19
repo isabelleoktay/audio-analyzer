@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import LineGraph from "./LineGraph";
+import { useEffect, useState, useCallback } from "react";
+import LineGraph from "./LineGraph/LineGraph";
 import WaveformPlayer from "./WaveformPlayer";
 import LoadingSpinner from "../LoadingSpinner";
 
@@ -14,8 +14,24 @@ const GraphWithWaveform = ({
   audioURL,
   featureData,
   selectedAnalysisFeature,
+  audioDuration,
 }) => {
   const [selectedDataIndex, setSelectedDataIndex] = useState(0);
+  const [chartState, setChartState] = useState(null);
+
+  const handleZoomChange = useCallback((changeData) => {
+    setChartState(changeData);
+
+    console.log("Chart updated:", {
+      zoom: changeData.zoom,
+      isZoomed: changeData.zoom.isZoomed,
+    });
+  }, []);
+
+  // Function to convert frame indices to time using your original formula
+  const frameToTime = (frameIndex, audioDuration, numFrames) => {
+    return frameIndex * (audioDuration / numFrames);
+  };
 
   const handleButtonClick = (index) => {
     setSelectedDataIndex(index);
@@ -108,6 +124,7 @@ const GraphWithWaveform = ({
                       ? featureData[selectedDataIndex]?.highlighted?.data
                       : []
                   }
+                  onZoomChange={handleZoomChange}
                   yMin={
                     featureData[selectedDataIndex]?.label === "pitch" ||
                     featureData[selectedDataIndex]?.label === "vibrato"
@@ -145,6 +162,29 @@ const GraphWithWaveform = ({
                 }
                 waveColor="#E0E0E0"
                 progressColor="#90F1EF"
+                startTime={
+                  chartState?.zoom?.isZoomed &&
+                  audioDuration &&
+                  featureData[selectedDataIndex]
+                    ? frameToTime(
+                        chartState.zoom.startIndex,
+                        audioDuration,
+                        featureData[selectedDataIndex].data.length
+                      )
+                    : 0
+                }
+                endTime={
+                  chartState?.zoom?.isZoomed &&
+                  audioDuration &&
+                  featureData[selectedDataIndex]
+                    ? frameToTime(
+                        chartState.zoom.endIndex,
+                        audioDuration,
+                        featureData[selectedDataIndex].data.length
+                      )
+                    : audioDuration || undefined
+                }
+                audioDuration={audioDuration}
               />
             </div>
           </>
