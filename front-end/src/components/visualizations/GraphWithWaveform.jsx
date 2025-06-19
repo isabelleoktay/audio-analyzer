@@ -109,10 +109,10 @@ const GraphWithWaveform = ({
                       : []
                   }
                   yMin={
-                    featureData[selectedDataIndex]?.label === "pitch"
+                    featureData[selectedDataIndex]?.label === "pitch" ||
+                    featureData[selectedDataIndex]?.label === "vibrato"
                       ? calculatePitchYMin(featureData[selectedDataIndex].data)
-                      : featureData[selectedDataIndex]?.label === "tempo" ||
-                        featureData[selectedDataIndex]?.label === "vibrato"
+                      : featureData[selectedDataIndex]?.label === "tempo"
                       ? Math.max(
                           0,
                           Math.min(...featureData[selectedDataIndex].data) - 50

@@ -41,19 +41,22 @@ const LineGraph = ({
       yMax !== undefined ? yMax : yExtent[1],
     ];
     const yScale = d3.scaleLinear().domain(yDomain).range([innerHeight, 0]);
+    const filteredData = data.map((d) => (d < yDomain[0] ? null : d));
 
     const line = d3
       .line()
       .x((d, i) => xScale(i))
       .y((d) => yScale(d))
-      .curve(d3.curveMonotoneX);
+      .curve(d3.curveMonotoneX)
+      .defined((d) => d !== null);
 
     const area = d3
       .area()
       .x((d, i) => xScale(i))
       .y0(yScale(yDomain[0]))
       .y1((d) => yScale(d))
-      .curve(d3.curveMonotoneX);
+      .curve(d3.curveMonotoneX)
+      .defined((d) => d !== null);
 
     const g = svg
       .append("g")
@@ -182,14 +185,6 @@ const LineGraph = ({
         id: "extent-gradient",
         yDomain,
         colorStops,
-        // colorStops: [
-        //   { value: yMax, color: "yellow" },
-        //   { value: 7, color: "yellow" },
-        //   { value: 7, color: "green" },
-        //   { value: 2, color: "green" },
-        //   { value: 2, color: "yellow" },
-        //   { value: yMin, color: "yellow" },
-        // ],
       });
 
       g.append("rect")
@@ -202,86 +197,12 @@ const LineGraph = ({
         .lower();
     }
 
-    // if (feature === "rates" || feature === "extents") {
-    //   const [yMin, yMax] = yDomain;
-
-    //   // Clamp the band around y=6 only if it's within the visible domain
-    //   const bandHalfSize = (yMax - yMin) / 6; // control how much color banding you want
-
-    //   const rateGradient = defs
-    //     .append("linearGradient")
-    //     .attr("id", "rate-gradient")
-    //     .attr("x1", "0%")
-    //     .attr("y1", "0%")
-    //     .attr("x2", "0%")
-    //     .attr("y2", "100%");
-
-    //   const getOffset = (value) => {
-    //     // Clamp offset to [0, 100]
-    //     return Math.max(
-    //       0,
-    //       Math.min(100, ((yMax - value) / (yMax - yMin)) * 100)
-    //     );
-    //   };
-
-    //   const gradientStops = [
-    //     { offset: 0, color: "#ff776b" },
-    //     { offset: getOffset(6 + 2 * bandHalfSize), color: "#ffb36b" },
-    //     { offset: getOffset(6 + bandHalfSize), color: "#FFCB6B" },
-    //     { offset: getOffset(6), color: "#7fff6b" }, // target line
-    //     { offset: getOffset(6 - bandHalfSize), color: "#FFCB6B" },
-    //     { offset: getOffset(6 - 2 * bandHalfSize), color: "#ffb36b" },
-    //     { offset: 100, color: "#ff776b" },
-    //   ];
-
-    //   gradientStops.forEach(({ offset, color }) => {
-    //     rateGradient
-    //       .append("stop")
-    //       .attr("offset", `${offset}%`)
-    //       .attr("stop-color", color);
-    //   });
-
-    //   g.append("rect")
-    //     .attr("x", 0)
-    //     .attr("y", 0)
-    //     .attr("width", innerWidth)
-    //     .attr("height", innerHeight)
-    //     .attr("fill", "url(#rate-gradient)")
-    //     .attr("opacity", 0.5)
-    //     .lower();
-    // }
-
-    // const xAxisGroup = g
-    //   .append("g")
-    //   .attr("transform", `translate(0,${innerHeight})`)
-    //   .call(
-    //     hasXLabels
-    //       ? d3
-    //           .axisBottom(xScale)
-    //           .tickValues(
-    //             Array.from({ length: 10 }, (_, i) =>
-    //               i === 9
-    //                 ? xLabels[xLabels.length - 1]
-    //                 : xLabels[Math.floor(i * ((xLabels.length - 1) / 9))]
-    //             )
-    //           )
-    //       : d3.axisBottom(xScale).ticks(10)
-    //   );
-
     const xAxisGroup = g
       .append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(xScale).ticks(0));
 
     const yAxisGroup = g.append("g").call(yAxis);
-
-    // [xAxisGroup, yAxisGroup].forEach((axis) => {
-    //   axis
-    //     .selectAll("path, line")
-    //     .attr("stroke", "#E0E0E0")
-    //     .attr("stroke-opacity", 0.25);
-    //   axis.selectAll("text").attr("fill", "#E0E0E0").attr("fill-opacity", 0.7);
-    // });
 
     [xAxisGroup, yAxisGroup].forEach((axis) => {
       axis
@@ -295,14 +216,6 @@ const LineGraph = ({
       .attr("fill", "#E0E0E0")
       .attr("fill-opacity", 0.7);
 
-    // g.append("text")
-    //   .attr("x", innerWidth / 2)
-    //   .attr("y", innerHeight + 40)
-    //   .attr("text-anchor", "middle")
-    //   .attr("fill", "#E0E0E0")
-    //   .attr("opacity", 0.7)
-    //   .text(xLabel);
-
     g.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", -35)
@@ -313,16 +226,51 @@ const LineGraph = ({
       .text(yLabel);
 
     g.append("path")
-      .datum(data)
+      .datum(filteredData)
       .attr("fill", "url(#line-gradient)")
       .attr("d", area);
 
     g.append("path")
-      .datum(data)
+      .datum(filteredData)
       .attr("fill", "none")
       .attr("stroke", lineColor)
       .attr("stroke-width", 2)
       .attr("d", line);
+
+    const silenceRanges = [];
+    let silenceStart = null;
+
+    filteredData.forEach((d, i) => {
+      if (d === null && silenceStart === null) {
+        silenceStart = i;
+      } else if (d !== null && silenceStart !== null) {
+        silenceRanges.push({ start: silenceStart, end: i - 1 });
+        silenceStart = null;
+      }
+    });
+
+    // Handle case where silence extends to the end
+    if (silenceStart !== null) {
+      silenceRanges.push({ start: silenceStart, end: filteredData.length - 1 });
+    }
+
+    // Draw silence indicators
+    silenceRanges.forEach(({ start, end }) => {
+      const width = xScale(end) - xScale(start);
+      if (width > 5) {
+        // Only show for gaps wider than 5 pixels
+        // Option A: Dotted line at bottom
+        g.append("line")
+          .attr("x1", xScale(start))
+          .attr("x2", xScale(end))
+          .attr("y1", innerHeight - 5)
+          .attr("y2", innerHeight - 5)
+          .attr("stroke", "#E0E0E0")
+          .attr("stroke-width", 2)
+          .attr("stroke-dasharray", "3,3")
+          .attr("opacity", 0.7);
+      }
+    });
 
     highlightedSections.forEach(({ start, end }) => {
       g.append("rect")
@@ -390,22 +338,52 @@ const LineGraph = ({
         const [mx, my] = d3.pointer(event);
         const x0 = xScale.invert(mx);
         const i = Math.round(x0);
-        const dVal = data[i];
+        const dVal = data[i]; // Original data value
+        const filteredVal = filteredData[i]; // Filtered value (could be null)
 
         if (dVal !== undefined) {
           const xCoord = xScale(i);
-          const yCoord = yScale(dVal);
+          const isSilence = filteredVal === null;
 
-          // Check if the mouse y-position is close to the line's y-coordinate.
-          const distance = Math.abs(my - yCoord);
-          const threshold = 10; // pixels
+          // Determine position and threshold based on data type
+          const yCoord = isSilence ? innerHeight - 5 : yScale(filteredVal); // Position circle on silence line
+          const threshold = isSilence ? 20 : 10;
+          const distance = Math.abs(my - (isSilence ? innerHeight : yCoord));
 
-          if (distance < threshold) {
+          if (distance < threshold || (isSilence && my > innerHeight - 30)) {
+            // Show tooltip
             focus
               .style("display", null)
               .attr("transform", `translate(${xCoord},${yCoord})`);
-            // Update the label text within the labelGroup.
-            focus.select(".labelGroup").select("text").text(dVal.toFixed(2));
+
+            // Set text content
+            const displayText = isSilence ? "silence" : dVal.toFixed(2);
+            focus.select(".labelGroup").select("text").text(displayText);
+
+            // Apply conditional styling
+            const bgColor = isSilence ? "#E0E0E0" : "#FF89BB";
+            const textColor = isSilence ? "#1E1E2F" : "#E0E0E0";
+            const opacity = 0.5;
+
+            // Style the circle differently for silence
+            focus
+              .select("circle")
+              .attr("fill", isSilence ? "#E0E0E0" : "#FF89BB")
+              .attr("opacity", isSilence ? 0.8 : 1);
+
+            focus
+              .select(".labelGroup")
+              .select("rect")
+              .attr("fill", bgColor)
+              .attr("opacity", opacity);
+
+            focus
+              .select(".labelGroup")
+              .select("path")
+              .attr("fill", bgColor)
+              .attr("opacity", opacity);
+
+            focus.select(".labelGroup").select("text").attr("fill", textColor);
           } else {
             focus.style("display", "none");
           }
