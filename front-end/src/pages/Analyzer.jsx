@@ -214,6 +214,9 @@ const Analyzer = ({
                         audioFeatures[selectedAnalysisFeature]?.data || []
                       }
                       selectedAnalysisFeature={selectedAnalysisFeature}
+                      audioDuration={
+                        audioFeatures[selectedAnalysisFeature]?.duration
+                      }
                     />
                   </div>
                   <div className="flex flex-row justify-end gap-2 items-center mt-2">

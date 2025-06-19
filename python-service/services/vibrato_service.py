@@ -11,9 +11,11 @@ def process_vibrato(audio_bytes, method="crepe"):
     clear_cache_if_new_file(audio_bytes)
 
     # 1) Load & trim audio + get URL    
-    _, audio_url, sr, pitches, smoothed_pitches, _, x_axis, hop_sec_duration, error = get_cached_or_calculated_pitch(audio_bytes, method=method)
+    audio, audio_url, sr, pitches, smoothed_pitches, _, x_axis, hop_sec_duration, error = get_cached_or_calculated_pitch(audio_bytes, method=method)
     if error:
         return None, None, None, None, None, None, error
+
+    audio_duration = len(audio) / sr
 
     pitch_piano_notes = frequencies_to_piano_notes(smoothed_pitches)
     vibrato_data = extract_vibrato(pitches, smoothed_pitches, pitch_piano_notes)
@@ -38,7 +40,8 @@ def process_vibrato(audio_bytes, method="crepe"):
             }
         ],
         'sample_rate': sr,
-        'audio_url': audio_url
+        'audio_url': audio_url,
+        'duration': audio_duration
     }
 
     return result, None
