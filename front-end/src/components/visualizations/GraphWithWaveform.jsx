@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import LineGraph from "./LineGraph/LineGraph";
 import WaveformPlayer from "./WaveformPlayer";
 import LoadingSpinner from "../LoadingSpinner";
@@ -20,6 +20,7 @@ const GraphWithWaveform = ({
 }) => {
   const [selectedDataIndex, setSelectedDataIndex] = useState(0);
   const [chartState, setChartState] = useState(null);
+  const emptyHighlightedSections = useMemo(() => [], []);
 
   const handleZoomChange = useCallback((changeData) => {
     setChartState(changeData);
@@ -147,7 +148,7 @@ const GraphWithWaveform = ({
                       featureData[selectedDataIndex]?.highlighted.data.length >
                         0
                         ? featureData[selectedDataIndex]?.highlighted?.data
-                        : []
+                        : emptyHighlightedSections
                     }
                     onZoomChange={handleZoomChange}
                     yMin={
