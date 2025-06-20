@@ -1,5 +1,7 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+from dotenv import load_dotenv
+load_dotenv()
 
 from flask import Flask
 from flask_cors import CORS
