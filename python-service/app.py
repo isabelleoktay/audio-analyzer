@@ -23,7 +23,7 @@ redis_client = get_redis_client()
 jwt_secret = os.environ.get('FLASK_SECRET_KEY', 'your_jwt_secret_key_here')
 init_jwt_manager(secret_key=jwt_secret, redis_client=redis_client)
 
-CORS(app)
+CORS(app, supports_credentials=True)
 
 if os.getenv("FLASK_ENV") == "production":
     app.config["ENV"] = "production"
