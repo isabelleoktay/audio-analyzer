@@ -69,12 +69,7 @@ const processFeatures = async (audioFile, feature) => {
     if (feature === "dynamics") {
       const response = await pythonClient.post(
         "/python-service/process-dynamics",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        formData
       );
       return response.data;
     } else if (feature === "pitch") {
@@ -94,34 +89,19 @@ const processFeatures = async (audioFile, feature) => {
     } else if (feature === "tempo") {
       const response = await pythonClient.post(
         "/python-service/process-tempo",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        formData
       );
       return response.data;
     } else if (feature === "vibrato") {
       const response = await pythonClient.post(
         "/python-service/process-vibrato",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        formData
       );
       return response.data;
     } else if (feature === "phonation") {
       const response = await pythonClient.post(
         "/python-service/process-phonation",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        formData
       );
       return response.data;
     } else {
@@ -167,12 +147,7 @@ const uploadAudioToPythonService = async (
   try {
     const response = await pythonClient.post(
       "/python-service/audio/upload",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
+      formData
     );
     return response.data;
   } catch (error) {
