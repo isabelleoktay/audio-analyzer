@@ -6,7 +6,7 @@ const InstrumentSelectionCards = ({ instruments, handleInstrumentSelect }) => {
       <h2 className="text-xl mb-6 text-lightgray text-center tracking-widest">
         Which instrument are you analyzing today?
       </h2>
-      <div className="flex lg:flex-row flex-col gap-6">
+      <div className="flex lg:flex-row flex-col gap-6 items-center justify-center">
         {instruments.map((inst) => (
           <InstrumentCard
             key={inst.label}
