@@ -51,4 +51,4 @@ def home():
     return f"Welcome to the Audio Processing API! Cache: {cache_type}"
 
 if __name__ == '__main__':
-    app.run(app, debug=False, use_reloader=False)
+    app.run(debug=False, use_reloader=False)
