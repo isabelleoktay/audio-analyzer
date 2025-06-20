@@ -2,7 +2,7 @@ import InstrumentCard from "./InstrumentCard.jsx";
 
 const InstrumentSelectionCards = ({ instruments, handleInstrumentSelect }) => {
   return (
-    <div className="mt-64 items-center justify-items-center">
+    <div className="mt-20 lg:mt-64 items-center justify-items-center">
       <h2 className="text-xl mb-6 text-lightgray tracking-widest">
         Which instrument are you analyzing today?
       </h2>
