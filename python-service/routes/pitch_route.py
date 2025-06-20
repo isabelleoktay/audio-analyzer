@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from services.pitch_service import process_pitch
 from utils.json_utils import convert_to_builtin_types
 
@@ -9,6 +9,13 @@ def handle_pitch():
     audio_file = request.files.get('audioFile')
     if not audio_file:
         return jsonify({'error': 'No file uploaded'}), 400
+    
+    current_app.logger.info(f"Request files keys: {list(request.files.keys())}")
+    current_app.logger.info(f"Request form keys: {list(request.form.keys())}")
+
+    if 'audioFile' not in request.files:
+        current_app.logger.error("No audioFile found in request.files")
+        return {"error": "No audioFile provided"}, 400
 
     result, error = process_pitch(audio_file.read(), sample_rate=16000, method="crepe")
     result = convert_to_builtin_types(result)
