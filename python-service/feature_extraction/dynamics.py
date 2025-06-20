@@ -46,7 +46,7 @@ def get_cached_or_calculated_dynamics(audio_bytes, sample_rate=44100, return_pat
     print(f"Loading audio for dynamics at {sample_rate}Hz")
     audio, sr, audio_url, error = load_and_process_audio(audio_bytes, sample_rate=sample_rate, return_path=return_path)
     if error:
-        return None, None, None, None, None, None
+        return None, None, None, None, None, None, error
     
     # Calculate RMS values
     rms = librosa.feature.rms(y=audio, frame_length=N_FFT, hop_length=HOP_LENGTH)
