@@ -53,7 +53,7 @@ const GraphWithWaveform = ({
 
   return (
     <div
-      className="flex flex-col items-center justify-center"
+      className="flex flex-col items-center justify-center w-full"
       style={{ width, height: graphHeight + 100 }}
     >
       {!selectedAnalysisFeature ? (
@@ -102,7 +102,7 @@ const GraphWithWaveform = ({
               </div>
             </div>
 
-            <div className="flex flex-col items-center" style={{ width }}>
+            <div className="flex flex-col items-center">
               <Tooltip
                 text="click and drag to zoom in on the graph"
                 position="top"
@@ -110,12 +110,9 @@ const GraphWithWaveform = ({
                 tooltipMode={tooltipMode}
               >
                 <div
+                  className="w-full flex items-center justify-center"
                   style={{
                     height: graphHeight,
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
                   }}
                 >
                   <LineGraph

@@ -149,7 +149,7 @@ const Analyzer = ({
   }, [setUploadsEnabled]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full">
       <ConsentModal isOpen={showConsentModal} onConsent={handleConsent} />
 
       <div
@@ -159,14 +159,14 @@ const Analyzer = ({
       >
         {selectedInstrument ? (
           /* Show smaller intrument selection buttons at the top of screen if an instrument is already selected. */
-          <div className="mt-28">
+          <div className="mt-20 lg:mt-28 mb-8 w-full lg:w-1/2">
             <Tooltip
               text="select an instrument to analyze"
               show={tooltipMode === "global"}
               tooltipMode={tooltipMode}
               className="w-full"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 lg:gap-6 mb-8 lg:mb-16">
                 {instrumentButtons.map((inst) => (
                   <InstrumentButton
                     key={inst.label}
@@ -192,6 +192,7 @@ const Analyzer = ({
                   audioURL={audioURL}
                   setAudioURL={setAudioURL}
                   handleDownloadRecording={handleDownloadRecording}
+                  className="w-full "
                 />
               ) : (
                 !selectedAnalysisFeature && (
@@ -235,31 +236,43 @@ const Analyzer = ({
                   />
                 </Tooltip>
                 {selectedAnalysisFeature && (
-                  <div className="flex flex-col w-full">
+                  <div className="flex flex-col w-full lg:w-fit">
                     <div className="text-xl font-semibold text-lightpink mb-1">
                       {uploadedFile.name}
                     </div>
-                    <div className="bg-lightgray/25 rounded-3xl w-full p-8">
-                      <GraphWithWaveform
-                        key={audioFeatures[selectedAnalysisFeature]?.audioUrl}
-                        audioURL={
-                          audioFeatures[selectedAnalysisFeature]?.audioUrl
-                        }
-                        featureData={
-                          audioFeatures[selectedAnalysisFeature]?.data || []
-                        }
-                        selectedAnalysisFeature={selectedAnalysisFeature}
-                        audioDuration={
-                          audioFeatures[selectedAnalysisFeature]?.duration
-                        }
-                        tooltipMode={tooltipMode}
-                      />
+                    <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
+                      {" "}
+                      {/* Add overflow-x-auto on mobile only */}
+                      <div className="w-full lg:min-w-[800px]">
+                        {" "}
+                        {/* Ensure 800px minimum width */}
+                        <GraphWithWaveform
+                          key={audioFeatures[selectedAnalysisFeature]?.audioUrl}
+                          audioURL={
+                            audioFeatures[selectedAnalysisFeature]?.audioUrl
+                          }
+                          featureData={
+                            audioFeatures[selectedAnalysisFeature]?.data || []
+                          }
+                          selectedAnalysisFeature={selectedAnalysisFeature}
+                          audioDuration={
+                            audioFeatures[selectedAnalysisFeature]?.duration
+                          }
+                          tooltipMode={tooltipMode}
+                        />
+                      </div>
                     </div>
-                    <div className="flex flex-row justify-end gap-2 items-center mt-2">
-                      <TertiaryButton onClick={handleDownloadRecording}>
+                    <div className="flex w-full flex-col lg:flex-row justify-end gap-2 items-center mt-2">
+                      <TertiaryButton
+                        onClick={handleDownloadRecording}
+                        className="w-full lg:w-auto"
+                      >
                         download file
                       </TertiaryButton>
-                      <TertiaryButton onClick={handleChangeFile}>
+                      <TertiaryButton
+                        onClick={handleChangeFile}
+                        className="w-full lg:w-auto"
+                      >
                         change file
                       </TertiaryButton>
                     </div>

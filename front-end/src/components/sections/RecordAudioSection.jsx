@@ -22,6 +22,7 @@ const RecordAudioSection = ({
   onChangeAttemptCount,
   updateSubjectData,
   attemptCount = 0,
+  className = "",
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -122,7 +123,7 @@ const RecordAudioSection = ({
   }, [setUploadedFile, setAudioBlob, setAudioURL, audioBlob]);
 
   return (
-    <div className="flex flex-col pointer-events-auto w-full">
+    <div className={`flex flex-col w-full ${className}`}>
       <div className="flex flex-row justify-between items-center align-bottom mb-2 w-full">
         <div>
           {(audioBlob || testingEnabled) && (
