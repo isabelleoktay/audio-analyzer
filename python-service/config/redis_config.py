@@ -9,6 +9,9 @@ def get_redis_client():
     """
     redis_client = None
     print("🔄 Initializing Redis client...")
+    print("FLASK_ENV:", os.getenv("FLASK_ENV"))
+    print("REDIS_HOST:", os.getenv("REDIS_HOST"))
+    print("REDIS_PASSWORD:", os.getenv("REDIS_PASSWORD"))
     
     try:
         if os.getenv("FLASK_ENV") == "production":
