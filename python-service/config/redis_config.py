@@ -8,12 +8,15 @@ def get_redis_client():
     Returns None if Redis connection fails.
     """
     redis_client = None
+    print("🔄 Initializing Redis client...")
     
     try:
         if os.getenv("FLASK_ENV") == "production":
+            print("getting production credentials...")
             redis_host = os.environ.get('REDIS_HOST', 'localhost')
             redis_port = int(os.environ.get('REDIS_PORT', 6379))
             redis_password = os.environ.get('REDIS_PASSWORD')
+            print(f"Connecting to Redis at {redis_host}:{redis_port} with password: {redis_password}")
             
             if redis_password:
                 encoded_password = urllib.parse.quote(redis_password)
