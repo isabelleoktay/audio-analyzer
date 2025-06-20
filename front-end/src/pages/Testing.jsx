@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 import ConsentCard from "../components/testing/ConsentCard";
 import IntroductionSection from "../components/testing/IntroductionSection";
@@ -16,27 +16,26 @@ import { uploadAudioToPythonService, uploadTestSubject } from "../utils/api";
 
 const TEST_FEATURES = ["pitch", "dynamics", "tempo"];
 
-const Testing = () => {
+const Testing = ({ setUploadsEnabled }) => {
+  const completedGroupsRef = useRef([]);
+
   const [currentStep, setCurrentStep] = useState("consent");
   const [testGroup, setTestGroup] = useState("feedback");
   const [subjectData, setSubjectData] = useState({});
   const [attemptCount, setAttemptCount] = useState(0);
-  const [completedGroups, setCompletedGroups] = useState([]);
   const [currentTestFeatureIndex, setCurrentTestFeatureIndex] = useState(0);
   const [feedbackStage, setFeedbackStage] = useState("before");
   const [selectedAnalysisFeature, setSelectedAnalysisFeature] = useState(null);
   const [audioFeatures, setAudioFeatures] = useState({});
   const [analyzeMode, setAnalyzeMode] = useState(false);
-  console.log(audioFeatures);
   const [remainingTime, setRemainingTime] = useState(600); // 10 minutes in seconds
-  const [isProceedButtonEnabled, setIsProceedButtonEnabled] = useState(false); // Tracks button state
+  const [isProceedButtonEnabled, setIsProceedButtonEnabled] = useState(false);
+  const [feedbackToolUsageCount, setFeedbackToolUsageCount] = useState(0);
 
   const [currentAudioName, setCurrentAudioName] = useState(null);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
-  console.log(audioBlob);
-  console.log(uploadedFile);
 
   const handleConsent = (consentGiven) => {
     if (consentGiven) {
@@ -52,6 +51,7 @@ const Testing = () => {
         ...prevData,
         consent: true,
         subjectId: newSubjectId,
+        feedbackToolUsageCount: 0,
         [`${testGroup}`]: {},
       }));
 
@@ -85,7 +85,7 @@ const Testing = () => {
     setAttemptCount(attemptCount + 1);
   };
 
-  const updateSubjectData = async () => {
+  const updateSubjectData = useCallback(async () => {
     let file;
     if (audioBlob) {
       file = new File([audioBlob], currentAudioName, {
@@ -164,9 +164,24 @@ const Testing = () => {
       );
       console.log(uploadTestSubjectRes);
     }
-  };
+  }, [
+    audioBlob,
+    currentAudioName,
+    testGroup,
+    feedbackStage,
+    currentTestFeatureIndex,
+    subjectData,
+    audioFeatures,
+  ]);
 
   const handleAnalyzeNewRecording = () => {
+    const newUsageCount =
+      currentStep === "feedback"
+        ? feedbackToolUsageCount + 1
+        : feedbackToolUsageCount;
+    if (currentStep === "feedback") {
+      setFeedbackToolUsageCount(newUsageCount);
+    }
     setAnalyzeMode(false);
     updateSubjectData();
     setAudioBlob(null);
@@ -181,7 +196,16 @@ const Testing = () => {
     setAnalyzeMode(true);
   };
 
-  const handleFinishTestingTool = () => {
+  const handleFinishTestingTool = useCallback(() => {
+    const newUsageCount = feedbackToolUsageCount + 1;
+    setFeedbackToolUsageCount(newUsageCount);
+
+    // Update subject data with the new usage count
+    setSubjectData((prevData) => ({
+      ...prevData,
+      feedbackToolUsageCount: newUsageCount,
+    }));
+
     updateSubjectData();
     setFeedbackStage("after");
     setCurrentStep("instructions");
@@ -196,7 +220,12 @@ const Testing = () => {
     setCurrentAudioName(fileName);
     setSelectedAnalysisFeature(null);
     setAudioFeatures({});
-  };
+  }, [
+    subjectData.subjectId,
+    currentTestFeatureIndex,
+    updateSubjectData,
+    feedbackToolUsageCount,
+  ]);
 
   const handleSubmitRecording = () => {
     updateSubjectData();
@@ -204,7 +233,7 @@ const Testing = () => {
       console.log(":D subject data already updated.");
     } else if (currentTestFeatureIndex < TEST_FEATURES.length - 1) {
       // Move to the next feature
-      setAttemptCount(0); // Reset attempts for the next feature
+      setAttemptCount(0);
       const newTestFeatureIndex = currentTestFeatureIndex + 1;
       setCurrentTestFeatureIndex(currentTestFeatureIndex + 1);
       setAudioBlob(null);
@@ -217,49 +246,47 @@ const Testing = () => {
     } else {
       console.log("All features completed. Submitting data...");
 
-      setCompletedGroups((prevGroups) => {
-        const updatedGroups = [...prevGroups, testGroup];
-        const testAnalyzer = feedbackStage === "before" ? true : false;
+      // Update completed groups using ref
+      completedGroupsRef.current = [...completedGroupsRef.current, testGroup];
+      const updatedGroups = completedGroupsRef.current;
+      const testAnalyzer = feedbackStage === "before";
 
-        let newAudioName;
-        if (
-          updatedGroups.includes("none") &&
-          updatedGroups.includes("feedback") &&
-          feedbackStage === "after"
-        ) {
-          setCurrentStep("completed");
-        } else if (updatedGroups.includes("feedback")) {
-          if (testAnalyzer) {
-            setFeedbackStage("during");
-            setCurrentStep("instructions");
-            newAudioName = `subject-${
-              subjectData.subjectId
-            }-feedback-during-${0}.wav`;
-          } else {
-            setTestGroup("none");
-            setCurrentStep("instructions");
-            newAudioName = `subject-${subjectData.subjectId}-none-${0}.wav`;
-          }
-          setCurrentTestFeatureIndex(0);
-          setAttemptCount(0);
-          setAudioBlob(null);
-          setAudioUrl(null);
-          setCurrentAudioName(newAudioName);
-        } else if (updatedGroups.includes("none")) {
-          setTestGroup("feedback");
+      let newAudioName;
+      if (
+        updatedGroups.includes("none") &&
+        updatedGroups.includes("feedback") &&
+        feedbackStage === "after"
+      ) {
+        setCurrentStep("completed");
+      } else if (updatedGroups.includes("feedback")) {
+        if (testAnalyzer) {
+          setFeedbackStage("during");
           setCurrentStep("instructions");
-          setCurrentTestFeatureIndex(0);
-          setAttemptCount(0);
-          setAudioBlob(null);
-          setAudioUrl(null);
-          const newAudioName = `subject-${
+          newAudioName = `subject-${
             subjectData.subjectId
-          }-feedback-${feedbackStage}-${0}.wav`;
-          setCurrentAudioName(newAudioName);
+          }-feedback-during-${0}.wav`;
+        } else {
+          setTestGroup("none");
+          setCurrentStep("instructions");
+          newAudioName = `subject-${subjectData.subjectId}-none-${0}.wav`;
         }
-
-        return updatedGroups;
-      });
+        setCurrentTestFeatureIndex(0);
+        setAttemptCount(0);
+        setAudioBlob(null);
+        setAudioUrl(null);
+        setCurrentAudioName(newAudioName);
+      } else if (updatedGroups.includes("none")) {
+        setTestGroup("feedback");
+        setCurrentStep("instructions");
+        setCurrentTestFeatureIndex(0);
+        setAttemptCount(0);
+        setAudioBlob(null);
+        setAudioUrl(null);
+        const newAudioName = `subject-${
+          subjectData.subjectId
+        }-feedback-${feedbackStage}-${0}.wav`;
+        setCurrentAudioName(newAudioName);
+      }
     }
   };
 
@@ -290,7 +317,7 @@ const Testing = () => {
     return () => {
       clearInterval(timer);
     };
-  }, [currentStep]);
+  }, [currentStep, handleFinishTestingTool]);
 
   useEffect(() => {
     // Enable the button once when 480 seconds have passed
@@ -298,6 +325,11 @@ const Testing = () => {
       setIsProceedButtonEnabled(true);
     }
   }, [remainingTime, isProceedButtonEnabled]);
+
+  useEffect(() => {
+    // disable enabling uploads from main application
+    setUploadsEnabled(false);
+  }, [setUploadsEnabled]);
 
   console.log(subjectData);
 
@@ -336,12 +368,14 @@ const Testing = () => {
         <TestingSection
           currentTestFeature={TEST_FEATURES[currentTestFeatureIndex]}
           attemptCount={attemptCount}
+          testGroup={testGroup}
         >
           <RecordAudioSection
             testingEnabled={true}
             audioName="Your Recording"
             audioBlob={audioBlob}
             setAudioBlob={setAudioBlob}
+            audioUrl={audioUrl}
             setAudioURL={setAudioUrl}
             attemptCount={attemptCount}
             onChangeAttemptCount={handleChangeAttemptCount}
@@ -386,7 +420,10 @@ const Testing = () => {
                 </div>
               </div>
               <div className="h-[100px] w-full bg-lightgray/25 p-4 rounded-3xl">
-                <ResponsiveWaveformPlayer highlightedSections={[]} />
+                <ResponsiveWaveformPlayer
+                  audioUrl="/audio/twinkle_twinkle_little_star_g.m4a"
+                  highlightedSections={[]}
+                />
               </div>
             </div>
             {!analyzeMode && !uploadedFile && (
@@ -430,6 +467,9 @@ const Testing = () => {
                       audioFeatures[selectedAnalysisFeature]?.data || []
                     }
                     selectedAnalysisFeature={selectedAnalysisFeature}
+                    audioDuration={
+                      audioFeatures[selectedAnalysisFeature]?.duration
+                    }
                   />
                 </div>
                 <div className="flex flex-row self-end space-x-2">

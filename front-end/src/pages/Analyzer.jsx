@@ -1,4 +1,4 @@
-import { startTransition } from "react";
+import { startTransition, useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import InstrumentSelectionCards from "../components/cards/InstrumentSelectionCards.jsx";
@@ -9,6 +9,7 @@ import AnalysisButtons from "../components/buttons/AnalysisButtons.jsx";
 import GraphWithWaveform from "../components/visualizations/GraphWithWaveform.jsx";
 import TertiaryButton from "../components/buttons/TertiaryButton.jsx";
 import Tooltip from "../components/text/Tooltip.jsx";
+import ConsentModal from "../components/modals/ConsentModal.jsx";
 import { instrumentButtons } from "../config/instrumentButtons.js";
 
 /**
@@ -60,7 +61,29 @@ const Analyzer = ({
   setAudioUuid,
   uploadsEnabled,
   tooltipMode,
+  setUploadsEnabled,
 }) => {
+  // Initialize consent state based on localStorage to prevent flashing
+  const [hasConsented, setHasConsented] = useState(() => {
+    return localStorage.getItem("audioAnalyzerConsent") === "true";
+  });
+
+  const [showConsentModal, setShowConsentModal] = useState(() => {
+    return localStorage.getItem("audioAnalyzerConsent") !== "true";
+  });
+
+  // Handle consent response
+  const handleConsent = (agreed) => {
+    if (agreed) {
+      setHasConsented(true);
+      setShowConsentModal(false);
+      localStorage.setItem("audioAnalyzerConsent", "true");
+    } else {
+      setHasConsented(false);
+      setShowConsentModal(true);
+    }
+  };
+
   // Handles the selection of an instrument.
   // Resets audio-related state if audio features are already present.
   const handleInstrumentSelect = (instrument) => {
@@ -120,125 +143,139 @@ const Analyzer = ({
     setAudioUuid(() => uuidv4());
   };
 
+  useEffect(() => {
+    // enable enabling uploads in main application
+    setUploadsEnabled(true);
+  }, [setUploadsEnabled]);
+
   return (
-    <div className="flex flex-col w-full items-center min-h-[calc(100vh-4rem)]">
-      {selectedInstrument ? (
-        /* Show smaller intrument selection buttons at the top of screen if an instrument is already selected. */
-        <div className="mt-28">
-          <Tooltip
-            text="select an instrument to analyze"
-            show={tooltipMode === "global"}
-            tooltipMode={tooltipMode}
-            className="w-full"
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
-              {instrumentButtons.map((inst) => (
-                <InstrumentButton
-                  key={inst.label}
-                  onClick={() => handleInstrumentSelect(inst.label)}
-                  selected={selectedInstrument === inst.label}
-                >
-                  {inst.label}
-                </InstrumentButton>
-              ))}
-            </div>
-          </Tooltip>
+    <div className="min-h-screen">
+      <ConsentModal isOpen={showConsentModal} onConsent={handleConsent} />
 
-          {/* Toggle between the recording and upload interface */}
-          <div className="flex flex-col items-center justify-center w-full">
-            {inRecordMode ? (
-              <RecordAudioSection
-                setUploadedFile={setUploadedFile}
-                setInRecordMode={setInRecordMode}
-                audioBlob={audioBlob}
-                setAudioBlob={setAudioBlob}
-                audioName={audioName}
-                setAudioName={setAudioName}
-                audioURL={audioURL}
-                setAudioURL={setAudioURL}
-                handleDownloadRecording={handleDownloadRecording}
-              />
-            ) : (
-              !selectedAnalysisFeature && (
-                <Tooltip
-                  text="upload an audio file (monophonic for violin or voice)"
-                  show={tooltipMode === "global"}
-                  tooltipMode={tooltipMode}
-                  className="w-full"
-                >
-                  <FileUploadSection
-                    handleSwitchToRecordMode={handleSwitchToRecordMode}
-                    handleFileUpload={handleFileUpload}
-                    uploadedFile={uploadedFile}
-                    className="mb-8 w-full"
-                  />
-                </Tooltip>
-              )
-            )}
-          </div>
+      <div
+        className={`flex flex-col w-full items-center min-h-[calc(100vh-4rem)] ${
+          hasConsented ? "" : "pointer-events-none opacity-50"
+        }`}
+      >
+        {selectedInstrument ? (
+          /* Show smaller intrument selection buttons at the top of screen if an instrument is already selected. */
+          <div className="mt-28">
+            <Tooltip
+              text="select an instrument to analyze"
+              show={tooltipMode === "global"}
+              tooltipMode={tooltipMode}
+              className="w-full"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
+                {instrumentButtons.map((inst) => (
+                  <InstrumentButton
+                    key={inst.label}
+                    onClick={() => handleInstrumentSelect(inst.label)}
+                    selected={selectedInstrument === inst.label}
+                  >
+                    {inst.label}
+                  </InstrumentButton>
+                ))}
+              </div>
+            </Tooltip>
 
-          {/* Display uploaded file, analysis buttons, and visualization for selected analysis feature */}
-          {uploadedFile && (
-            <div className="flex flex-col items-center w-full space-y-8">
-              <Tooltip
-                text="select an analysis feature"
-                show={tooltipMode === "global"}
-                tooltipMode={tooltipMode}
-                position="bottom"
-                className="w-full justify-center"
-              >
-                <AnalysisButtons
-                  selectedInstrument={selectedInstrument}
-                  selectedAnalysisFeature={selectedAnalysisFeature}
-                  onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
-                  uploadedFile={uploadedFile}
-                  audioFeatures={audioFeatures}
-                  setAudioFeatures={setAudioFeatures}
-                  audioUuid={audioUuid}
-                  setAudioUuid={setAudioUuid}
-                  uploadsEnabled={uploadsEnabled}
+            {/* Toggle between the recording and upload interface */}
+            <div className="flex flex-col items-center justify-center w-full">
+              {inRecordMode ? (
+                <RecordAudioSection
+                  setUploadedFile={setUploadedFile}
+                  setInRecordMode={setInRecordMode}
+                  audioBlob={audioBlob}
+                  setAudioBlob={setAudioBlob}
+                  audioName={audioName}
+                  setAudioName={setAudioName}
+                  audioURL={audioURL}
+                  setAudioURL={setAudioURL}
+                  handleDownloadRecording={handleDownloadRecording}
                 />
-              </Tooltip>
-              {selectedAnalysisFeature && (
-                <div className="flex flex-col w-full">
-                  <div className="text-xl font-semibold text-lightpink mb-1">
-                    {uploadedFile.name}
-                  </div>
-                  <div className="bg-lightgray/25 rounded-3xl w-full p-8">
-                    <GraphWithWaveform
-                      key={audioFeatures[selectedAnalysisFeature]?.audioUrl}
-                      audioURL={
-                        audioFeatures[selectedAnalysisFeature]?.audioUrl
-                      }
-                      featureData={
-                        audioFeatures[selectedAnalysisFeature]?.data || []
-                      }
-                      selectedAnalysisFeature={selectedAnalysisFeature}
-                      audioDuration={
-                        audioFeatures[selectedAnalysisFeature]?.duration
-                      }
+              ) : (
+                !selectedAnalysisFeature && (
+                  <Tooltip
+                    text="upload an audio file (monophonic for violin or voice)"
+                    show={tooltipMode === "global"}
+                    tooltipMode={tooltipMode}
+                    className="w-full"
+                  >
+                    <FileUploadSection
+                      handleSwitchToRecordMode={handleSwitchToRecordMode}
+                      handleFileUpload={handleFileUpload}
+                      uploadedFile={uploadedFile}
+                      className="mb-8 w-full"
                     />
-                  </div>
-                  <div className="flex flex-row justify-end gap-2 items-center mt-2">
-                    <TertiaryButton onClick={handleDownloadRecording}>
-                      download file
-                    </TertiaryButton>
-                    <TertiaryButton onClick={handleChangeFile}>
-                      change file
-                    </TertiaryButton>
-                  </div>
-                </div>
+                  </Tooltip>
+                )
               )}
             </div>
-          )}
-        </div>
-      ) : (
-        /* Show initial instrument select cards when you first load the app */
-        <InstrumentSelectionCards
-          instruments={instrumentButtons}
-          handleInstrumentSelect={handleInstrumentSelect}
-        />
-      )}
+
+            {/* Display uploaded file, analysis buttons, and visualization for selected analysis feature */}
+            {uploadedFile && (
+              <div className="flex flex-col items-center w-full space-y-8">
+                <Tooltip
+                  text="select an analysis feature"
+                  show={tooltipMode === "global"}
+                  tooltipMode={tooltipMode}
+                  position="bottom"
+                  className="w-full justify-center"
+                >
+                  <AnalysisButtons
+                    selectedInstrument={selectedInstrument}
+                    selectedAnalysisFeature={selectedAnalysisFeature}
+                    onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
+                    uploadedFile={uploadedFile}
+                    audioFeatures={audioFeatures}
+                    setAudioFeatures={setAudioFeatures}
+                    audioUuid={audioUuid}
+                    setAudioUuid={setAudioUuid}
+                    uploadsEnabled={uploadsEnabled}
+                  />
+                </Tooltip>
+                {selectedAnalysisFeature && (
+                  <div className="flex flex-col w-full">
+                    <div className="text-xl font-semibold text-lightpink mb-1">
+                      {uploadedFile.name}
+                    </div>
+                    <div className="bg-lightgray/25 rounded-3xl w-full p-8">
+                      <GraphWithWaveform
+                        key={audioFeatures[selectedAnalysisFeature]?.audioUrl}
+                        audioURL={
+                          audioFeatures[selectedAnalysisFeature]?.audioUrl
+                        }
+                        featureData={
+                          audioFeatures[selectedAnalysisFeature]?.data || []
+                        }
+                        selectedAnalysisFeature={selectedAnalysisFeature}
+                        audioDuration={
+                          audioFeatures[selectedAnalysisFeature]?.duration
+                        }
+                        tooltipMode={tooltipMode}
+                      />
+                    </div>
+                    <div className="flex flex-row justify-end gap-2 items-center mt-2">
+                      <TertiaryButton onClick={handleDownloadRecording}>
+                        download file
+                      </TertiaryButton>
+                      <TertiaryButton onClick={handleChangeFile}>
+                        change file
+                      </TertiaryButton>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Show initial instrument select cards when you first load the app */
+          <InstrumentSelectionCards
+            instruments={instrumentButtons}
+            handleInstrumentSelect={handleInstrumentSelect}
+          />
+        )}
+      </div>
     </div>
   );
 };

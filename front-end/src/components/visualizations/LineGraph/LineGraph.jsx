@@ -165,7 +165,9 @@ const LineGraph = ({
       );
 
       // Update highlighted sections
-      updateHighlightedSections(chartGroup, newXScale);
+      if (highlightedSections.length > 0) {
+        updateHighlightedSections(chartGroup, newXScale);
+      }
 
       // Update silence indicators
       updateSilenceIndicators(chartGroup, filteredData, newXScale, innerHeight);
@@ -204,7 +206,10 @@ const LineGraph = ({
       .call(brush);
 
     // Style the brush
-    brushOverlay.selectAll(".overlay").style("cursor", "crosshair");
+    brushOverlay
+      .selectAll(".overlay")
+      .style("cursor", "crosshair")
+      .style("pointer-events", "all");
 
     brushOverlay
       .selectAll(".selection")
@@ -256,7 +261,7 @@ const LineGraph = ({
     createResetButton(g, innerWidth, handleReset);
 
     // Initial call to set the highlighted sections coordinates (only if changed)
-    notifyChange(xScale);
+    // notifyChange(xScale);
   }, [
     data,
     width,

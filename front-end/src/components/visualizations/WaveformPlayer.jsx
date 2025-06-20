@@ -101,19 +101,11 @@ const WaveformPlayer = ({
 
         // Scroll to the zoomed section
         wavesurfer.setScrollTime(startTime);
-
-        console.log(
-          `Zoomed waveform: ${startTime.toFixed(2)}s - ${endTime.toFixed(
-            2
-          )}s (zoom: ${targetMinPxPerSec.toFixed(0)} px/sec)`
-        );
       } else {
         // Reset to initial zoom when showing full range
         const initialZoom = calculateInitialZoom(audioDuration);
         wavesurfer.zoom(initialZoom);
         wavesurfer.setTime(0);
-
-        console.log(`Reset waveform zoom to initial: ${initialZoom} px/sec`);
       }
     }
   }, [isReady, wavesurfer, startTime, endTime, audioDuration]);

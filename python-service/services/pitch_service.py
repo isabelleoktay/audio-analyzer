@@ -95,10 +95,10 @@ def get_cached_or_calculated_pitch(audio_bytes, sample_rate=16000, method="crepe
 
     return audio, audio_url, sr, pitch, smoothed_pitch, highlighted, x_axis, hop_sec, None  
 
-def process_pitch(audio_bytes, method="crepe"):
+def process_pitch(audio_bytes, sample_rate=16000, method="crepe"):
     """Simple wrapper around get_cached_or_calculated_pitch that formats the response"""
     
-    audio, audio_url, sr, _, smoothed_pitch, highlighted, _, _, error = get_cached_or_calculated_pitch(audio_bytes, method)
+    audio, audio_url, sr, _, smoothed_pitch, highlighted, _, _, error = get_cached_or_calculated_pitch(audio_bytes, sample_rate=sample_rate, method=method)
     audio_duration = len(audio) / sr   
     # Check if there was an error
     if error:

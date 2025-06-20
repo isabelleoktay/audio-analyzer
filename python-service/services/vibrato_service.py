@@ -11,7 +11,7 @@ def process_vibrato(audio_bytes, method="crepe"):
     clear_cache_if_new_file(audio_bytes)
 
     # 1) Load & trim audio + get URL    
-    audio, audio_url, sr, pitches, smoothed_pitches, _, x_axis, hop_sec_duration, error = get_cached_or_calculated_pitch(audio_bytes, method=method)
+    audio, audio_url, sr, pitches, smoothed_pitches, _, x_axis, hop_sec_duration, error = get_cached_or_calculated_pitch(audio_bytes, sample_rate=16000, method=method)
     if error:
         return None, None, None, None, None, None, error
 
