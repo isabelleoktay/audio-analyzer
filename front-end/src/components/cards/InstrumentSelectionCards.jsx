@@ -2,11 +2,11 @@ import InstrumentCard from "./InstrumentCard.jsx";
 
 const InstrumentSelectionCards = ({ instruments, handleInstrumentSelect }) => {
   return (
-    <div className="mt-20 mb-6 lg:mt-64 items-center justify-items-center">
-      <h2 className="text-xl mb-6 text-lightgray text-center tracking-widest">
+    <div className="mt-16 md:mt-32 lg:mt-64 px-4 flex flex-col items-center">
+      <h2 className="text-lg md:text-xl mb-6 text-lightgray text-center tracking-widest">
         Which instrument are you analyzing today?
       </h2>
-      <div className="flex lg:flex-row flex-col gap-6 items-center justify-center">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 justify-items-center w-full max-w-md lg:max-w-none">
         {instruments.map((inst) => (
           <InstrumentCard
             key={inst.label}
