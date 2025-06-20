@@ -1,6 +1,26 @@
+import { useCallback } from "react";
 import ResponsiveWaveformPlayer from "../visualizations/ResponsiveWaveformPlayer";
 
-const TestingSection = ({ currentTestFeature, attemptCount, children }) => {
+const TestingSection = ({
+  currentTestFeature,
+  attemptCount,
+  testGroup,
+  children,
+}) => {
+  const getAudioUrl = useCallback(() => {
+    // Assuming your audio files are in the public folder
+    // You can adjust the path structure based on your actual file organization
+    if (testGroup === "feedback") {
+      return `/audio/twinkle_twinkle_little_star_g.m4a`;
+    } else if (testGroup === "none") {
+      return `/audio/mary_had_a_little_lamb_g.m4a`;
+    }
+    // Default fallback
+    return `/audio/twinkle_twinkle_little_star_g.m4a`;
+  }, [testGroup]);
+
+  const audioUrl = getAudioUrl();
+
   return (
     <div className="flex flex-col items-center justify-center h-screen text-lightgray w-1/2 space-y-6">
       <div className="flex flex-col self-start mb-8 space-y-2">
@@ -28,7 +48,10 @@ const TestingSection = ({ currentTestFeature, attemptCount, children }) => {
           </div>
         </div>
         <div className="h-[100px] w-full bg-lightgray/25 p-4 rounded-3xl">
-          <ResponsiveWaveformPlayer highlightedSections={[]} />
+          <ResponsiveWaveformPlayer
+            highlightedSections={[]}
+            audioUrl={audioUrl}
+          />
         </div>
       </div>
       {children}

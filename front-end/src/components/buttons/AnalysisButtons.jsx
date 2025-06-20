@@ -25,13 +25,12 @@ const AnalysisButtons = ({
     onClick: async () => {
       onAnalysisFeatureSelect(btn.label);
       if (!audioFeatures[btn.label]) {
-        console.log("AUDIO FILE");
-        console.log(uploadedFile);
         const featureResult = await processFeatures(uploadedFile, btn.label);
         const featureData = {
           data: featureResult.data,
           sampleRate: featureResult.sample_rate,
           audioUrl: featureResult.audio_url || "",
+          duration: featureResult.duration || 0,
         };
 
         setAudioFeatures((prev) => ({

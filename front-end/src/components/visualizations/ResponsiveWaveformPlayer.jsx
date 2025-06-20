@@ -31,6 +31,7 @@ const ResponsiveWaveformPlayer = ({
     responsive: true,
     normalize: true,
     barWidth: 2,
+    height: 50,
     waveColor: waveColor,
     progressColor: progressColor,
     url: audioUrl,
@@ -91,15 +92,14 @@ const ResponsiveWaveformPlayer = ({
         <IconButton
           icon={isPlaying ? FaPause : FaPlay}
           onClick={handlePlayPause}
-          colorClass="text-electricblue"
+          colorClass="text-darkpink"
           bgClass="bg-transparent"
           sizeClass="w-10 h-10"
           ariaLabel="play audio"
         />
       </div>
       <div className="flex-grow flex flex-col">
-        <div ref={containerRef} className="w-full h-3/4" />
-        <div ref={timelineRef} className="w-full h-1/4 mt-2" />
+        <div ref={containerRef} className="w-full" />
       </div>
     </div>
   );

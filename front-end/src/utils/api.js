@@ -1,4 +1,5 @@
 import axios from "axios";
+import { tokenManager } from "./tokenManager.js";
 
 const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL,
@@ -7,6 +8,58 @@ const apiClient = axios.create({
 const pythonClient = axios.create({
   baseURL: process.env.REACT_APP_PYTHON_SERVICE_BASE_URL,
 });
+
+pythonClient.interceptors.request.use(
+  async (config) => {
+    try {
+      const token = await tokenManager.ensureValidToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      console.error("Error getting token for request:", error);
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+pythonClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    if (error.response?.status === 401) {
+      console.log("Token expired, generating new token and retrying...");
+      tokenManager.clearToken();
+
+      try {
+        await tokenManager.generateToken();
+        // Retry the original request with new token
+        const token = await tokenManager.getToken();
+        error.config.headers.Authorization = `Bearer ${token}`;
+        return pythonClient.request(error.config);
+      } catch (retryError) {
+        console.error("Error retrying request with new token:", retryError);
+        return Promise.reject(error);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+const startNewSession = async () => {
+  try {
+    tokenManager.clearToken();
+    await tokenManager.generateToken();
+    console.log("New session started with fresh token");
+  } catch (error) {
+    console.error("Error starting new session:", error);
+    throw error;
+  }
+};
 
 const processFeatures = async (audioFile, feature) => {
   const formData = new FormData();
@@ -205,20 +258,11 @@ const cleanupTempFiles = async () => {
   }
 };
 
-const cleanupSession = async () => {
-  try {
-    const response = await pythonClient.post("/python-service/cleanup-session");
-    console.log("Session cleanup response:", response.data);
-  } catch (error) {
-    console.error("Error cleaning up session:", error);
-  }
-};
-
 export {
   uploadAudio,
   processFeatures,
   uploadAudioToPythonService,
   uploadTestSubject,
   cleanupTempFiles,
-  cleanupSession,
+  startNewSession,
 };
