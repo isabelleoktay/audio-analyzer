@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Layout from "./components/Layout.jsx";
 import NavBar from "./components/NavBar.jsx";
-import Analyzer from "./pages/Analyzer.jsx";
-import Testing from "./pages/Testing.jsx";
+import { Analyzer, Testing, HowToUse, NotFound } from "./pages";
+
 import { cleanupTempFiles } from "./utils/api.js";
 import { tokenManager } from "./utils/tokenManager.js";
 
@@ -27,7 +27,7 @@ const App = () => {
   const [audioURL, setAudioURL] = useState(null);
   const [audioUuid, setAudioUuid] = useState(() => uuidv4());
   const [audioFeatures, setAudioFeatures] = useState({});
-  const [uploadsEnabled, setUploadsEnabled] = useState(false);
+  const [uploadsEnabled, setUploadsEnabled] = useState(true);
 
   // Reset the application state to its initial values.
   const handleReset = () => {
@@ -104,14 +104,19 @@ const App = () => {
                   audioUuid={audioUuid}
                   setAudioUuid={setAudioUuid}
                   uploadsEnabled={uploadsEnabled}
+                  setUploadsEnabled={setUploadsEnabled}
                 />
               }
             />
             {/* Testing page for additional functionality */}
-            <Route path="/testing" element={<Testing />} />
+            <Route
+              path="/testing"
+              element={<Testing setUploadsEnabled={setUploadsEnabled} />}
+            />
+            <Route path="/how-to-use" element={<HowToUse />} />
 
             {/* Fallback route for undefined paths */}
-            <Route path="*" element={<div>404 Not Found</div>} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
       </Router>

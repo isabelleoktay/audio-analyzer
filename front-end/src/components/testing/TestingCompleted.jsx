@@ -40,6 +40,10 @@ const TestingCompleted = ({ subjectData }) => {
     });
   };
 
+  const handleFeedback = () => {
+    window.open("https://forms.gle/WF8g6WrMVsrokqyK6", "_blank");
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen text-lightgray w-1/2 space-y-8">
       <div className="text-4xl text-electricblue font-bold">
@@ -56,6 +60,16 @@ const TestingCompleted = ({ subjectData }) => {
         </SecondaryButton>
         <SecondaryButton onClick={downloadSubjectData}>
           download subject data
+        </SecondaryButton>
+      </div>
+      <div className="text-lg text-justify">
+        {" "}
+        Please fill out our feedback form to provide a more detailed
+        understanding of your experience with the audio analyzer.
+      </div>
+      <div className="flex items-center space-x-2">
+        <SecondaryButton onClick={handleFeedback}>
+          go to feedback form
         </SecondaryButton>
       </div>
     </div>

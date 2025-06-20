@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from utils.jwt_manager import get_jwt_manager
+import uuid
 
 auth_blueprint = Blueprint('auth', __name__)
 
@@ -10,7 +11,8 @@ def generate_token():
     if not jwt_manager:
         return jsonify({'error': 'JWT manager not initialized'}), 500
 
-    token = jwt_manager.generate_new_user()
+    user_id = f"user_{uuid.uuid4().hex[:12]}"
+    token = jwt_manager.generate_token(user_id)
     return jsonify({'token': token, 'message': 'Token generated successfully'}), 200
 
 @auth_blueprint.route('/python-service/auth/verify', methods=['POST'])

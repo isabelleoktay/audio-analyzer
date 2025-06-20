@@ -25,8 +25,6 @@ const AnalysisButtons = ({
     onClick: async () => {
       onAnalysisFeatureSelect(btn.label);
       if (!audioFeatures[btn.label]) {
-        console.log("AUDIO FILE");
-        console.log(uploadedFile);
         const featureResult = await processFeatures(uploadedFile, btn.label);
         const featureData = {
           data: featureResult.data,
