@@ -14,7 +14,6 @@ def get_redis_client():
             redis_host = os.environ.get('REDIS_HOST', 'localhost')
             redis_port = int(os.environ.get('REDIS_PORT', 6379))
             redis_password = os.environ.get('REDIS_PASSWORD')
-            print(f"⚠️  Connecting with redis password: {redis_password}")
             
             if redis_password:
                 encoded_password = urllib.parse.quote(redis_password)
@@ -29,6 +28,7 @@ def get_redis_client():
         print("✅ Redis connected successfully")
         
     except Exception as e:
+        print(f"⚠️  Connecting with redis password: {redis_password}")
         print(f"⚠️  Redis connection failed: {e}")
         print("📝 Falling back to in-memory caching")
         redis_client = None
