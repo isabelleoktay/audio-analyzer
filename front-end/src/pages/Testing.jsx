@@ -392,9 +392,11 @@ const Testing = ({ setUploadsEnabled }) => {
               Visualization Tool
             </div>
             <div>
-              You may record yourself and visualize your audio recordings as
-              many times as you want within the next 10 minutes, but you must
-              use the tool for at least 2 minutes.
+              You may record yourself and visualize your audio recordings
+              following the reference audio as many times as you want within the
+              next 10 minutes, but you must use the tool for at least 2 minutes.
+              You may use the tool to gain insights on your pitch, dynamics
+              (loudness), and tempo.
             </div>
           </div>
 
