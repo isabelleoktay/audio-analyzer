@@ -17,6 +17,11 @@ from routes.auth_route import auth_blueprint
 
 app = Flask(__name__)
 
+if os.getenv("FLASK_ENV") == "production":
+    app.config["ENV"] = "production"
+else:
+    app.config["ENV"] = "development"
+
 redis_client = get_redis_client()
 
 # Initialize JWT Manager with Redis
@@ -24,11 +29,6 @@ jwt_secret = os.environ.get('FLASK_SECRET_KEY', 'your_jwt_secret_key_here')
 init_jwt_manager(secret_key=jwt_secret, redis_client=redis_client)
 
 CORS(app, supports_credentials=True)
-
-if os.getenv("FLASK_ENV") == "production":
-    app.config["ENV"] = "production"
-else:
-    app.config["ENV"] = "development"
 
 # Create directory to store audio files
 AUDIO_FOLDER = os.path.join(os.getcwd(), 'static', 'audio')
