@@ -28,7 +28,6 @@ def get_redis_client():
         print("✅ Redis connected successfully")
         
     except Exception as e:
-        print(f"⚠️  Connecting with redis password: {redis_password}")
         print(f"⚠️  Redis connection failed: {e}")
         print("📝 Falling back to in-memory caching")
         redis_client = None
