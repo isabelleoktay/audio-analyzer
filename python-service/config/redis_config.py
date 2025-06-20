@@ -14,9 +14,9 @@ def get_redis_client():
             redis_host = os.environ.get('REDIS_HOST', 'localhost')
             redis_port = int(os.environ.get('REDIS_PORT', 6379))
             redis_password = os.environ.get('REDIS_PASSWORD')
+            print(f"⚠️  Connecting with redis password: {redis_password}")
             
             if redis_password:
-                print(f"⚠️  Connecting with redis password: {redis_password}")
                 encoded_password = urllib.parse.quote(redis_password)
                 redis_client = redis.from_url(f"redis://:{encoded_password}@{redis_host}:{redis_port}/0")
             else:
