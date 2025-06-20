@@ -1,5 +1,6 @@
 import os
 import redis
+import urllib.parse
 
 def get_redis_client():
     """
@@ -15,7 +16,8 @@ def get_redis_client():
             redis_password = os.environ.get('REDIS_PASSWORD')
             
             if redis_password:
-                redis_client = redis.from_url(f"redis://:{redis_password}@{redis_host}:{redis_port}/0")
+                encoded_password = urllib.parse.quote(redis_password)
+                redis_client = redis.from_url(f"redis://:{encoded_password}@{redis_host}:{redis_port}/0")
             else:
                 redis_client = redis.from_url(f"redis://{redis_host}:{redis_port}/0")
         else:
