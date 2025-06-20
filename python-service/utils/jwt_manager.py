@@ -1,6 +1,7 @@
 import os
 import json
 from datetime import datetime, timedelta
+from typing import Optional, Dict, Any, Union
 import jwt
 
 
@@ -19,7 +20,7 @@ class JWTManager:
         }
         return jwt.encode(payload, self.secret_key, algorithm='HS256')
 
-    def verify_token(self, token: str) -> str | None:
+    def verify_token(self, token: str) -> Optional[str]:
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=['HS256'])
             return payload.get('user_id')
@@ -32,7 +33,7 @@ class JWTManager:
     def _get_cache_key(self, user_id: str) -> str:
         return f"user_cache:{user_id}"
 
-    def get_user_cache(self, user_id: str) -> dict | None:
+    def get_user_cache(self, user_id: str) -> Optional[Dict[str, Any]]:
         cache_key = self._get_cache_key(user_id)
         # print(f"Fetching cache for user_id: {user_id}, cache_key: {cache_key}")
         if self.redis_client:
@@ -40,7 +41,7 @@ class JWTManager:
             return json.loads(data) if data else None
         return self.user_cache.get(user_id)
 
-    def update_user_cache(self, user_id: str, cache_data: dict) -> None:
+    def update_user_cache(self, user_id: str, cache_data: Dict[str, Any]) -> None:
         cache_key = self._get_cache_key(user_id)
         if self.redis_client:
             print(f"Updating cache for user_id: {user_id}, cache_key: {cache_key}")
