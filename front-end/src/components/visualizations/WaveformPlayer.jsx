@@ -4,6 +4,7 @@ import { FaPlay, FaPause } from "react-icons/fa";
 import { useWavesurfer } from "@wavesurfer/react";
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions";
 import TimelinePlugin from "wavesurfer.js/dist/plugins/timeline";
+import ZoomPlugin from "wavesurfer.js/dist/plugins/zoom.esm.js";
 
 const width = 800;
 const leftMargin = 50;
@@ -16,6 +17,9 @@ const WaveformPlayer = ({
   highlightedSections,
   waveColor = "#FFD6E8",
   progressColor = "#FF89BB",
+  startTime,
+  endTime,
+  audioDuration,
 }) => {
   const containerRef = useRef();
   const timelineRef = useRef();
@@ -27,10 +31,25 @@ const WaveformPlayer = ({
       }),
     []
   );
-  const plugins = useMemo(
-    () => [regionsPlugin, timelinePlugin],
-    [regionsPlugin, timelinePlugin]
+  const zoomPlugin = useMemo(
+    () =>
+      ZoomPlugin.create({
+        scale: 0.5,
+      }),
+    []
   );
+  const plugins = useMemo(
+    () => [regionsPlugin, timelinePlugin, zoomPlugin],
+    [regionsPlugin, timelinePlugin, zoomPlugin]
+  );
+
+  const calculateInitialZoom = (audioDuration) => {
+    if (!audioDuration) return 50; // default
+
+    // Adjust zoom so the full waveform fits nicely in the container
+    const containerWidth = width - leftMargin - rightMargin;
+    return Math.max(25, Math.min(100, containerWidth / audioDuration));
+  };
 
   const { wavesurfer, isReady, isPlaying } = useWavesurfer({
     container: containerRef,
@@ -43,11 +62,79 @@ const WaveformPlayer = ({
     progressColor: progressColor,
     url: audioUrl,
     plugins: plugins,
+    hideScrollbar: true,
+    autoScroll: false,
+    minPxPerSec: calculateInitialZoom(audioDuration),
   });
 
   const handlePlayPause = useCallback(() => {
-    wavesurfer && wavesurfer.playPause();
-  }, [wavesurfer]);
+    if (wavesurfer) {
+      // If not playing and we have a start time, seek to it first
+      if (!isPlaying && startTime !== undefined && startTime > 0) {
+        wavesurfer.setTime(startTime);
+      }
+      wavesurfer.playPause();
+    }
+  }, [wavesurfer, isPlaying, startTime]);
+
+  useEffect(() => {
+    if (
+      isReady &&
+      wavesurfer &&
+      startTime !== undefined &&
+      endTime !== undefined
+    ) {
+      const duration = wavesurfer.getDuration();
+
+      // Check if we have a specific time range (zoomed) or full range
+      const isZoomed = startTime > 0 || endTime < duration;
+
+      if (isZoomed) {
+        const zoomDuration = endTime - startTime;
+        const containerWidth = width - leftMargin - rightMargin;
+
+        // Calculate zoom level to fit the time range in the container
+        const targetMinPxPerSec = containerWidth / zoomDuration;
+
+        // Apply zoom
+        wavesurfer.zoom(targetMinPxPerSec);
+
+        // Scroll to the zoomed section
+        wavesurfer.setScrollTime(startTime);
+      } else {
+        // Reset to initial zoom when showing full range
+        const initialZoom = calculateInitialZoom(audioDuration);
+        wavesurfer.zoom(initialZoom);
+        wavesurfer.setTime(0);
+      }
+    }
+  }, [isReady, wavesurfer, startTime, endTime, audioDuration]);
+
+  useEffect(() => {
+    if (
+      isReady &&
+      wavesurfer &&
+      startTime !== undefined &&
+      endTime !== undefined
+    ) {
+      const duration = wavesurfer.getDuration();
+      const isZoomed = startTime > 0 || endTime < duration;
+
+      if (isZoomed) {
+        const handleTimeUpdate = () => {
+          const currentTime = wavesurfer.getCurrentTime();
+          // Stop playback if we've reached the end of the zoomed range
+          if (currentTime >= endTime) {
+            wavesurfer.pause();
+            wavesurfer.setTime(startTime);
+          }
+        };
+
+        wavesurfer.on("timeupdate", handleTimeUpdate);
+        return () => wavesurfer.un("timeupdate", handleTimeUpdate);
+      }
+    }
+  }, [isReady, wavesurfer, startTime, endTime]);
 
   useEffect(() => {
     if (isReady) {
@@ -81,6 +168,31 @@ const WaveformPlayer = ({
       }
     };
   }, [isReady, regionsPlugin, wavesurfer, highlightedSections]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+
+    const preventScroll = (e) => {
+      e.preventDefault();
+    };
+
+    if (container) {
+      container.addEventListener("wheel", preventScroll, { passive: false });
+      container.addEventListener("touchmove", preventScroll, {
+        passive: false,
+      });
+      container.addEventListener("touchmove", preventScroll, {
+        passive: false,
+      });
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener("wheel", preventScroll);
+        container.removeEventListener("touchmove", preventScroll);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {

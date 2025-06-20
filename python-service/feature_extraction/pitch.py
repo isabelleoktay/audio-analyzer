@@ -1,7 +1,7 @@
 import numpy as np
 import librosa
 from essentia.standard import PitchCREPE
-from config import CREPE_MODEL_PATH
+from config import CREPE_MODEL_PATH, CREPE_EXTRACTOR
 
 class PitchExtractorBase:
     def extract_pitch(self, audio, **kwargs):
@@ -9,11 +9,19 @@ class PitchExtractorBase:
 
 class CrepePitchExtractor(PitchExtractorBase):
     def extract_pitch(self, audio, hop_ms, batch):
-        extractor = PitchCREPE(
-            graphFilename=CREPE_MODEL_PATH,
-            hopSize=hop_ms,
-            batchSize=batch
-        )
+        # Check if we can use the pre-loaded extractor with matching parameters
+        if (CREPE_EXTRACTOR is not None and 
+            hasattr(CREPE_EXTRACTOR, 'hopSize') and 
+            CREPE_EXTRACTOR.hopSize == hop_ms and CREPE_EXTRACTOR.batchSize == batch):
+            extractor = CREPE_EXTRACTOR
+        else:
+            # Create new extractor with custom parameters
+            extractor = PitchCREPE(
+                graphFilename=CREPE_MODEL_PATH,
+                hopSize=hop_ms,
+                batchSize=batch
+            )
+
         times, pitch, conf, _ = extractor(audio)
         return np.array(times), np.array(pitch), np.array(conf)
 

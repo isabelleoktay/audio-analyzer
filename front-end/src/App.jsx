@@ -3,9 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Layout from "./components/Layout.jsx";
 import NavBar from "./components/NavBar.jsx";
-import Analyzer from "./pages/Analyzer.jsx";
-import Testing from "./pages/Testing.jsx";
-import { cleanupTempFiles, cleanupSession } from "./utils/api.js";
+import { Analyzer, Testing, HowToUse, NotFound } from "./pages";
+
+import { cleanupTempFiles } from "./utils/api.js";
+import { tokenManager } from "./utils/tokenManager.js";
 
 /**
  * The main application component for the Audio Analyzer frontend.
@@ -26,7 +27,7 @@ const App = () => {
   const [audioURL, setAudioURL] = useState(null);
   const [audioUuid, setAudioUuid] = useState(() => uuidv4());
   const [audioFeatures, setAudioFeatures] = useState({});
-  const [uploadsEnabled, setUploadsEnabled] = useState(false);
+  const [uploadsEnabled, setUploadsEnabled] = useState(true);
 
   // Reset the application state to its initial values.
   const handleReset = () => {
@@ -51,30 +52,17 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Clean up when user closes tab/browser
-      cleanupSession();
-    };
-
-    const handleVisibilityChange = () => {
-      // Clean up when user switches to another tab for extended period
-      if (document.visibilityState === "hidden") {
-        setTimeout(() => {
-          if (document.visibilityState === "hidden") {
-            cleanupSession();
-          }
-        }, 300000); // 5 minutes
+    // Initialize token when app starts
+    const initializeToken = async () => {
+      try {
+        await tokenManager.ensureValidToken();
+        console.log("App initialized with valid token");
+      } catch (error) {
+        console.error("Error initializing token:", error);
       }
     };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      cleanupSession(); // Clean up when component unmounts
-    };
+    initializeToken();
   }, []);
 
   return (
@@ -116,14 +104,19 @@ const App = () => {
                   audioUuid={audioUuid}
                   setAudioUuid={setAudioUuid}
                   uploadsEnabled={uploadsEnabled}
+                  setUploadsEnabled={setUploadsEnabled}
                 />
               }
             />
             {/* Testing page for additional functionality */}
-            <Route path="/testing" element={<Testing />} />
+            <Route
+              path="/testing"
+              element={<Testing setUploadsEnabled={setUploadsEnabled} />}
+            />
+            <Route path="/how-to-use" element={<HowToUse />} />
 
             {/* Fallback route for undefined paths */}
-            <Route path="*" element={<div>404 Not Found</div>} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Layout>
       </Router>
