@@ -46,3 +46,4 @@ docker-compose.override.yml
 python-service/static/audio/
 python-service/testing/
 python-service/generated_sounds/soundfiles/
+python-service/generated_sounds/
