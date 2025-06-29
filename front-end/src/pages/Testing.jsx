@@ -9,7 +9,7 @@ import SecondaryButton from "../components/buttons/SecondaryButton";
 import TertiaryButton from "../components/buttons/TertiaryButton";
 import TestingCompleted from "../components/testing/TestingCompleted";
 import TestingSection from "../components/testing/TestingSection";
-import ResponsiveWaveformPlayer from "../components/visualizations/ResponsiveWaveformPlayer";
+import AudioPlayback from "../components/testing/AudioPlayback";
 import Rating from "../components/testing/Rating";
 import Questionnaire from "../components/testing/Questionnaire";
 import Timer from "../components/Timer";
@@ -304,10 +304,6 @@ const Testing = ({ setUploadsEnabled }) => {
 
   const handleAnalyzeNewRecording = () => {
     setAudioFeatures({});
-
-    if (STEPS[currentStepIndex] === "feedback") {
-      setIsProceedButtonEnabled(true);
-    }
     setAnalyzeMode(false);
     updateSubjectData();
     setAudioBlob(null);
@@ -348,6 +344,9 @@ const Testing = ({ setUploadsEnabled }) => {
   };
 
   const handleSubmitRecording = () => {
+    if (STEPS[currentStepIndex] === "feedback") {
+      setIsProceedButtonEnabled(true);
+    }
     if (feedbackStage === "during") {
       setFeedbackToolUsageCount((prev) => prev + 1);
     }
@@ -366,12 +365,15 @@ const Testing = ({ setUploadsEnabled }) => {
     updateAudioFileName();
   };
 
-  const handleQuestionnaireSubmit = (answers) => {
+  const handleQuestionnaireSubmit = async (answers) => {
     // Update subject data with the questionnaire answers
-    setSubjectData((prevData) => ({
-      ...prevData,
-      questionnaireAnswers: answers, // Add answers at the highest level
-    }));
+
+    const updatedSubjectData = {
+      ...subjectData,
+      questionnaireAnswers: answers,
+    };
+    setSubjectData(updatedSubjectData);
+    await uploadTestSubject(updatedSubjectData.subjectId, updatedSubjectData);
 
     // Move to the next step
     moveToNextStep();
@@ -500,7 +502,7 @@ const Testing = ({ setUploadsEnabled }) => {
             </div>
             <div className="text-justify">
               Record yourself and visualize your recordings following the
-              reference audio within the next 5 minutes. You make sing each note
+              reference audio within the next 5 minutes. You may sing each note
               in the reference audio on a consonant sound (la, na, etc.). You do
               not have to use up all of the five minutes, but you must analyze
               at least one recording.{" "}
@@ -527,11 +529,8 @@ const Testing = ({ setUploadsEnabled }) => {
                   </TertiaryButton>
                 </div>
               </div>
-              <div className="h-[100px] w-full bg-lightgray/25 p-4 rounded-3xl">
-                <ResponsiveWaveformPlayer
-                  audioUrl={testingAudioUrl}
-                  highlightedSections={[]}
-                />
+              <div className="w-full bg-lightgray/25 p-4 rounded-3xl">
+                <AudioPlayback audioUrl={testingAudioUrl} />
               </div>
             </div>
             {!analyzeMode && !uploadedFile && (

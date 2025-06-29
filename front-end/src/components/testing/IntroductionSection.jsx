@@ -15,7 +15,7 @@ const IntroductionSection = ({ handleNextStep, subjectData }) => {
         Introduction{" "}
       </h1>
       <div className="flex flex-col items-center justify-center w-full md:w-1/2 text-justify">
-        <p className="mb-6 ">
+        <p className="mb-6 font-bold">
           Thank you for participating in this study! This experiment is designed
           to explore how visual feedback of audio features may support the
           improvement of music performance.
@@ -24,10 +24,12 @@ const IntroductionSection = ({ handleNextStep, subjectData }) => {
           You will be randomly assigned to start with one of two rounds of the
           experiment, both of which involve recording yourself singing short
           musical phrases under specific conditions. You will be asked to
-          complete both rounds of the experiment. Please ensure that you have a
-          quiet space to record your audio, that you have a microphone
-          available, and that you are in a comfortable environment where you can
-          focus on your performance.
+          complete both rounds of the experiment.
+        </p>
+        <p className="mb-6">
+          Please ensure that you have a quiet space to record your audio and
+          that you are in a comfortable environment where you can focus on your
+          performance.
         </p>
         <p className="mb-6 font-bold">
           Before you begin, please answer the following question to help us
