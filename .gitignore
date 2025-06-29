@@ -45,3 +45,4 @@ docker-compose.override.yml
 # Exclude static audio files
 python-service/static/audio/
 python-service/testing/
+python-service/generated_sounds/soundfiles/
