@@ -198,8 +198,7 @@ const Testing = ({ setUploadsEnabled }) => {
         randomizedGroup === "feedback" ? `${feedbackStage}-` : ""
       }${TEST_FEATURES[currentTestFeatureIndex]}-${attemptCount}.wav`;
       setCurrentAudioName(fileName);
-      // setTestGroup(randomizedGroup);
-      setTestGroup("feedback");
+      setTestGroup(randomizedGroup);
 
       setSubjectData((prevData) => ({
         ...prevData,
