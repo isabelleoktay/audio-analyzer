@@ -4,9 +4,9 @@ const ConsentCard = ({ handleConsent }) => {
   return (
     <div className="flex flex-col items-center justify-center h-screen text-lightgray">
       <h1 className="text-5xl text-electricblue font-bold mb-8">
-        Welcome to the FeeVa Test
+        Welcome to the Audio Analyzer Test
       </h1>
-      <div className="text-justify w-1/2">
+      <div className="text-justify w-full md:w-1/2">
         <p className="mb-6">
           By participating in this study, you acknowledge that audio recordings
           will be collected and used for educational and scientific research

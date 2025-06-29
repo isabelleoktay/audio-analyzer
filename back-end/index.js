@@ -23,8 +23,9 @@ app.use(express.urlencoded({ limit: "16mb", extended: true }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+const env = process.env.NODE_ENV || "development";
 // Enable HTTP request logging in non-production environments
-if (process.env.NODE_ENV !== "production") {
+if (env !== "production") {
   app.use(morgan("dev"));
 }
 
@@ -44,7 +45,7 @@ const port = process.env.PORT || 5000;
  */
 const start = async () => {
   try {
-    await connectDB(process.env.MONGODB_URI);
+    await connectDB(env);
     app.listen(port, () =>
       console.log(`Server is listening on port ${port}...`)
     );

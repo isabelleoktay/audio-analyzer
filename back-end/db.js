@@ -12,8 +12,11 @@ const private_key = process.env.VPS_PRIVATE_KEY;
  *
  * @param {string} url - The MongoDB connection string.
  */
-const connectDB = async (url) => {
+const connectDB = async (env) => {
   mongoose.set("strictQuery", false);
+
+  const url =
+    env === "production" ? process.env.PROD_DB_URL : process.env.DEV_DB_URL; // Use different URLs for production and development
 
   if (private_key) {
     const privateKey = fs.readFileSync(private_key);

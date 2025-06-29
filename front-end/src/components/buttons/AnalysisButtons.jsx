@@ -26,8 +26,11 @@ const AnalysisButtons = ({
       onAnalysisFeatureSelect(btn.label);
       if (!audioFeatures[btn.label]) {
         const featureResult = await processFeatures(uploadedFile, btn.label);
+
+        const isDataInvalid = !Array.isArray(featureResult.data);
+
         const featureData = {
-          data: featureResult.data,
+          data: isDataInvalid ? "invalid" : featureResult.data, // Set to "invalid" if all values are NaN
           sampleRate: featureResult.sample_rate,
           audioUrl: featureResult.audio_url || "",
           duration: featureResult.duration || 0,

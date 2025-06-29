@@ -4,21 +4,21 @@ const FeatureInstructionsList = () => {
       <li className="flex flex-col items-start justify-start space-y-1">
         <div className="font-bold text-darkpink text-lg">Pitch Accuracy</div>
         <div>
-          Sing the phrase as closely as possible to the correct pitch shown in
-          the reference audio.
+          Sing the musical phrase as closely as possible to the pitch of the
+          reference audio.
         </div>
       </li>
       <li className="flex flex-col items-start justify-start space-y-1">
         <div className="font-bold text-darkpink text-lg">Constant Dynamics</div>
         <div>
-          Sing the phrase with consistent loudness (volume) from start to
-          finish.
+          Sing the musical phrase following the loudness levels of the reference
+          audio.
         </div>
       </li>
       <li className="flex flex-col items-start justify-start space-y-1">
         <div className="font-bold text-darkpink text-lg">Constant Tempo</div>
         <div>
-          Sing the phrase at a steady speed, matching the tempo of the reference
+          Sing the musical phrase following the tempo changes of the reference
           audio.
         </div>
       </li>

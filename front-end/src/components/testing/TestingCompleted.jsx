@@ -56,7 +56,7 @@ const TestingCompleted = ({ subjectData }) => {
       </div>
       <div className="flex flex-col items-center justify-center w-full space-y-4">
         <SecondaryButton onClick={() => (window.location.href = "/")}>
-          go to home page
+          go to audio analyzer
         </SecondaryButton>
         <SecondaryButton onClick={downloadSubjectData}>
           download subject data
@@ -64,8 +64,8 @@ const TestingCompleted = ({ subjectData }) => {
       </div>
       <div className="text-lg text-justify">
         {" "}
-        Please fill out our feedback form to provide a more detailed
-        understanding of your experience with the audio analyzer.
+        Please fill out our feedback form to provide some more details on your
+        experience with the audio analyzer.
       </div>
       <div className="flex items-center space-x-2">
         <SecondaryButton onClick={handleFeedback}>

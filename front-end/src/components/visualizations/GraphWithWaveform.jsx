@@ -60,6 +60,10 @@ const GraphWithWaveform = ({
         <div>select an analysis feature above to start analyzing audio </div>
       ) : featureData.length === 0 && selectedAnalysisFeature ? (
         <LoadingSpinner />
+      ) : featureData === "invalid" ? (
+        <div className="text-lightpink text-xl font-semibold">
+          Not enough data to compute
+        </div>
       ) : (
         featureData &&
         featureData[selectedDataIndex] && (
@@ -138,6 +142,8 @@ const GraphWithWaveform = ({
                         ? "hz"
                         : featureData[selectedDataIndex]?.label === "tempo"
                         ? "beats per minute (bpm)"
+                        : selectedAnalysisFeature === "phonation"
+                        ? "probabilty"
                         : selectedAnalysisFeature
                     }
                     highlightedSections={

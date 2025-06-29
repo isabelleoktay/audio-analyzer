@@ -131,9 +131,8 @@ const RecordAudioSection = ({
               type="text"
               value={audioName}
               onChange={handleRename}
-              style={{ width: `${Math.max(audioName?.length, 10)}ch` }}
               disabled={testingEnabled}
-              className="text-lightgray text-xl font-semibold bg-transparent focus:outline-none"
+              className="w-full overflow-hidden text-ellipsis whitespace-nowrap text-lightgray text-xl font-semibold bg-transparent focus:outline-none"
             />
           )}
         </div>

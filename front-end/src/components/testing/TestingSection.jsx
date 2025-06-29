@@ -1,42 +1,45 @@
-import { useCallback } from "react";
 import ResponsiveWaveformPlayer from "../visualizations/ResponsiveWaveformPlayer";
 
 const TestingSection = ({
+  completedGroupsRef,
   currentTestFeature,
   attemptCount,
   testGroup,
+  feedbackStage,
   children,
+  audioUrl,
 }) => {
-  const getAudioUrl = useCallback(() => {
-    // Assuming your audio files are in the public folder
-    // You can adjust the path structure based on your actual file organization
-    if (testGroup === "feedback") {
-      return `/audio/twinkle_twinkle_little_star_g.m4a`;
-    } else if (testGroup === "none") {
-      return `/audio/mary_had_a_little_lamb_g.m4a`;
-    }
-    // Default fallback
-    return `/audio/twinkle_twinkle_little_star_g.m4a`;
-  }, [testGroup]);
-
-  const audioUrl = getAudioUrl();
-
   return (
     <div className="flex flex-col items-center justify-center h-screen text-lightgray w-1/2 space-y-6">
       <div className="flex flex-col self-start mb-8 space-y-2">
         <div className="text-4xl text-electricblue font-bold">
           {currentTestFeature === "pitch"
-            ? "Pitch Accuracy"
+            ? "Pitch"
             : currentTestFeature === "dynamics"
-            ? "Constant Dynamics"
-            : "Constant Tempo"}
+            ? "Dynamics"
+            : "Tempo"}
+          {testGroup === "feedback" &&
+            `${
+              feedbackStage === "before"
+                ? " - Before Visualizer"
+                : " - After Visualizer"
+            }`}
         </div>
-        <div>
-          {currentTestFeature === "pitch"
-            ? "Sing the phrase as closely as possible to the correct pitch shown in the reference audio."
-            : currentTestFeature === "dynamics"
-            ? "Sing the phrase with consistent loudness (volume) from start to finish."
-            : "Sing the phrase at a steady speed, matching the tempo of the reference audio."}
+        <div className="text-justify">
+          {feedbackStage === "after" &&
+            `Given your experience in the previous round, you will now be asked to record yourself once more with respect to ${currentTestFeature}. `}
+          You will have three attempts to reproduce the reference audio. You
+          make sing each note in the reference audio on a consonant sound (la,
+          na, etc.). Once you submit your recording, you will be automatically
+          directed to a short questionnaire before moving on to the{" "}
+          {feedbackStage === "before" && testGroup === "feedback"
+            ? "visualization tool"
+            : currentTestFeature === "tempo"
+            ? completedGroupsRef.current.length === 0
+              ? "instructions for the next testing round"
+              : "final questionnaire"
+            : "next reference audio"}
+          .
         </div>
       </div>
       <div className="flex flex-col items-start w-full space-y-2">

@@ -66,7 +66,7 @@ const App = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-radial from-bluegray to-blueblack">
+    <div className="min-h-screen bg-radial from-bluegray to-blueblack bg-fixed">
       <Router>
         <Layout>
           {/* Navigation bar with reset functionality and tooltip controls */}

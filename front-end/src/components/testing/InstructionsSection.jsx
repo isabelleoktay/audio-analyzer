@@ -6,31 +6,61 @@ const InstructionsSection = ({ testGroup, feedbackStage, handleNextStep }) => {
   return (
     <div className="flex flex-col items-center justify-center h-screen text-lightgray">
       <h1 className="text-5xl text-electricblue font-bold mb-8">
-        {testGroup === "feedback"
-          ? `Round 1 - Stage ${
-              feedbackStage === "before"
-                ? "1"
-                : feedbackStage === "during"
-                ? "2"
-                : "3"
-            }`
-          : "Round 2"}{" "}
-        - Instructions
+        {testGroup === "feedback" ? `Round A` : "Round B"}
       </h1>
-      <div className="flex flex-col items-start justify-center w-1/2 text-justify space-y-6 mb-8">
+      <div className="flex flex-col items-start justify-center w-full md:w-1/2 text-justify space-y-6 mb-8">
         {testGroup === "feedback" ? (
           feedbackStage === "before" ? (
             <>
               <p>
-                In this round, you will be provided with a reference audio
-                example of a short musical phrase. You are first asked to record
-                yourself following the reference audio based on the following
-                three parameters:
+                In this round, you will be provided with multiple reference
+                audios of short musical phrases. Each phrase corresponds with
+                one of the following audio features:
               </p>
-              <FeatureInstructionsList />
+              <ul className="flex flex-col font-bold self-start space-y-2 ml-20">
+                <li>Pitch</li>
+                <li>Dynamics (Loudness)</li>
+                <li>Tempo (Timing)</li>
+              </ul>
               <p>
-                You will have up to three attempts for each of these tasks. If
-                you are ready, please proceed to this task by clicking next.
+                For each feature, you will be asked to complete the following
+                tasks:
+              </p>
+              <ol className="flex flex-col self-start space-y-2 ml-20">
+                <li>
+                  <span className="text-lightpink font-bold text-lg">
+                    Record.
+                  </span>{" "}
+                  Listen carefully to the reference audio. Record yourself
+                  replicating the reference audio as close as possible. You will
+                  be given up to three attempts to reproduce the musical phrase
+                  of the reference audio, but you do not have to use up all your
+                  attempts.
+                </li>
+                <li>
+                  <span className="text-lightpink font-bold text-lg">
+                    Visualize.{" "}
+                  </span>{" "}
+                  Interact with an audio feature visualization tool. You are
+                  asked to record yourself reproducing the reference audio and
+                  use the available audio analysis tool to reflect on your
+                  recordings. You are given a maximum 5 minute window to use the
+                  audio analysis tool. Instructions for how to use the tool will
+                  be provided when you reach this step.
+                </li>
+                <li>
+                  <span className="text-lightpink font-bold text-lg">
+                    Record.{" "}
+                  </span>{" "}
+                  Once more, record yourself replicating the same reference
+                  audio as close as possible. You will be given up to three
+                  attempts to reproduce the musical phrase of the reference
+                  audio, but you do not have to use up all your attempts.
+                </li>
+              </ol>
+
+              <p className="font-bold">
+                If you are ready, please proceed to this task by clicking next.
               </p>
             </>
           ) : feedbackStage === "during" ? (
