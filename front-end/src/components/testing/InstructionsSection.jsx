@@ -4,11 +4,11 @@ import SecondaryButton from "../buttons/SecondaryButton";
 const InstructionsSection = ({ testGroup, feedbackStage, handleNextStep }) => {
   console.log("testGroup", testGroup);
   return (
-    <div className="flex flex-col items-center justify-center h-screen text-lightgray">
+    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray">
       <h1 className="text-5xl text-electricblue font-bold mb-8">
         {testGroup === "feedback" ? `Round A` : "Round B"}
       </h1>
-      <div className="flex flex-col items-start justify-center w-full md:w-1/2 text-justify space-y-6 mb-8">
+      <div className="flex flex-col items-start text-sm md:text-base justify-center w-full md:w-1/2 text-justify space-y-6 mb-8">
         {testGroup === "feedback" ? (
           feedbackStage === "before" ? (
             <>
@@ -17,7 +17,7 @@ const InstructionsSection = ({ testGroup, feedbackStage, handleNextStep }) => {
                 audios of short musical phrases. Each phrase corresponds with
                 one of the following audio features:
               </p>
-              <ul className="flex flex-col font-bold self-start space-y-2 ml-20">
+              <ul className="flex flex-col font-bold self-start space-y-2 ml-0 md:ml-20">
                 <li>Pitch</li>
                 <li>Dynamics (Loudness)</li>
                 <li>Tempo (Timing)</li>
@@ -26,9 +26,9 @@ const InstructionsSection = ({ testGroup, feedbackStage, handleNextStep }) => {
                 For each feature, you will be asked to complete the following
                 tasks:
               </p>
-              <ol className="flex flex-col self-start space-y-2 ml-20">
+              <ol className="flex flex-col self-start space-y-2 ml-0 md:ml-20">
                 <li>
-                  <span className="text-lightpink font-bold text-lg">
+                  <span className="text-lightpink font-bold text-base md:text-lg">
                     Record.
                   </span>{" "}
                   Listen carefully to the reference audio. Record yourself
@@ -38,7 +38,7 @@ const InstructionsSection = ({ testGroup, feedbackStage, handleNextStep }) => {
                   attempts.
                 </li>
                 <li>
-                  <span className="text-lightpink font-bold text-lg">
+                  <span className="text-lightpink font-bold text-base md:text-lg">
                     Visualize.{" "}
                   </span>{" "}
                   Interact with an audio feature visualization tool. You are
@@ -49,7 +49,7 @@ const InstructionsSection = ({ testGroup, feedbackStage, handleNextStep }) => {
                   be provided when you reach this step.
                 </li>
                 <li>
-                  <span className="text-lightpink font-bold text-lg">
+                  <span className="text-lightpink font-bold text-base md:text-lg">
                     Record.{" "}
                   </span>{" "}
                   Once more, record yourself replicating the same reference

@@ -20,9 +20,9 @@ const TestingSection = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen text-lightgray w-full md:w-1/2 space-y-6">
-      <div className="flex flex-col self-start mb-8 space-y-2">
-        <div className="text-4xl text-electricblue font-bold">
+    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray w-full md:w-1/2 space-y-6">
+      <div className="flex flex-col self-start mb-2 md:mb-8 space-y-2">
+        <div className="text-2xl md:text-4xl text-electricblue font-bold">
           {currentTestFeature === "pitch"
             ? "Pitch"
             : currentTestFeature === "dynamics"
@@ -35,7 +35,7 @@ const TestingSection = ({
                 : " - After Visualizer"
             }`}
         </div>
-        <div className="text-justify">
+        <div className="text-sm md:text-base text-justify">
           {feedbackStage === "after" &&
             `Given your experience in the previous round, you will now be asked to record yourself once more with respect to ${currentTestFeature}. `}
           You will have three attempts to reproduce the reference audio.{" "}
@@ -58,8 +58,10 @@ const TestingSection = ({
       </div>
       <div className="flex flex-col items-start w-full space-y-2">
         <div className="flex flex-row items-end justify-between w-full">
-          <div className="text-xl font-semibold">Reference Audio</div>
-          <div className="text-sm text-warmyellow bg-bluegray rounded-2xl px-4 py-2 w-fit">
+          <div className="text-lg md:text-xl font-semibold">
+            Reference Audio
+          </div>
+          <div className="text-sm text-warmyellow bg-bluegray rounded-2xl px-2 py-1 md:px-4 md:py-2 w-fit">
             <span className="font-bold">attempts remaining:</span>{" "}
             {3 - attemptCount}
           </div>

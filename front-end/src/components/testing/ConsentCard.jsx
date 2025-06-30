@@ -2,7 +2,7 @@ import SecondaryButton from "../buttons/SecondaryButton";
 
 const ConsentCard = ({ handleConsent }) => {
   return (
-    <div className="flex flex-col items-center justify-center h-screen text-lightgray">
+    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray">
       <h1 className="text-5xl text-electricblue font-bold mb-8">
         Welcome to the Audio Analyzer Test
       </h1>

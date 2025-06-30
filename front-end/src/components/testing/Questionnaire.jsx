@@ -24,7 +24,7 @@ const Questionnaire = ({ onSubmit }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center text-center h-screen text-lightgray w-full md:w-1/2 gap-4 md:gap-6">
+    <div className="flex flex-col items-center justify-center text-center min-h-screen text-lightgray w-full md:w-1/2 gap-4 md:gap-6">
       <div className="flex flex-col mb-8 space-y-8">
         <div className="text-4xl text-electricblue font-bold">
           Final Questionnaire

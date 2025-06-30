@@ -36,6 +36,14 @@ module.exports = {
           borderStyle: "dashed",
           borderDasharray: "10 5",
         },
+        ".no-scrollbar": {
+          /* Hide scrollbar for modern browsers */
+          scrollbarWidth: "none" /* Firefox */,
+          "-ms-overflow-style": "none" /* IE and Edge */,
+        },
+        ".no-scrollbar::-webkit-scrollbar": {
+          display: "none" /* Chrome, Safari, and Edge */,
+        },
       });
     },
   ],

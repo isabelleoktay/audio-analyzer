@@ -34,7 +34,7 @@ const Rating = ({
     ) {
       return "Once you submit your response, you will be redirected to the final questionnaire.";
     } else {
-      if (feedbackStage === "before") {
+      if (feedbackStage === "before" && testGroup === "feedback") {
         return "Once you submit your response, you will automatically be directed to the visualization tool.";
       }
       return "Once you submit your response, you will automatically be directed to the next reference audio.";
@@ -42,7 +42,7 @@ const Rating = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center text-center h-screen text-lightgray w-full md:w-1/2 space-y-6">
+    <div className="flex flex-col items-center justify-center text-center min-h-screen text-lightgray w-full md:w-1/2 space-y-6">
       <div className="flex flex-col items-center justify-center mb-8 space-y-8">
         <div className="flex flex-col w-full space-y-2">
           <div className="text-4xl text-electricblue font-bold capitalize">

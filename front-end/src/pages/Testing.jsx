@@ -432,7 +432,7 @@ const Testing = ({ setUploadsEnabled }) => {
   console.log(subjectData);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen text-lightgray">
+    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray my-20 md:my-0">
       {STEPS[currentStepIndex] === "consent" && (
         <ConsentCard handleConsent={handleConsent} />
       )}
@@ -495,12 +495,12 @@ const Testing = ({ setUploadsEnabled }) => {
       )}
 
       {STEPS[currentStepIndex] === "feedback" && (
-        <div className="flex flex-col items-center justify-start h-screen text-lightgray w-full space-y-6 mb-20 overflow-y-scroll overflow-x-scroll">
-          <div className="flex flex-col items-center justify-self-start space-y-2 mt-20 w-full md:w-1/2">
-            <div className="text-4xl text-electricblue font-bold capitalize">
+        <div className="flex flex-col items-center justify-start min-h-screen text-lightgray w-full space-y-6">
+          <div className="flex flex-col items-center justify-self-start space-y-2 mt-0 md:mt-20 w-full md:w-1/2">
+            <div className="text-2xl md:text-4xl text-electricblue font-bold capitalize">
               Visualization Tool - {TEST_FEATURES[currentTestFeatureIndex]}
             </div>
-            <div className="text-justify">
+            <div className="text-sm md:text-base text-justify">
               Record yourself and visualize your recordings following the
               reference audio within the next 5 minutes. You may sing each note
               in the reference audio on a consonant sound (la, na, etc.). You do
@@ -517,7 +517,9 @@ const Testing = ({ setUploadsEnabled }) => {
           <div className="flex flex-col items-center justify-center w-full md:w-1/2 gap-8">
             <div className="flex flex-col items-start w-full space-y-2">
               <div className="flex flex-row items-end justify-between w-full">
-                <div className="text-xl font-semibold">Reference Audio</div>
+                <div className="text-lg md:text-xl font-semibold">
+                  Reference Audio
+                </div>
                 <div className="flex flex-row space-x-2 items-end">
                   <Timer onTimerFinish={handleTimerFinish} />
                   <TertiaryButton

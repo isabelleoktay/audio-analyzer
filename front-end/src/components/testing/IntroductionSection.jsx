@@ -10,7 +10,7 @@ const IntroductionSection = ({ handleNextStep, subjectData }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen text-lightgray mt-20 md:mt-0 mb-28">
+    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray my-32 md:my-0">
       <h1 className="text-5xl text-electricblue font-bold mb-8">
         Introduction{" "}
       </h1>
