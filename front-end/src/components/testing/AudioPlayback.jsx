@@ -78,7 +78,7 @@ const AudioPlayback = ({ audioUrl }) => {
   };
 
   return (
-    <div className="flex flex-row items-center space-x-4 w-full mx-auto">
+    <div className="flex flex-row items-center gap-4 w-full mx-auto">
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
       <SecondaryButton onClick={togglePlayPause} className="aspect-square">
         {isPlaying ? <FaPause /> : <FaPlay />}

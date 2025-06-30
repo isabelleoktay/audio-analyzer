@@ -241,10 +241,8 @@ const Analyzer = ({
                       {uploadedFile.name}
                     </div>
                     <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
-                      {" "}
                       {/* Add overflow-x-auto on mobile only */}
                       <div className="w-full lg:min-w-[800px]">
-                        {" "}
                         {/* Ensure 800px minimum width */}
                         <GraphWithWaveform
                           key={audioFeatures[selectedAnalysisFeature]?.audioUrl}

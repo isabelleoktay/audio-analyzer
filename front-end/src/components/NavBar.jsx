@@ -96,7 +96,9 @@ const NavBar = ({
 
         {/* Right Section - Desktop */}
         <div className="flex items-center space-x-2">
-          <SecondaryButton onClick={handleFeedback}>feedback</SecondaryButton>
+          <SecondaryButton onClick={handleFeedback}>
+            feedback form
+          </SecondaryButton>
         </div>
       </div>
 
@@ -202,7 +204,7 @@ const NavBar = ({
                 }}
                 className="w-full"
               >
-                feedback
+                feedback form
               </SecondaryButton>
             </div>
           </div>

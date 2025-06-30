@@ -2,7 +2,8 @@ export const createHighlightedSections = (
   chartGroup,
   highlightedSections,
   xScale,
-  innerHeight
+  innerHeight,
+  feature
 ) => {
   highlightedSections.forEach((section) => {
     chartGroup
@@ -13,7 +14,7 @@ export const createHighlightedSections = (
       .attr("y", 0)
       .attr("width", xScale(section.end) - xScale(section.start))
       .attr("height", innerHeight)
-      .attr("fill", "#FFCB6B")
+      .attr("fill", feature === "pitch" ? "#FF89BB" : "#FFCB6B") // Red for pitch, yellow otherwise
       .attr("opacity", 0.25);
   });
 };

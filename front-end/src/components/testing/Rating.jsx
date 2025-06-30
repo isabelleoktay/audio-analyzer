@@ -42,8 +42,8 @@ const Rating = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center text-center h-screen text-lightgray w-1/2 space-y-6">
-      <div className="flex flex-col mb-8 space-y-12">
+    <div className="flex flex-col items-center justify-center text-center h-screen text-lightgray w-full md:w-1/2 space-y-6">
+      <div className="flex flex-col items-center justify-center mb-8 space-y-8">
         <div className="flex flex-col w-full space-y-2">
           <div className="text-4xl text-electricblue font-bold capitalize">
             {currentTestFeature} {testGroup === "feedback" ? feedbackStage : ""}{" "}
@@ -54,14 +54,14 @@ const Rating = ({
           </div>
         </div>
         <div className="flex flex-col items-center justify-center w-full space-y-6 bg-blueblack/25 p-6 rounded-3xl">
-          <div className="text-2xl text-center text-lightgray">
+          <div className="text-lg md:text-2xl text-left md:text-center text-lightgray">
             How would you rate your{" "}
             <span className="text-darkpink font-semibold">
               {currentTestFeature} performance
             </span>{" "}
             on a scale from 1 (lowest) to 10 (highest)?
           </div>
-          <div className="flex flex-row space-x-4">
+          <div className="grid grid-cols-5 md:grid-cols-10 gap-4">
             {Array.from({ length: 10 }, (_, index) => (
               <label
                 key={index}
@@ -80,7 +80,7 @@ const Rating = ({
                   className="hidden"
                 />
                 <div
-                  className={`w-10 h-10 flex items-center justify-center rounded-full border-2 ${
+                  className={`w-7 h-7 text-sm md:text-base md:w-10 md:h-10 flex items-center justify-center rounded-full border-2 ${
                     selectedValue === index + 1
                       ? "border-lightpink bg-darkpink text-white"
                       : "border-gray-300 bg-white hover:border-lightpink hover:bg-lightpink hover:text-white"
@@ -91,10 +91,10 @@ const Rating = ({
               </label>
             ))}
           </div>
-          <SecondaryButton className="w-fit" onClick={handleSubmit}>
-            Submit
-          </SecondaryButton>
         </div>
+        <SecondaryButton className="w-fit" onClick={handleSubmit}>
+          Submit
+        </SecondaryButton>
       </div>
     </div>
   );

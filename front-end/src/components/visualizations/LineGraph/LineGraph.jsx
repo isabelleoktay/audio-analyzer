@@ -100,7 +100,8 @@ const LineGraph = ({
       chartGroup,
       highlightedSections,
       xScale,
-      innerHeight
+      innerHeight,
+      feature
     );
 
     // Create main chart (line and area)
@@ -213,9 +214,9 @@ const LineGraph = ({
 
     brushOverlay
       .selectAll(".selection")
-      .style("fill", "#FF89BB")
+      .style("fill", "#90F1EF")
       .style("fill-opacity", 0.2)
-      .style("stroke", "#FF89BB")
+      .style("stroke", "#90F1EF")
       .style("stroke-width", 1);
 
     // Add mouse events for tooltips

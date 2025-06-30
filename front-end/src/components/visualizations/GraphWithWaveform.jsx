@@ -69,26 +69,32 @@ const GraphWithWaveform = ({
         featureData[selectedDataIndex] && (
           <>
             {/* Render buttons for each data object */}
-            <div
-              className={`flex flex-row items-end w-full ${
-                featureData[selectedDataIndex].label === "pitch" ||
-                featureData[selectedDataIndex].label === "dynamics" ||
-                featureData[selectedDataIndex].label === "vibrato"
-                  ? "justify-between"
-                  : "justify-end"
-              }`}
-            >
-              {(featureData[selectedDataIndex].label === "pitch" ||
-                featureData[selectedDataIndex].label === "dynamics" ||
-                featureData[selectedDataIndex].label === "vibrato") && (
-                <div className="text-sm text-lightgray">{`highlighted areas indicate ${
-                  featureData[selectedDataIndex].label === "pitch"
-                    ? "most off-pitch moments"
-                    : featureData[selectedDataIndex].label === "dynamics"
-                    ? "most variable moments of loudness"
-                    : "moments of detected vibrato"
-                }`}</div>
-              )}
+            <div className={`flex flex-row items-end w-full justify-between`}>
+              <ul className="text-sm text-lightgray">
+                {(selectedAnalysisFeature === "pitch" ||
+                  selectedAnalysisFeature === "dynamics" ||
+                  selectedAnalysisFeature === "vibrato") && (
+                  <li>
+                    highlighted areas indicate{" "}
+                    <span
+                      className={`font-bold ${
+                        featureData[selectedDataIndex].label === "pitch"
+                          ? "text-darkpink"
+                          : "text-warmyellow"
+                      }`}
+                    >
+                      {featureData[selectedDataIndex].label === "pitch"
+                        ? "most off-pitch moments"
+                        : featureData[selectedDataIndex].label === "dynamics"
+                        ? "fastest changes in loudness"
+                        : "detected vibrato moments"}
+                    </span>
+                  </li>
+                )}
+                <li className="font-bold text-lightpink">
+                  click and drag on the graph area to zoom in!
+                </li>
+              </ul>
               <div className="flex space-x-4 self-end">
                 {featureData?.map((d, index) => (
                   <div
@@ -183,6 +189,7 @@ const GraphWithWaveform = ({
                 </div>
               </Tooltip>
               <WaveformPlayer
+                feature={featureData[selectedDataIndex]?.label}
                 key={audioURL}
                 audioUrl={audioURL}
                 // width={width - leftMargin - rightMargin}

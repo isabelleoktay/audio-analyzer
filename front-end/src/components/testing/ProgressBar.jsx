@@ -2,7 +2,7 @@ const ProgressBar = ({ currentStep, totalSteps }) => {
   const progressPercentage = Math.round((currentStep / totalSteps) * 100);
 
   return (
-    <div className="fixed bottom-0 w-full">
+    <div className="fixed bottom-0 w-full z-20 pt-2 bg-blueblack/50">
       {/* Label above the progress bar */}
       <div className="text-center font-bold text-lightpink mb-2">
         Progress Bar

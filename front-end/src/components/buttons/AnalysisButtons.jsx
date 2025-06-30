@@ -41,17 +41,17 @@ const AnalysisButtons = ({
           [btn.label]: featureData,
         }));
 
-        console.log(featureResult);
+        // console.log(featureResult);
 
         if (uploadsEnabled) {
-          console.log("Uploading audio...");
+          // console.log("Uploading audio...");
           const uploadResult = await uploadAudio(
             uploadedFile,
             audioUuid,
             selectedInstrument,
             { ...audioFeatures, [btn.label]: featureData }
           );
-          console.log(uploadResult);
+          // console.log(uploadResult);
           setAudioUuid(uploadResult.id);
         }
       }

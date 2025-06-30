@@ -495,8 +495,8 @@ const Testing = ({ setUploadsEnabled }) => {
       )}
 
       {STEPS[currentStepIndex] === "feedback" && (
-        <div className="flex flex-col items-center justify-start h-screen text-lightgray w-full space-y-6">
-          <div className="flex flex-col items-center justify-self-start space-y-2 mt-20 w-1/2">
+        <div className="flex flex-col items-center justify-start h-screen text-lightgray w-full space-y-6 mb-20 overflow-y-scroll overflow-x-scroll">
+          <div className="flex flex-col items-center justify-self-start space-y-2 mt-20 w-full md:w-1/2">
             <div className="text-4xl text-electricblue font-bold capitalize">
               Visualization Tool - {TEST_FEATURES[currentTestFeatureIndex]}
             </div>
@@ -514,7 +514,7 @@ const Testing = ({ setUploadsEnabled }) => {
             </div>
           </div>
 
-          <div className="flex flex-col items-center justify-center w-1/2 space-y-8">
+          <div className="flex flex-col items-center justify-center w-full md:w-1/2 gap-8">
             <div className="flex flex-col items-start w-full space-y-2">
               <div className="flex flex-row items-end justify-between w-full">
                 <div className="text-xl font-semibold">Reference Audio</div>
@@ -550,12 +550,13 @@ const Testing = ({ setUploadsEnabled }) => {
           </div>
 
           {uploadedFile && (
-            <div className="flex flex-col items-center justify-center w-full space-y-6">
-              <div className="flex flex-col justify-center items-center w-fit space-y-2">
-                <div className="text-xl font-semibold text-lightpink mb-1 self-start">
-                  Your Recording
-                </div>
-                <div className="bg-lightgray/25 rounded-3xl w-fit p-8">
+            <div className="flex flex-col w-full lg:w-fit gap-2">
+              <div className="text-xl font-semibold text-lightpink">
+                Your Recording
+              </div>
+              <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
+                {/* Add overflow-x-auto on mobile only */}
+                <div className="w-full lg:min-w-[800px]">
                   <GraphWithWaveform
                     key={audioFeatures?.audioUrl}
                     audioURL={audioFeatures?.audioUrl}
@@ -566,11 +567,11 @@ const Testing = ({ setUploadsEnabled }) => {
                     audioDuration={audioFeatures?.duration}
                   />
                 </div>
-                <div className="flex flex-row self-end space-x-2">
-                  <SecondaryButton onClick={handleAnalyzeNewRecording}>
-                    analyze new recording
-                  </SecondaryButton>
-                </div>
+              </div>
+              <div className="flex flex-row self-end space-x-2">
+                <SecondaryButton onClick={handleAnalyzeNewRecording}>
+                  analyze new recording
+                </SecondaryButton>
               </div>
             </div>
           )}

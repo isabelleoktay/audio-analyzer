@@ -20,7 +20,7 @@ const TestingSection = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen text-lightgray w-1/2 space-y-6">
+    <div className="flex flex-col items-center justify-center h-screen text-lightgray w-full md:w-1/2 space-y-6">
       <div className="flex flex-col self-start mb-8 space-y-2">
         <div className="text-4xl text-electricblue font-bold">
           {currentTestFeature === "pitch"

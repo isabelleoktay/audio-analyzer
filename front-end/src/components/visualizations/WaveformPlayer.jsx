@@ -20,6 +20,7 @@ const WaveformPlayer = ({
   startTime,
   endTime,
   audioDuration,
+  feature,
 }) => {
   const containerRef = useRef();
   const timelineRef = useRef();
@@ -142,7 +143,10 @@ const WaveformPlayer = ({
 
       highlightedSections.forEach(({ start, end }) => {
         regionsPlugin.addRegion({
-          color: "rgba(255, 203, 107, 0.25)",
+          color:
+            feature === "pitch"
+              ? "rgba(255, 137, 187, 0.25)"
+              : "rgba(255, 203, 107, 0.25)", // Dynamic color based on feature
           start: start,
           end: end,
           drag: false,
@@ -151,14 +155,23 @@ const WaveformPlayer = ({
       });
 
       regionsPlugin.on("region-clicked", (region, e) => {
-        region.setOptions({ color: "rgba(255, 203, 107, 0.5)" });
+        region.setOptions({
+          color:
+            feature === "pitch"
+              ? "rgba(255, 137, 187, 0.5)"
+              : "rgba(255, 203, 107, 0.5)", // Highlighted color
+        });
         e.stopPropagation(); // prevent triggering a click on the waveform
         region.play(true);
       });
 
       regionsPlugin.on("region-out", (region) => {
-        // region.play();
-        region.setOptions({ color: "rgba(255, 203, 107, 0.25)" });
+        region.setOptions({
+          color:
+            feature === "pitch"
+              ? "rgba(255, 137, 187, 0.25)"
+              : "rgba(255, 203, 107, 0.25)", // Reset color
+        });
       });
     }
 
@@ -167,7 +180,7 @@ const WaveformPlayer = ({
         regionsPlugin.unAll();
       }
     };
-  }, [isReady, regionsPlugin, wavesurfer, highlightedSections]);
+  }, [isReady, regionsPlugin, wavesurfer, highlightedSections, feature]);
 
   useEffect(() => {
     const container = containerRef.current;

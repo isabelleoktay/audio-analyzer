@@ -66,60 +66,70 @@ const App = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-radial from-bluegray to-blueblack bg-fixed">
-      <Router>
-        <Layout>
-          {/* Navigation bar with reset functionality and tooltip controls */}
-          <NavBar
-            handleReset={handleReset}
-            uploadsEnabled={uploadsEnabled}
-            setUploadsEnabled={setUploadsEnabled}
-            setTooltipMode={setTooltipMode}
-            tooltipMode={tooltipMode}
-          />
-          <Routes>
-            {/* Main Analyzer page for audio analysis */}
-            <Route
-              path="/"
-              element={
-                <Analyzer
-                  selectedInstrument={selectedInstrument}
-                  setSelectedInstrument={setSelectedInstrument}
-                  uploadedFile={uploadedFile}
-                  setUploadedFile={setUploadedFile}
-                  inRecordMode={inRecordMode}
-                  setInRecordMode={setInRecordMode}
-                  setAudioBlob={setAudioBlob}
-                  audioBlob={audioBlob}
-                  setAudioName={setAudioName}
-                  audioName={audioName}
-                  setAudioURL={setAudioURL}
-                  audioURL={audioURL}
-                  selectedAnalysisFeature={selectedAnalysisFeature}
-                  setSelectedAnalysisFeature={setSelectedAnalysisFeature}
-                  audioFeatures={audioFeatures}
-                  setAudioFeatures={setAudioFeatures}
-                  handleReset={handleReset}
-                  tooltipMode={tooltipMode}
-                  audioUuid={audioUuid}
-                  setAudioUuid={setAudioUuid}
-                  uploadsEnabled={uploadsEnabled}
-                  setUploadsEnabled={setUploadsEnabled}
-                />
-              }
-            />
-            {/* Testing page for additional functionality */}
-            <Route
-              path="/testing"
-              element={<Testing setUploadsEnabled={setUploadsEnabled} />}
-            />
-            <Route path="/how-to-use" element={<HowToUse />} />
+    <div className="relative">
+      {/* Fixed background layer */}
+      <div className="fixed inset-0 z-0">
+        <div className="w-full min-h-screen bg-radial from-bluegray to-blueblack bg-fixed" />
+      </div>
 
-            {/* Fallback route for undefined paths */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
-      </Router>
+      {/* Scrollable content layer */}
+      <div className="relative z-10">
+        <div className="min-h-screen">
+          <Router>
+            <Layout>
+              {/* Navigation bar with reset functionality and tooltip controls */}
+              <NavBar
+                handleReset={handleReset}
+                uploadsEnabled={uploadsEnabled}
+                setUploadsEnabled={setUploadsEnabled}
+                setTooltipMode={setTooltipMode}
+                tooltipMode={tooltipMode}
+              />
+              <Routes>
+                {/* Main Analyzer page for audio analysis */}
+                <Route
+                  path="/"
+                  element={
+                    <Analyzer
+                      selectedInstrument={selectedInstrument}
+                      setSelectedInstrument={setSelectedInstrument}
+                      uploadedFile={uploadedFile}
+                      setUploadedFile={setUploadedFile}
+                      inRecordMode={inRecordMode}
+                      setInRecordMode={setInRecordMode}
+                      setAudioBlob={setAudioBlob}
+                      audioBlob={audioBlob}
+                      setAudioName={setAudioName}
+                      audioName={audioName}
+                      setAudioURL={setAudioURL}
+                      audioURL={audioURL}
+                      selectedAnalysisFeature={selectedAnalysisFeature}
+                      setSelectedAnalysisFeature={setSelectedAnalysisFeature}
+                      audioFeatures={audioFeatures}
+                      setAudioFeatures={setAudioFeatures}
+                      handleReset={handleReset}
+                      tooltipMode={tooltipMode}
+                      audioUuid={audioUuid}
+                      setAudioUuid={setAudioUuid}
+                      uploadsEnabled={uploadsEnabled}
+                      setUploadsEnabled={setUploadsEnabled}
+                    />
+                  }
+                />
+                {/* Testing page for additional functionality */}
+                <Route
+                  path="/testing"
+                  element={<Testing setUploadsEnabled={setUploadsEnabled} />}
+                />
+                <Route path="/how-to-use" element={<HowToUse />} />
+
+                {/* Fallback route for undefined paths */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Layout>
+          </Router>
+        </div>
+      </div>
     </div>
   );
 };

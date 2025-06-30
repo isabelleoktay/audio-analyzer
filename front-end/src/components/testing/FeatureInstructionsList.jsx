@@ -1,6 +1,6 @@
 const FeatureInstructionsList = () => {
   return (
-    <ol className="flex flex-col space-y-4 text-lightpink ml-20">
+    <ol className="flex flex-col space-y-4 text-lightpink ml-0 md:ml-20">
       <li className="flex flex-col items-start justify-start space-y-1">
         <div className="font-bold text-darkpink text-lg">Pitch Accuracy</div>
         <div>

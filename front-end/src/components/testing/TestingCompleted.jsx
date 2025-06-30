@@ -45,11 +45,11 @@ const TestingCompleted = ({ subjectData }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen text-lightgray w-1/2 space-y-8">
+    <div className="flex flex-col items-center justify-center h-screen text-lightgray w-full md:w-1/2 space-y-8">
       <div className="text-4xl text-electricblue font-bold">
         Testing Completed.
       </div>
-      <div className="text-lg text-justify">
+      <div className="text-base md:text-lg text-justify">
         Thank you for participating in our audio feedback analysis testing tool!
         Your data has been successfully recorded and saved. If you would like to
         access your data, click the download subject data button.
