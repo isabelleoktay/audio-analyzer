@@ -74,7 +74,7 @@ const App = () => {
 
       {/* Scrollable content layer */}
       <div className="relative z-10">
-        <div className="min-h-screen">
+        <div className="flex flex-col min-h-screen">
           <Router>
             <Layout>
               {/* Navigation bar with reset functionality and tooltip controls */}
