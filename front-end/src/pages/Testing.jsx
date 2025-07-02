@@ -432,7 +432,7 @@ const Testing = ({ setUploadsEnabled }) => {
   console.log(subjectData);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray my-20 md:my-0">
+    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray my-20 md:my-0 pb-24">
       {STEPS[currentStepIndex] === "consent" && (
         <ConsentCard handleConsent={handleConsent} />
       )}
