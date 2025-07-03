@@ -203,6 +203,7 @@ const Testing = ({ setUploadsEnabled }) => {
       setSubjectData((prevData) => ({
         ...prevData,
         consent: true,
+        firstRound: randomizedGroup,
         subjectId: newSubjectId,
         [`${testGroup}`]: {},
       }));
