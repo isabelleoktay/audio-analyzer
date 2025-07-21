@@ -22,18 +22,18 @@ const TestingSection = ({
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-lightgray w-full md:w-1/2 space-y-6">
       <div className="flex flex-col self-start mb-2 md:mb-8 space-y-2">
-        <div className="text-2xl md:text-4xl text-electricblue font-bold">
-          {currentTestFeature === "pitch"
-            ? "Pitch"
-            : currentTestFeature === "dynamics"
-            ? "Dynamics"
-            : "Tempo"}
-          {testGroup === "feedback" &&
-            `${
-              feedbackStage === "before"
-                ? " - Before Visualizer"
-                : " - After Visualizer"
-            }`}
+        <div className="flex flex-col items-start w-full space-y-0">
+          <div className="text-2xl md:text-4xl text-electricblue font-bold">
+            {currentTestFeature === "pitch"
+              ? "Pitch"
+              : currentTestFeature === "dynamics"
+              ? "Dynamics"
+              : "Tempo"}
+            {` - ${feedbackStage === "before" ? "Before" : "After"} Practice`}
+          </div>
+          <div className="text-lg md:text-xl text-lightgray font-bold">
+            {testGroup === "none" ? "Without" : "With"} Feedback Tool
+          </div>
         </div>
         <div className="text-sm md:text-base text-justify">
           {feedbackStage === "after" &&
@@ -46,13 +46,15 @@ const TestingSection = ({
           (la, na, etc.). Once you submit your recording, you will be
           automatically directed to a short questionnaire before moving on to
           the{" "}
-          {feedbackStage === "before" && testGroup === "feedback"
-            ? "visualization tool"
+          {feedbackStage === "before"
+            ? `practice round ${
+                testGroup === "feedback" ? "with" : "without"
+              } the feedback tool`
             : currentTestFeature === "tempo"
             ? completedGroupsRef.current.length === 0
-              ? "instructions for the next testing round"
+              ? "instructions for the next test stage"
               : "final questionnaire"
-            : "next reference audio"}
+            : "next audio feature"}
           .
         </div>
       </div>

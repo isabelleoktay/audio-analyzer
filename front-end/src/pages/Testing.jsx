@@ -32,10 +32,11 @@ const STEPS = [
   "questionnaire",
   "completed",
 ];
-const TOTAL_STEPS = 27;
+const TOTAL_STEPS = 36;
 
 const Testing = ({ setUploadsEnabled }) => {
   const completedGroupsRef = useRef([]);
+  const timerRef = useRef();
 
   const [testGroup, setTestGroup] = useState("feedback");
   const [subjectData, setSubjectData] = useState({});
@@ -46,9 +47,7 @@ const Testing = ({ setUploadsEnabled }) => {
 
   const [feedbackStage, setFeedbackStage] = useState("before");
   const [audioFeatures, setAudioFeatures] = useState({});
-  const [analyzeMode, setAnalyzeMode] = useState(false);
   const [isProceedButtonEnabled, setIsProceedButtonEnabled] = useState(false);
-  const [feedbackToolUsageCount, setFeedbackToolUsageCount] = useState(0);
   const [progressBarIndex, setProgressBarIndex] = useState(0);
 
   const [currentAudioName, setCurrentAudioName] = useState(null);
@@ -99,89 +98,60 @@ const Testing = ({ setUploadsEnabled }) => {
 
   const moveToNextStep = () => {
     setProgressBarIndex((prevIndex) => prevIndex + 1);
-    if (testGroup === "none") {
-      // Skip feedback step entirely for "none" group
-      if (STEPS[currentStepIndex] === "questionnaire") {
-        // Move to "completed" step
-        setCurrentStepIndex(7);
-      } else if (STEPS[currentStepIndex] === "introduction") {
-        setCurrentStepIndex(2);
-      } else if (STEPS[currentStepIndex] === "instructions") {
-        // Move directly to testing for the first feature
-        setCurrentStepIndex(3); // Move to "testing"
-      } else if (STEPS[currentStepIndex] === "testing") {
-        // Move directly to testing for the first feature
-        setCurrentStepIndex(5); // Move to "testing"
-      } else if (STEPS[currentStepIndex] === "rating") {
-        // Move to the next feature
-        if (currentTestFeatureIndex < TEST_FEATURES.length - 1) {
-          setAttemptCount(0);
-          setCurrentTestFeatureIndex((prevIndex) => prevIndex + 1);
-          setCurrentStepIndex(3);
-        } else {
-          completedGroupsRef.current.push("none");
-
-          if (!completedGroupsRef.current.includes("feedback")) {
-            // Switch to "feedback" group and start instructions
-            setTestGroup("feedback");
-            setCurrentStepIndex(2); // Move to "instructions"
-            setCurrentTestFeatureIndex(0); // Reset feature index
-            setAttemptCount(0); // Reset attempt count
-          } else {
-            // Both groups completed, move to "questionnaire"
-            setCurrentStepIndex(6);
-          }
-        }
-      }
-    } else if (testGroup === "feedback") {
-      if (STEPS[currentStepIndex] === "questionnaire") {
-        // Move to "completed" step
-        setCurrentStepIndex(7);
-      } else if (STEPS[currentStepIndex] === "introduction") {
-        setCurrentStepIndex(2); // move to instructions
-      } else if (STEPS[currentStepIndex] === "instructions") {
-        // Move to testing (before) after instructions
-        setCurrentStepIndex(3); // Move to "testing"
+    if (STEPS[currentStepIndex] === "questionnaire") {
+      // Move to "completed" step
+      setCurrentStepIndex(7);
+    } else if (STEPS[currentStepIndex] === "introduction") {
+      setCurrentStepIndex(2); // move to instructions
+    } else if (STEPS[currentStepIndex] === "instructions") {
+      // Move to testing (before) after instructions
+      setCurrentStepIndex(3); // Move to "testing"
+      setFeedbackStage("before");
+    } else if (
+      (feedbackStage === "before" || feedbackStage === "after") &&
+      STEPS[currentStepIndex] === "testing"
+    ) {
+      // Move to "during" (feedback tool usage)
+      setCurrentStepIndex(5); // Move to "rating"
+    } else if (
+      STEPS[currentStepIndex] === "rating" &&
+      feedbackStage === "before"
+    ) {
+      setFeedbackStage("during");
+      setCurrentStepIndex(4); // Move to "feedback"
+    } else if (feedbackStage === "during") {
+      // Move to "after" (testing again for the same feature)
+      setFeedbackStage("after");
+      setCurrentStepIndex(3); // Move back to "testing"
+    } else if (
+      STEPS[currentStepIndex] === "rating" &&
+      feedbackStage === "after"
+    ) {
+      // Move to the next feature
+      if (currentTestFeatureIndex < TEST_FEATURES.length - 1) {
+        setCurrentTestFeatureIndex((prevIndex) => prevIndex + 1);
         setFeedbackStage("before");
-      } else if (
-        (feedbackStage === "before" || feedbackStage === "after") &&
-        STEPS[currentStepIndex] === "testing"
-      ) {
-        // Move to "during" (feedback tool usage)
-        setCurrentStepIndex(5); // Move to "rating"
-      } else if (
-        STEPS[currentStepIndex] === "rating" &&
-        feedbackStage === "before"
-      ) {
-        setFeedbackStage("during");
-        setCurrentStepIndex(4); // Move to "feedback"
-      } else if (feedbackStage === "during") {
-        // Move to "after" (testing again for the same feature)
-        setFeedbackStage("after");
-        setCurrentStepIndex(3); // Move back to "testing"
-      } else if (
-        STEPS[currentStepIndex] === "rating" &&
-        feedbackStage === "after"
-      ) {
-        // Move to the next feature
-        if (currentTestFeatureIndex < TEST_FEATURES.length - 1) {
-          setCurrentTestFeatureIndex((prevIndex) => prevIndex + 1);
-          setFeedbackStage("before");
-          setCurrentStepIndex(3); // stay on testing
-        } else {
-          // Mark "feedback" group as completed
-          completedGroupsRef.current.push("feedback");
+        setCurrentStepIndex(3); // stay on testing
+      } else {
+        // Mark "feedback" group as completed
+        completedGroupsRef.current.push(testGroup);
 
-          if (!completedGroupsRef.current.includes("none")) {
-            // Switch to "none" group and start instructions
-            setTestGroup("none");
-            setCurrentStepIndex(2); // Move to "instructions"
-            setCurrentTestFeatureIndex(0); // Reset feature index
-            setAttemptCount(0); // Reset attempt count
-          } else {
-            // Both groups completed, move to "completed"
-            setCurrentStepIndex(6);
-          }
+        if (!completedGroupsRef.current.includes("none")) {
+          // Switch to "none" group and start instructions
+          setTestGroup("none");
+          setCurrentStepIndex(2); // Move to "instructions"
+          setCurrentTestFeatureIndex(0); // Reset feature index
+          setAttemptCount(0); // Reset attempt count
+          setFeedbackStage("before");
+        } else if (!completedGroupsRef.current.includes("feedback")) {
+          setTestGroup("feedback");
+          setCurrentStepIndex(2); // Move to "instructions"
+          setCurrentTestFeatureIndex(0); // Reset feature index
+          setAttemptCount(0); // Reset attempt count
+          setFeedbackStage("before");
+        } else {
+          // Both groups completed, move to "completed"
+          setCurrentStepIndex(6);
         }
       }
     }
@@ -205,7 +175,8 @@ const Testing = ({ setUploadsEnabled }) => {
         consent: true,
         firstRound: randomizedGroup,
         subjectId: newSubjectId,
-        [`${testGroup}`]: {},
+        feedback: {},
+        none: {},
       }));
 
       // Move to the instructions step
@@ -217,51 +188,47 @@ const Testing = ({ setUploadsEnabled }) => {
   };
 
   const handleChangeAttemptCount = () => {
-    const fileName = `subject-${subjectData.subjectId}-${testGroup}-${
-      testGroup === "feedback" ? `${feedbackStage}-` : ""
-    }${TEST_FEATURES[currentTestFeatureIndex]}-${attemptCount + 1}.wav`;
+    const fileName = `subject-${
+      subjectData.subjectId
+    }-${testGroup}-${feedbackStage}-${TEST_FEATURES[currentTestFeatureIndex]}-${
+      attemptCount + 1
+    }.wav`;
 
     setCurrentAudioName(fileName);
     setAttemptCount(attemptCount + 1);
   };
 
-  const updateSubjectData = useCallback(async () => {
-    let file;
-    if (audioBlob) {
-      file = new File([audioBlob], currentAudioName, {
-        type: "audio/wav",
-      });
+  const updateSubjectData = useCallback(
+    async (elapsedTime = null) => {
+      let file;
+      if (audioBlob) {
+        file = new File([audioBlob], currentAudioName, {
+          type: "audio/wav",
+        });
 
-      setUploadedFile(file);
+        setUploadedFile(file);
 
-      if (feedbackStage === "during") {
-        handleProcessFeature(file, TEST_FEATURES[currentTestFeatureIndex]);
-      }
+        if (feedbackStage === "during" && testGroup === "feedback") {
+          handleProcessFeature(file, TEST_FEATURES[currentTestFeatureIndex]);
+        }
 
-      const response = await uploadAudioToPythonService(
-        file,
-        testGroup,
-        testGroup === "feedback" ? feedbackStage : null,
-        TEST_FEATURES[currentTestFeatureIndex]
-      );
+        const response = await uploadAudioToPythonService(
+          file,
+          testGroup,
+          feedbackStage,
+          TEST_FEATURES[currentTestFeatureIndex]
+        );
 
-      const updatedData = (() => {
-        if (testGroup === "none") {
-          return {
-            ...subjectData,
-            [testGroup]: {
-              ...(subjectData[testGroup] || {}),
-              [TEST_FEATURES[currentTestFeatureIndex]]: {
-                ...(subjectData[testGroup]?.[
-                  TEST_FEATURES[currentTestFeatureIndex]
-                ] || {}),
-                [currentAudioName]: {
-                  filePath: response.path,
-                },
-              },
-            },
-          };
-        } else if (testGroup === "feedback") {
+        console.log("Audio uploaded successfully:", response);
+
+        console.log("Elapsed time:", elapsedTime);
+
+        const practiceTimeObject =
+          feedbackStage === "during" && elapsedTime
+            ? { practiceTime: elapsedTime }
+            : {};
+
+        const updatedData = (() => {
           return {
             ...subjectData,
             [testGroup]: {
@@ -272,9 +239,7 @@ const Testing = ({ setUploadsEnabled }) => {
                   ...(subjectData[testGroup]?.[feedbackStage]?.[
                     TEST_FEATURES[currentTestFeatureIndex]
                   ] || {}),
-                  ...(feedbackStage === "during" && {
-                    feedbackToolUsageCount: feedbackToolUsageCount, // Only add if feedbackStage is "during"
-                  }),
+                  ...practiceTimeObject,
                   [currentAudioName]: {
                     filePath: response.path,
                   },
@@ -282,30 +247,29 @@ const Testing = ({ setUploadsEnabled }) => {
               },
             },
           };
-        }
-      })();
+        })();
 
-      setSubjectData(updatedData);
+        setSubjectData(updatedData);
 
-      const uploadTestSubjectRes = await uploadTestSubject(
-        updatedData.subjectId,
-        updatedData
-      );
-      console.log(uploadTestSubjectRes);
-    }
-  }, [
-    audioBlob,
-    currentAudioName,
-    testGroup,
-    feedbackStage,
-    currentTestFeatureIndex,
-    subjectData,
-    feedbackToolUsageCount,
-  ]);
+        const uploadTestSubjectRes = await uploadTestSubject(
+          updatedData.subjectId,
+          updatedData
+        );
+        console.log(uploadTestSubjectRes);
+      }
+    },
+    [
+      audioBlob,
+      currentAudioName,
+      testGroup,
+      feedbackStage,
+      currentTestFeatureIndex,
+      subjectData,
+    ]
+  );
 
   const handleAnalyzeNewRecording = () => {
     setAudioFeatures({});
-    setAnalyzeMode(false);
     updateSubjectData();
     setAudioBlob(null);
     setAudioUrl(null);
@@ -313,20 +277,27 @@ const Testing = ({ setUploadsEnabled }) => {
   };
 
   const handleFinishTestingTool = useCallback(() => {
+    const timeLeft = timerRef.current?.getTimeLeft() || 0;
+    const elapsedTime = 300 - timeLeft;
+
     setProgressBarIndex((prevIndex) => prevIndex + 1);
-    updateSubjectData();
+    updateSubjectData(elapsedTime);
     setFeedbackStage("after");
     setCurrentStepIndex(3);
     setAttemptCount(0);
     resetRecordingState();
-    setAnalyzeMode(false);
 
-    const fileName = `subject-${subjectData.subjectId}-feedback-after-${
+    const fileName = `subject-${subjectData.subjectId}-${testGroup}-after-${
       TEST_FEATURES[currentTestFeatureIndex]
     }-${0}.wav`;
     setCurrentAudioName(fileName);
     setAudioFeatures({});
-  }, [subjectData.subjectId, currentTestFeatureIndex, updateSubjectData]);
+  }, [
+    subjectData.subjectId,
+    currentTestFeatureIndex,
+    updateSubjectData,
+    testGroup,
+  ]);
 
   const resetRecordingState = () => {
     setAudioBlob(null);
@@ -334,22 +305,16 @@ const Testing = ({ setUploadsEnabled }) => {
     setUploadedFile(null);
     setAudioFeatures({});
     setIsProceedButtonEnabled(false);
-    setFeedbackToolUsageCount(0);
   };
 
   const updateAudioFileName = () => {
-    const fileName = `subject-${subjectData.subjectId}-${testGroup}-${
-      testGroup === "feedback" ? `${feedbackStage}-` : ""
-    }${TEST_FEATURES[currentTestFeatureIndex]}-${attemptCount}.wav`;
+    const fileName = `subject-${subjectData.subjectId}-${testGroup}-${feedbackStage}-${TEST_FEATURES[currentTestFeatureIndex]}-${attemptCount}.wav`;
     setCurrentAudioName(fileName);
   };
 
   const handleSubmitRecording = () => {
     if (STEPS[currentStepIndex] === "feedback") {
       setIsProceedButtonEnabled(true);
-    }
-    if (feedbackStage === "during") {
-      setFeedbackToolUsageCount((prev) => prev + 1);
     }
     // Update subject data
     console.log("updating subject data...");
@@ -360,6 +325,13 @@ const Testing = ({ setUploadsEnabled }) => {
       moveToNextStep();
       // Reset recording-related states
       resetRecordingState();
+    }
+
+    if (feedbackStage === "during" && testGroup === "none") {
+      // If in "none" group, reset the recording state
+      setUploadedFile(null);
+      setAudioBlob(null);
+      setAudioUrl(null);
     }
 
     // Update the audio file name for the next step
@@ -387,26 +359,16 @@ const Testing = ({ setUploadsEnabled }) => {
         ...prevData,
         [testGroup]: {
           ...(prevData[testGroup] || {}),
-          ...(testGroup === "feedback"
-            ? {
-                [feedbackStage]: {
-                  ...(prevData[testGroup]?.[feedbackStage] || {}),
-                  [TEST_FEATURES[currentTestFeatureIndex]]: {
-                    ...(prevData[testGroup]?.[feedbackStage]?.[
-                      TEST_FEATURES[currentTestFeatureIndex]
-                    ] || {}),
-                    performanceRating: response, // Add the response for feedback group
-                  },
-                },
-              }
-            : {
-                [TEST_FEATURES[currentTestFeatureIndex]]: {
-                  ...(prevData[testGroup]?.[
-                    TEST_FEATURES[currentTestFeatureIndex]
-                  ] || {}),
-                  performanceRating: response, // Add the response for none group
-                },
-              }),
+          [feedbackStage]: {
+            ...(prevData[testGroup]?.[feedbackStage] || {}),
+            [TEST_FEATURES[currentTestFeatureIndex]]: {
+              ...(prevData[testGroup]?.[feedbackStage]?.[
+                TEST_FEATURES[currentTestFeatureIndex]
+              ] || {}),
+              performanceRating: response.performanceRating,
+              highlightsHelpfulnessRating: response.helpfulnessRating,
+            },
+          },
         },
       };
       return updatedData;
@@ -498,18 +460,41 @@ const Testing = ({ setUploadsEnabled }) => {
       {STEPS[currentStepIndex] === "feedback" && (
         <div className="flex flex-col items-center justify-start min-h-screen text-lightgray w-full space-y-6">
           <div className="flex flex-col items-center justify-self-start space-y-2 mt-0 md:mt-20 w-full md:w-1/2">
-            <div className="text-2xl md:text-4xl text-electricblue font-bold capitalize">
-              Visualization Tool - {TEST_FEATURES[currentTestFeatureIndex]}
+            <div className="flex flex-col items-center w-full space-y-0">
+              <div className="text-2xl md:text-4xl text-electricblue font-bold capitalize">
+                {TEST_FEATURES[currentTestFeatureIndex]} - Practice
+              </div>
+              <div className="text-lg md:text-xl text-lightgray font-bold">
+                {testGroup === "none" ? "Without" : "With"} Feedback Tool
+              </div>
             </div>
             <div className="text-sm md:text-base text-justify">
-              Record yourself and visualize your recordings following the
-              reference audio within the next 5 minutes. You may sing each note
-              in the reference audio on a consonant sound (la, na, etc.). You do
-              not have to use up all of the five minutes, but you must analyze
-              at least one recording.{" "}
+              {testGroup === "feedback" ? (
+                <>
+                  Record yourself and visualize your recordings following the
+                  reference audio within the next 5 minutes{" "}
+                  <span className="font-bold text-lightpink">
+                    with the assistance of the feedback tool
+                  </span>
+                  . You may sing each note in the reference audio on a consonant
+                  sound (la, na, etc.). You do not have to use up all of the
+                  five minutes, but you must analyze at least one recording.
+                </>
+              ) : (
+                <>
+                  Practice recording yourself following the reference audio
+                  within the next 5 minutes{" "}
+                  <span className="font-bold text-lightpink">
+                    without the assistance of the feedback tool
+                  </span>
+                  . You may sing each note in the reference audio on a consonant
+                  sound (la, na, etc.). You do not have to use up all of the
+                  five minutes, but you must make at least one recording.
+                </>
+              )}{" "}
               <span className="font-bold text-lightpink">
-                You may use the tool to gain insights on your{" "}
-                {TEST_FEATURES[currentTestFeatureIndex]}
+                Focus on improving your {TEST_FEATURES[currentTestFeatureIndex]}{" "}
+                performance
               </span>
               .
             </div>
@@ -522,7 +507,11 @@ const Testing = ({ setUploadsEnabled }) => {
                   Reference Audio
                 </div>
                 <div className="flex flex-row space-x-2 items-end">
-                  <Timer onTimerFinish={handleTimerFinish} />
+                  <Timer
+                    ref={timerRef}
+                    initialTime={300}
+                    onTimerFinish={handleTimerFinish}
+                  />
                   <TertiaryButton
                     onClick={handleFinishTestingTool}
                     className="whitespace-nowrap text-sm"
@@ -536,9 +525,10 @@ const Testing = ({ setUploadsEnabled }) => {
                 <AudioPlayback audioUrl={testingAudioUrl} />
               </div>
             </div>
-            {!analyzeMode && !uploadedFile && (
+            {!uploadedFile && (
               <RecordAudioSection
                 feedbackStage={feedbackStage}
+                testGroup={testGroup}
                 testingEnabled={true}
                 audioName="Your Recording"
                 audioBlob={audioBlob}
@@ -548,17 +538,19 @@ const Testing = ({ setUploadsEnabled }) => {
                 onChangeAttemptCount={handleChangeAttemptCount}
                 onSubmitRecording={handleSubmitRecording}
                 updateSubjectData={updateSubjectData}
+                setIsProceedButtonEnabled={setIsProceedButtonEnabled}
+                isProceedButtonEnabled={isProceedButtonEnabled}
+                setUploadedFile={setUploadedFile}
               />
             )}
           </div>
 
-          {uploadedFile && (
+          {testGroup === "feedback" && uploadedFile && (
             <div className="flex flex-col w-full lg:w-fit gap-2">
               <div className="text-xl font-semibold text-lightpink">
                 Your Recording
               </div>
               <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
-                {/* Add overflow-x-auto on mobile only */}
                 <div className="w-full lg:min-w-[800px]">
                   <GraphWithWaveform
                     key={audioFeatures?.audioUrl}
@@ -580,6 +572,7 @@ const Testing = ({ setUploadsEnabled }) => {
           )}
         </div>
       )}
+
       <ProgressBar
         currentStep={progressBarIndex + 1}
         totalSteps={TOTAL_STEPS}

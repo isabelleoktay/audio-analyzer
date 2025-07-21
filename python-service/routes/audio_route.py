@@ -41,12 +41,9 @@ def upload_audio():
     base_folder = current_app.config['AUDIO_FOLDER']
 
     # Determine target folder based on group, stage, and feature
-    if group and group == 'feedback' and stage in ['before', 'during', 'after']:
+    if group in ['feedback', 'none'] and stage in ['before', 'during', 'after']:
         testing_folder = os.path.join(base_folder, 'testing')
         target_folder = os.path.join(testing_folder, group, stage)
-    elif group == 'none':
-        testing_folder = os.path.join(base_folder, 'testing')
-        target_folder = os.path.join(testing_folder, group)
     else:
         target_folder = os.path.join(base_folder, 'collected')  # Default to normal /static/audio folder
 
