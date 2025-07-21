@@ -14,11 +14,10 @@ const IntroductionSection = ({ handleNextStep, subjectData }) => {
       <h1 className="text-5xl text-electricblue font-bold mb-8">
         Introduction{" "}
       </h1>
-      <div className="flex flex-col items-center text-sm md:text-base justify-center w-full md:w-1/2 text-justify">
+      <div className="flex flex-col items-left text-sm md:text-base justify-center w-full md:w-1/2 text-justify">
         <p className="mb-6 font-bold">
-          Thank you for participating in this study! This experiment is designed
-          to explore how visual feedback of audio features may support the
-          improvement of music performance.
+          Thank you for participating in this study on music performance and
+          feedback!
         </p>
         <p className="mb-6">
           You will be randomly assigned to start with one of two rounds of the

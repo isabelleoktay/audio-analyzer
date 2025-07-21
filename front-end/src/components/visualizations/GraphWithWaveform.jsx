@@ -86,7 +86,7 @@ const GraphWithWaveform = ({
                       {featureData[selectedDataIndex].label === "pitch"
                         ? "most off-pitch moments"
                         : featureData[selectedDataIndex].label === "dynamics"
-                        ? "fastest changes in loudness"
+                        ? "most inconsistent moments in loudness"
                         : "detected vibrato moments"}
                     </span>
                   </li>

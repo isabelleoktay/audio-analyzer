@@ -23,6 +23,9 @@ const RecordAudioSection = ({
   updateSubjectData,
   attemptCount = 0,
   className = "",
+  testGroup,
+  setIsProceedButtonEnabled,
+  isProceedButtonEnabled,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -41,11 +44,20 @@ const RecordAudioSection = ({
   const handleStopRecording = async () => {
     await recordRef.current.stopRecording();
     setIsRecording(false);
+    if (
+      testingEnabled &&
+      testGroup === "none" &&
+      feedbackStage === "during" &&
+      !isProceedButtonEnabled
+    ) {
+      setIsProceedButtonEnabled(true);
+    }
   };
 
   const handleResetRecording = () => {
     if (testingEnabled) {
       updateSubjectData();
+      if (setUploadedFile) setUploadedFile(null);
     }
     setAudioBlob(null);
     setAudioURL(null);
@@ -155,22 +167,31 @@ const RecordAudioSection = ({
             <SecondaryButton onClick={handlePlayPause}>
               {isPlaying ? "pause" : "play"}
             </SecondaryButton>
-            {attemptCount < 3 && (
-              <SecondaryButton onClick={handleResetRecording}>
-                redo
-              </SecondaryButton>
-            )}
+            {!(feedbackStage === "during" && testGroup === "none") &&
+              attemptCount < 3 && (
+                <SecondaryButton onClick={handleResetRecording}>
+                  redo
+                </SecondaryButton>
+              )}
             {!testingEnabled && (
               <SecondaryButton onClick={handleDownloadRecording}>
                 download
               </SecondaryButton>
             )}
           </div>
-          <TertiaryButton onClick={handleAnalyze}>
-            {testingEnabled && feedbackStage !== "during"
-              ? "submit recording"
-              : "analyze"}
-          </TertiaryButton>
+          {testingEnabled === false ? (
+            <TertiaryButton onClick={handleAnalyze}>
+              submit recording
+            </TertiaryButton>
+          ) : feedbackStage === "during" && testGroup === "none" ? (
+            <TertiaryButton onClick={handleAnalyze}>
+              make another recording
+            </TertiaryButton>
+          ) : (
+            <TertiaryButton onClick={handleAnalyze}>
+              {feedbackStage !== "during" ? "submit recording" : "analyze"}
+            </TertiaryButton>
+          )}
         </div>
       ) : (
         <div className="flex items-center space-x-2">

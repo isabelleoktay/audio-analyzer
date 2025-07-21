@@ -1,16 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 
-const Timer = ({ initialTime = 300, onTimerFinish }) => {
+const Timer = forwardRef(({ initialTime = 300, onTimerFinish }, ref) => {
   const [timeLeft, setTimeLeft] = useState(initialTime);
 
   useEffect(() => {
-    // Start the countdown when the component is mounted
     const timerInterval = setInterval(() => {
       setTimeLeft((prevTime) => {
         if (prevTime <= 0) {
           clearInterval(timerInterval);
           if (onTimerFinish) {
-            // Defer the state update in the parent component
             setTimeout(() => {
               onTimerFinish();
             }, 0);
@@ -24,7 +22,11 @@ const Timer = ({ initialTime = 300, onTimerFinish }) => {
     return () => clearInterval(timerInterval); // Cleanup on unmount
   }, [onTimerFinish]);
 
-  // Format time as MM:SS
+  // Expose the timeLeft value to the parent component
+  useImperativeHandle(ref, () => ({
+    getTimeLeft: () => timeLeft,
+  }));
+
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -38,6 +40,6 @@ const Timer = ({ initialTime = 300, onTimerFinish }) => {
       {formatTime(timeLeft)}
     </div>
   );
-};
+});
 
 export default Timer;

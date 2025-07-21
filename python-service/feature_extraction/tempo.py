@@ -18,6 +18,11 @@ def calculate_dynamic_tempo_essentia(audio, sr, duration, window_frac=0.01):
     rhythm_extractor = es.RhythmExtractor2013(method="multifeature")
     global_tempo, beats, _, _, _ = rhythm_extractor(audio)
 
+    # Handle case with too few beats to calculate tempo
+    if len(beats) < 2:
+        interpolated_time_axis = np.linspace(0, duration, int(duration * sr / 512))
+        return np.full_like(interpolated_time_axis, np.nan), 0, interpolated_time_axis
+
     time_axis = np.array(beats)
     dynamic_tempo = 60.0 / np.diff(time_axis)
     tempo_time_axis = (time_axis[:-1] + time_axis[1:]) / 2
