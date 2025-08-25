@@ -1,0 +1,25 @@
+MuSA AUDIO FEEDBACK SYSTEM - PERFORMANCE RATINGS ANALYSIS
+============================================================
+
+Generated: 2025-08-23 00:48:21
+
+DATASET OVERVIEW
+--------------------
+Participants: 14
+Audio Features: pitch, dynamics, tempo
+Total Measurements: 42
+
+PERCEIVED PERFORMANCE IMPROVEMENTS (With Feedback)
+----------------------------------------
+Pitch: perceived improved by 0.15 points
+Dynamics: perceived improved by 1.00 points
+Tempo: perceived improved by 0.58 points
+
+Best Perceived Improvement: Dynamics (+1.00 points)
+
+STATISTICAL NOTES
+--------------------
+• Analysis based on paired t-tests
+• Before/after performance comparisons
+• Feedback vs no-feedback conditions
+• Effect sizes calculated using Cohen's d
