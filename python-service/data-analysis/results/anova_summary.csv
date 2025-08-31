@@ -1,4 +1,0 @@
-Metric,Timing_p,Group_p,Interaction_p,Timing_significant,Group_significant,Interaction_significant
-Pitch Rmse,0.44007628115036357,0.3220694652234709,0.4308779050339645,False,False,False
-Dynamics Rmse,0.8706606848681413,0.5344643897254387,0.5205393791623478,False,False,False
-Tempo Rmse,0.21020531392911773,0.003378598057426158,0.3674124332163988,False,True,False
