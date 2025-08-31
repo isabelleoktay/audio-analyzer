@@ -86,7 +86,7 @@ const NavBar = ({
               },
               {
                 type: "right",
-                to: "https://github.com/your-repo",
+                to: "https://github.com/isabelleoktay/audio-analyzer/",
                 label: "github",
                 external: true,
               },

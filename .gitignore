@@ -47,5 +47,6 @@ python-service/static/audio/
 python-service/testing/
 python-service/generated_sounds/soundfiles/
 python-service/generated_sounds/
-python-service/data-analysis/old-data/*
-python-service/data-analysis/downloaded_audios/*
+python-service/data-analysis/*
+python-service/graphs/*
+python-service/comparative_analysis.ipynb

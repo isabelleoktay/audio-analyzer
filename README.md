@@ -1,264 +1,313 @@
-# SkyNote Audio Analyzer
+# SkyNote Audio Analyzer – Developer Guide
 
-## Setting Up the Local Application
+This guide provides a comprehensive overview of the SkyNote (formerly MuSA) web application, its architecture, and detailed instructions for developers to set up, run, extend, and deploy the project. It covers the three main components: front-end, back-end, and python-service.
 
-### 1. Environment Variables
+---
 
-There are three directories that require environment variables:
+## Table of Contents
 
-1. **Frontend Directory:** You should put this .env in the root of the frontend directory. The contents of this file in my configuration look like the following example. Your .env file should contain the same information (unless you change the ports of the Python and Nodejs APIs accordingly):
+- [Architecture Overview](#architecture-overview)
+- [Tech Stack & Prerequisites](#tech-stack--prerequisites)
+- [Local Development Setup](#local-development-setup)
+- [Project Structure](#project-structure)
+- [Data Storage](#data-storage)
+- [Deployment Instructions](#deployment-instructions)
+- [Testing](#testing)
+- [Error Handling & Logs](#error-handling--logs)
+- [Contributing & Code Standards](#contributing--code-standards)
+- [Extending the Application](#extending-the-application)
+- [Security Considerations](#security-considerations)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
-   ```
-   REACT_APP_API_BASE_URL=http://localhost:8004/
-   REACT_APP_PYTHON_SERVICE_BASE_URL=http://localhost:8080/
-   ```
+---
 
-2. **Backend Directory:** You should put this .env file in the root of the backend directory. The contents of this file in my configuration look like the following example. Your file should not contain the exact same information, as you should fill out the MongoDB URI with your own username and password as well as the VPS private key and username with your own key and name. **NOTE:** MongoDB is not being used in the application yet, so there is no need to actually use the MongoDB URI. The port information should stay the same unless you've changed the API ports accordingly.
+## Architecture Overview
 
-   ```
-   PORT=8004
-   PYTHON_SERVICE_URL=http://localhost:8080
-   MONGODB_URI=mongodb://<username>:<password>@127.0.0.1:27017/audioAnalyzerDB?serverSelectionTimeoutMS=5000&connectTimeoutMS=10000&authSource=skynote&authMechanism=SCRAM-SHA-256
-   VPS_PRIVATE_KEY = /Users/<yourname>/.ssh/id_rsa
-   VPS_USERNAME = <yourname>
-   ```
+This project is composed of three distinct services that communicate with each other to provide a full-stack experience. Understanding the data flow is key to working on the application.
 
-3. **Python Service Directory:** You should put this .env file in the root of the python service directory. The contents of this .env file should look like the following:
-
-   ```
-   FLASK_APP=app.py
-   ```
-
-### 2. Running the application
-
-The commands to run the application are located in `package.json`. You can use `npm start` to run the application. However, you will need to ensure that all dependencies are installed. Since this application used npm and python, you will need to have the node package manager and a python environment installed.
-
-1. **Node dependencies:** You will need to install the node dependencies on both the frontend and backend directories of the application.
-
-   - **To install the frontend dependencies**, `cd` to the root of the frontend directory and use the command `npm i`. This should install the node dependencies. If `npm i` doesn't work, you may need to enable legacy dependencies with `npm i --legacy-peer-deps`.
-   - **To install the backend dependencies**: `cd` to the root of the backend directory and use the command `npm i`. This should install the node dependencies. If `npm i` doesn't work, you may need to enable legacy dependencies with `npm i --legacy-peer-deps`.
-
-2. **Python dependencies**: You will need to have a python environment activated to run this application locally. Once this environment is activated, you should `cd` to the python service directory and run the following command to install the dependencies:
-
-   ```
-   pip install -r requirements.txt
-   ```
-
-Once again, when you have installed all the necessary dependencies, you may `cd` to the root directory of this project and run the command `npm start` to run the application locally.
-
-## Deploying and Updating the Application
-
-### 1. Make Code Changes
-
-- Modify the code in the backend (Node.js, Python, etc.) or frontend as required. After making changes, push your code to GitHub.
-
-### 2. SSH into the Server
-
-- Connect to your server via SSH:
+**Data Flow Diagram:**
 
 ```
-ssh username@appskynote.com
+User (Browser)
+   ⇅
+Front-end (React)
+   ⇅ HTTP API
+Back-end (Node.js/Express)
+   ⇅ HTTP API
+Python Service (Flask)
+   ⇅
+MongoDB (Database)
 ```
 
-### 3. Pull Latest Changes
+**Component Description:**
 
-```
-cd /home/isabelle/audio-analyzer
-git pull origin main
-```
+- **Front-end:** A React application that provides the user interface. It communicates exclusively with the back-end via a REST API.
+- **Back-end:** A Node.js/Express server that acts as the central hub. It serves the front-end's API requests, manages file uploads, and proxies analysis requests to the python-service. It is also responsible for all interactions with the MongoDB database.
+- **Python Service:** A Flask microservice that handles all computationally intensive audio feature extraction. It exposes its own API that is consumed by the back-end.
+- **MongoDB:** The database used for storing audio file metadata, extracted feature data, and user information.
 
-### 4. Install and Set Up Python Service
+---
 
-- **If you have already set up the Python service, you can ignore this step and move on to Step 5.** You can check if the Python service is running by using the following command:
+## Tech Stack & Prerequisites
 
-```
-sudo supervisorctl status python-service
-```
+Ensure you have the following software installed on your machine. The specified versions are recommended to prevent "works on my machine" issues.
 
-- Python service is running if you receive a response like:
+- **Node.js:** 18.x
+- **npm:** 9.x or higher
+- **Python:** 3.10 or higher
+- **MongoDB:** 6.x or higher
 
-```
-python-service                   RUNNING   pid 3590747, uptime 0:40:31
-```
+You can check your versions with the following commands:
 
-#### 4.1 Setting up the Python virtual environment
-
-- To install the Python virtual environment, you can run the following command from the `audio-analyzer` root directory:
-
-```
-npm run create-venv
-```
-
-- This will create the Python virtual environment and install all dependencies in `requirements.txt`.
-- Once the virtual environment is created, you should activate the python virtual environment.
-
-#### 4.2 Preparing the application for production deployment
-
-- This application uses Gunicorn, a WSGI HTTP server to serve Python applications in a production environment. To activate the Python virtual environment and install Gunicorn, you should run the following code:
-
-```
-source /home/isabelle/audio-analyzer/python-service/venv/bin/activate
-pip install gunicorn
+```bash
+node -v
+npm -v
+python --version
+# For MongoDB Shell 5.x+
+mongosh --version
+# For older mongo shell
+mongo --version
 ```
 
-- The python service is managed with **Supervisor**. Ensure that **Supervisor** is installed and running. You can find the python servisor Supervisor configuration file in `/etc/supervisor/conf.d/python-service.conf`. This file contains the paths to `std_out` and `stderr` files. The current configuration of the Supervisor configuration file contains the following:
+---
 
-```
-[program:python-service]
-directory=/home/isabelle/audio-analyzer/python-service
-command=/home/isabelle/audio-analyzer/python-service/venv/bin/gunicorn --bind 0.0.0.0:8080 app:app
-autostart=true
-autorestart=true
-stderr_logfile=/var/log/python-service.err.log
-stdout_logfile=/var/log/python-service.out.log
-```
+## Local Development Setup
 
-- Once you have the configuration in place (or if you ever change the configuration), you need to run the following code:
+Follow these steps to get all three services running on your local machine.
 
-```
-# Reread Supervisor configurations to include the new python-service config
-sudo supervisorctl reread
+### 1. Clone the Repository
 
-# Update Supervisor to apply the new config
-sudo supervisorctl update
-
-# Start the Python service
-sudo supervisorctl start python-service
+```bash
+git clone <your-repository-url>
+cd <repository-folder>
 ```
 
-### 5. Update and Monitor Python Service
+### 2. Configure Environment Variables
 
-- If you make changes to the Python code and need to restart the service, you can restart it with the following command:
+Each service (`front-end`, `back-end`, `python-service`) requires its own `.env` file in its root directory. Create these files and add the necessary variables.
 
-```
-sudo supervisorctl restart python-service
-```
+**front-end/.env**
 
-- You can monitor the logs to check if the service is running correctly or if any issues arise. The logs are located in the /var/log directory:
-
-```
-# Check status
-sudo supervisorctl status python-service
-
-# View standard output logs
-tail -f  /var/log/python-service.out.log
-
-# View error logs
-tail -f  /var/log/python-service.err.log
+```env
+REACT_APP_API_BASE_URL=http://localhost:8004/
 ```
 
-### 6. Install and Set Up Node.js Back End
+**back-end/.env**
 
-- **If you have already set up the Node.js back end service, you can ignore this step and move on to Step 7.**
-- Supervisor manages the Node.js backend for the audio analyzer and ensures it starts automatically, restarts if it crashes, and keeps logs for debugging.
-- The configuration file for Supervisor is located in `/etc/supervisor/conf.d/audio-analyzer-backend.conf` and should look like this:
+```env
+PORT=8004
+PYTHON_SERVICE_URL=http://localhost:8080
+DEV_DB_URL=mongodb://<user>:<password>@127.0.0.1:27017/audio-analyzer-dev?authSource=admin
+PROD_DB_URL=mongodb://<user>:<password>@127.0.0.1:27017/audio-analyzer-prod?authSource=admin
 
-```
-[program:audio-analyzer-backend]
-command=/usr/bin/node /home/isabelle/audio-analyzer/back-end/index.js
-directory=/home/isabelle/audio-analyzer/back-end
-autostart=true
-autorestart=true
-stderr_logfile=/var/log/supervisor/audio-analyzer-backend-stderr.log
-stdout_logfile=/var/log/supervisor/audio-analyzer-backend-stdout.log
-environment=NODE_ENV="production",PORT=8004
-user=isabelle
+# Variables for remote DB connection via SSH tunnel (optional for local setup)
+VPS_PRIVATE_KEY=/Users/<your-user>/.ssh/id_rsa
+VPS_USERNAME=<your-vps-user>
 ```
 
-- Before running the Node.js service, make sure you install the necessary dependencies:
+**python-service/.env**
 
+```env
+FLASK_APP=app.py
+FLASK_RUN_PORT=8080
 ```
-cd /home/isabelle/audio-analyzer/back-end
+
+### 3. Install Dependencies
+
+Run `npm install` or `pip install` in each service's directory.
+
+**Front-end:**
+
+```bash
+cd front-end
 npm install
+cd ..
 ```
 
-- After setting up the Supervisor configuration, reload Supervisor to apply the new configuration and start the Node.js service:
+**Back-end:**
 
-```
-# Reread Supervisor configurations to include the new nodejs-backend config
-sudo supervisorctl reread
-
-# Update Supervisor to apply the new config
-sudo supervisorctl update
-
-# Start the Node.js backend service
-sudo supervisorctl start audio-analyzer-backend
+```bash
+cd back-end
+npm install
+cd ..
 ```
 
-### 7. Update and Monitor Node.js Back End
+**Python Service:**
 
-- If you make changes to the Node.js back end code and need to restart the service, you can restart it with the following command:
-
-```
-sudo supervisorctl restart audio-analyzer-backend
-```
-
-- You can monitor the logs to check if the service is running correctly or if any issues arise. The logs are located in the /var/log directory:
-
-```
-# Check status
-sudo supervisorctl status audio-analyzer-backend
-
-# View standard output logs
-tail -f  /var/log/supervisor/audio-analyzer-backend-stdout.log
-
-# View error logs
-tail -f  /var/log/supervisor/audio-analyzer-backend-stderr.log
+```bash
+cd python-service
+pip install -r requirements.txt
+cd ..
 ```
 
-### 8. Set Up and Update the React Front End with Nginx
+### 4. Run the Application
 
-- The React front end build files are located in `/etc/nginx/sites-available/audio-analyzer.frontend`.
-- Every time you update the front end code, you first need to pull in the changes to the server copy:
+Start each service in a separate terminal window. It's recommended to start them in this order:
 
-```
-cd /home/isabelle/audio-analyzer
-git pull origin main
-```
+**Start Python Service:**
 
-- Next, you need to build the static files that will be hosted by nginx:
-
-```
-cd /home/isabelle/audio-analyzer/front-end
-npm run build
+```bash
+cd python-service
+flask run
 ```
 
-- From this directory, you must copy the build over to `/etc/nginx/sites-available/audio-analyzer.frontend`, where the files are located for nginx:
+**Start Back-end:**
 
-```
-sudo cp -r build/* /var/www/html/audio-analyzer.frontend/
-```
-
-- The nginx configuration file is located in `/etc/nginx/sites-available/default`. You can access its contents with the following command:
-
-```
-sudo nano /etc/nginx/sites-available/default
+```bash
+cd back-end
+npm start
 ```
 
-- If you haven't already done so, ensure that there is a symbolic link in the `sites-enabled` directory to enable this site:
+**Start Front-end:**
 
-```
-sudo ln -s /etc/nginx/sites-available/audio-analyzer.frontend /etc/nginx/sites-enabled/
-```
-
-- Whenever you update the nginx configuration file, you must test the configuration to make sure everything is set up correctly:
-
-```
-sudo nginx -t
+```bash
+cd front-end
+npm start
 ```
 
-- If the test passes, reload Nginx to apply the changes (either from the nginx configuration file or from code changes in the front-end):
+### 5. Access the Application
 
-```
-sudo systemctl reload nginx
+Once all services are running, open your browser and navigate to `http://localhost:3000` (or the port your React app is running on).
+
+---
+
+## Project Structure
+
+The repository is organized into three main directories, one for each service.
+
+### python-service/
+
+- **Purpose:** Performs all heavy audio analysis.
+- **Key Files:** `app.py` (Flask API), `requirements.txt`, and modules inside `feature_extraction/`.
+
+### back-end/
+
+- **Purpose:** The core API that connects the front-end to the other services.
+- **Key Files:** `index.js` (server entry), `controllers/`, `routes/`, and `models/` (Mongoose schemas).
+
+### front-end/
+
+- **Purpose:** The user-facing React application.
+- **Key Files:** `src/App.jsx`, `src/components/`, `package.json`.
+
+---
+
+## Data Storage
+
+The application uses MongoDB for storing audio file metadata and test subject information.
+
+**What is stored:**
+
+- Audio file metadata (filename, upload date, duration, user ID).
+- Extracted feature data (pitch, dynamics, vibrato, etc.).
+- User/Test subject information (demographics, experiment group).
+
+**Schema Definitions:**
+
+- Mongoose schemas defining the structure of the data are located in the `back-end/models/` directory (e.g., `Audio.js`, `TestSubject.js`).
+- For a more detailed schema visualization, consider adding documentation to a `/docs` folder.
+
+The backend connects to MongoDB using the connection string defined in its `.env` file. For secure remote connections in production, an SSH tunnel can be established using your VPS credentials.
+
+---
+
+## Deployment Instructions
+
+While the setup above is for local development, production requires a more robust configuration.
+
+- **Node.js Back-end:** Use a process manager like PM2 or systemd to ensure the Node.js service runs continuously and restarts on failure.
+- **Python Service:** Use a production-grade WSGI server like Gunicorn behind a process manager like systemd or Supervisor.
+- **Front-end:** Build the static React application (`npm run build`) and serve the generated files using a web server like Nginx.
+- **Reverse Proxy:** Nginx is highly recommended to act as a reverse proxy. It can handle incoming HTTPS traffic, terminate SSL, and route requests to the appropriate backend service (e.g., requests to `/api/` go to the Node.js app, other requests serve the React app).
+
+**Example Nginx Configuration:**
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name yourdomain.com;
+
+    # SSL Certs
+    ssl_certificate /path/to/your/fullchain.pem;
+    ssl_certificate_key /path/to/your/privkey.pem;
+
+    # Route API calls to the backend service
+    location /api/ {
+        proxy_pass http://localhost:8004/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Serve the static front-end files
+    location / {
+        root /var/www/skynote/front-end/build;
+        try_files $uri $uri/ /index.html;
+    }
+}
 ```
 
-- You can monitor Nginx logs using the following code:
+**Environment Variable Differences:**
 
-```
-# Access logs (requests to your frontend)
-tail -f /var/log/nginx/access.log
+- Ensure you create separate `.env` files for production or use a secret management system.
+- Use production database URLs, API keys, and other credentials.
+- **NEVER** commit production secrets to version control.
 
-# Error logs
-tail -f /var/log/nginx/error.log
-```
+## Error Handling & Logs
+
+**Where logs go:**
+
+- In production, Node.js and Python logs are typically managed by the process manager (e.g., `pm2 logs` or `journalctl -u your-service`).
+- Nginx logs are usually found in `/var/log/nginx/`.
+- In local development, all logs output to the console.
+
+**Debugging Common Errors:**
+
+- Python service not responding: Check the logs from Flask/Gunicorn. Ensure it's running and accessible from the backend server.
+- MongoDB connection issues: Verify your connection string, IP whitelisting rules, and credentials in the `.env` file. If using an SSH tunnel, ensure it's active.
+- CORS errors: Ensure the backend server has the correct CORS configuration to allow requests from the front-end domain.
+
+## Extending the Application
+
+To add a new audio feature or instrument, or update the available analysis buttons for each instrument, follow these steps:
+
+### 1. Front-end (React)
+
+- Edit `front-end/src/config/analysisButtons.js`:
+  - Add or modify entries in `analysisButtonConfig` to specify which features (buttons) are available for each instrument.
+  - Example:
+    ```js
+    export const analysisButtonConfig = {
+       violin: [ ... ],
+       voice: [ ... ],
+       polyphonic: [ ... ],
+       guitar: [
+          { type: "left", label: "dynamics" },
+          { type: "center", label: "pitch" },
+          { type: "right", label: "tempo" },
+       ],
+    };
+    ```
+- The `AnalysisButtons.jsx` component will automatically render buttons for any instrument defined in this config.
+
+### 2. Python Service (Flask)
+
+- Implement the feature extraction logic for the new instrument/feature in `python-service/feature_extraction/`.
+- Expose a new endpoint in `app.py` if needed, or update existing endpoints to handle the new instrument/feature.
+
+### 3. End-to-End Connection
+
+- When a user selects a feature button in the front-end, it triggers an API call to the backend, which then calls the python-service for analysis.
+- The backend and python-service must both recognize the instrument and feature label for the request to succeed.
+
+**Summary:**
+
+- Update `analysisButtonConfig` in the front-end for UI changes.
+- Update backend and python-service to support new instruments/features for full-stack integration.
+
+## License
+
+This project is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.

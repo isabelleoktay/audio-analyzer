@@ -10,6 +10,7 @@ export const analysisButtonConfig = {
       label: "dynamics",
     },
     { type: "center", label: "pitch" },
+    { type: "center", label: "vibrato" },
     { type: "right", label: "tempo" },
   ],
   voice: [
