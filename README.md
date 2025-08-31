@@ -1,4 +1,4 @@
-# MuSA (Musical Understanding using Saliency Analysis) – Developer Guide
+# MuSA (Musical Salience Analyzer) – Developer Guide
 
 This guide provides a comprehensive overview of the MuSA web application, its architecture, and detailed instructions for developers to set up, run, extend, and deploy the project. It covers the three main components: front-end, back-end, and python-service.
 
