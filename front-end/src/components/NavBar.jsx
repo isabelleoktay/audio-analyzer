@@ -80,6 +80,12 @@ const NavBar = ({
               },
               {
                 type: "center",
+                to: "/musa-voice",
+                label: "MuSA voice",
+                active: isActive("/musa-voice"),
+              },
+              {
+                type: "center",
                 to: "/how-to-use",
                 label: "how to use",
                 active: isActive("/how-to-use"),
@@ -157,6 +163,12 @@ const NavBar = ({
                   to: "/",
                   label: "analyzer",
                   active: isActive("/"),
+                },
+                {
+                  type: "center",
+                  to: "/musa-voice",
+                  label: "MuSA voice",
+                  active: isActive("/musa-voice"),
                 },
                 {
                   type: "center",
