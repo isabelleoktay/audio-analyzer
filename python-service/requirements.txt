@@ -16,6 +16,8 @@ flask-socketio==5.3.6
 python-socketio==5.8.0
 python-engineio==4.9.0
 gunicorn
+pyjwt==2.10.1
+redis==6.4.0
 
 # Machine learning & audio
 tensorflow==2.15.0
