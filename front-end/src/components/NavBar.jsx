@@ -80,6 +80,12 @@ const NavBar = ({
               },
               {
                 type: "center",
+                to: "/multi-audio",
+                label: "multi audio",
+                active: isActive("/multi-audio"),
+              },
+              {
+                type: "center",
                 to: "/how-to-use",
                 label: "how to use",
                 active: isActive("/how-to-use"),
@@ -157,6 +163,12 @@ const NavBar = ({
                   to: "/",
                   label: "analyzer",
                   active: isActive("/"),
+                },
+                {
+                  type: "center",
+                  to: "/multi-audio",
+                  label: "multi audio",
+                  active: isActive("/multi-audio"),
                 },
                 {
                   type: "center",
