@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Layout from "./components/Layout.jsx";
 import NavBar from "./components/NavBar.jsx";
-import { Analyzer, Testing, HowToUse, NotFound, MusaVoice } from "./pages";
+import { Analyzer, Testing, HowToUse, NotFound, MusaVoice, FeedbackForm } from "./pages";
 
 import { cleanupTempFiles } from "./utils/api.js";
 import { tokenManager } from "./utils/tokenManager.js";
@@ -123,6 +123,7 @@ const App = () => {
                 />
                 <Route path="/how-to-use" element={<HowToUse />} />
                 <Route path="/musa-voice" element={<MusaVoice />} />
+                <Route path="/musa-feedback" element={<FeedbackForm />} />
 
                 {/* Fallback route for undefined paths */}
                 <Route path="*" element={<NotFound />} />

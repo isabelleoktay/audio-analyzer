@@ -15,6 +15,7 @@ const MusaVoice = () => {
   const handleSubmit = (answers) => {
     console.log("Survey answers:", answers);
     setShowSurvey(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (

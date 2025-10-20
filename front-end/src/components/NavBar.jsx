@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import ButtonGroup from "./buttons/ButtonGroup";
 import SecondaryButton from "./buttons/SecondaryButton";
@@ -13,6 +13,7 @@ const NavBar = ({
 }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const isActive = (path) => location.pathname === path;
 
@@ -27,7 +28,8 @@ const NavBar = ({
   };
 
   const handleFeedback = () => {
-    window.open("https://forms.gle/WF8g6WrMVsrokqyK6", "_blank");
+    window.scrollTo(0, 0);
+    navigate("/musa-feedback"); // now the handler can use it
   };
 
   const toggleMobileMenu = () => {

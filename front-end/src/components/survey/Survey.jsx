@@ -1,17 +1,20 @@
 import { useState } from "react";
 import SurveySingleSelect from "./SurveySingleSelect";
 import SurveyMultiSelect from "./SurveyMultiSelect";
-import SurveyScale from "./SurveyScale";
 import SurveyMultiScale from "./SurveyMultiScale";
+import SurveyTextAnswer from "./SurveyTextAnswer";
+import SurveyStatementRating from "./SurveyStatementRating";
+import SecondaryButton from "../buttons/SecondaryButton";
 
 const componentMap = {
-    singleselect: SurveySingleSelect,
-    multiselect: SurveyMultiSelect,
-    scale: SurveyScale,
-    multiscale: SurveyMultiScale,
+  singleselect: SurveySingleSelect,
+  multiselect: SurveyMultiSelect,
+  multiscale: SurveyMultiScale,
+  textAnswer: SurveyTextAnswer,
+  statementRating: SurveyStatementRating,
 };
 
-const Survey = ({ config, onSubmit }) => {
+const Survey = ({ config, onSubmit, sectionTitle, buttonText }) => {
   const [answers, setAnswers] = useState({});
 
   const handleAnswerChange = (question, answer) => {
@@ -20,8 +23,16 @@ const Survey = ({ config, onSubmit }) => {
 
   return (
     <div className="flex flex-col gap-8">
+      {/* Section heading */}
+      {sectionTitle && (
+        <h2 className="text-xl font-bold text-lightgray text-center">
+          {sectionTitle}
+        </h2>
+      )}
+
       {config.map((item, index) => {
         const Component = componentMap[item.type];
+        if (!Component) return null; // skip unknown types
         return (
           <Component
             key={index}
@@ -32,12 +43,9 @@ const Survey = ({ config, onSubmit }) => {
       })}
 
       <div className="flex justify-center mt-6">
-        <button
-          onClick={() => onSubmit(answers)}
-          className="bg-darkpink text-white px-6 py-2 rounded-xl hover:bg-lightpink"
-        >
-          Submit
-        </button>
+        <SecondaryButton onClick={onSubmit}>
+          {buttonText || "Submit"}
+        </SecondaryButton>
       </div>
     </div>
   );
