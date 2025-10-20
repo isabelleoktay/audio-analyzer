@@ -1,12 +1,12 @@
 import { useState } from "react";
 import SurveyButton from "../buttons/SurveyButton";
 
-export default function SurveySingleSelect({ question, options = [], onSelect }) {
-  const [selected, setSelected] = useState(null); // <-- rename correctly
+export default function SurveySingleSelect({ question, options = [], onChange }) {
+  const [selected, setSelected] = useState(null);
 
   const handleSelect = (option) => {
     setSelected(option);
-    onSelect?.(option);
+    onChange?.(option); // use onChange instead of onSelect
   };
 
   return (
@@ -20,8 +20,7 @@ export default function SurveySingleSelect({ question, options = [], onSelect })
           <SurveyButton
             key={index}
             onClick={() => handleSelect(opt)}
-            isActive={true}
-            isSelected={selected === opt} // <-- compare state value
+            isSelected={selected === opt}
           >
             {opt}
           </SurveyButton>
