@@ -23,6 +23,15 @@ module.exports = {
         "8-4": "8 4", // Dash length 8px, gap 4px
         "10-5": "10 5", // Dash length 10px, gap 5px
       },
+      keyframes: {
+        zoomIn: {
+          "0%": { transform: "scale(0.5)", opacity: "0" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+      },
+      animation: {
+        zoomIn: "zoomIn 1s ease-out forwards",
+      },
     },
   },
   plugins: [

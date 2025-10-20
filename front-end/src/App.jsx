@@ -3,8 +3,14 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Layout from "./components/Layout.jsx";
 import NavBar from "./components/NavBar.jsx";
-import { Analyzer, Testing, HowToUse, NotFound, MultiAudio } from "./pages";
-
+import {
+  Analyzer,
+  Testing,
+  HowToUse,
+  NotFound,
+  MusaVoice,
+  MultiAudio,
+} from "./pages";
 import { cleanupTempFiles } from "./utils/api.js";
 import { tokenManager } from "./utils/tokenManager.js";
 
@@ -126,6 +132,7 @@ const App = () => {
                   element={<MultiAudio setUploadsEnabled={setUploadsEnabled} />}
                 />
                 <Route path="/how-to-use" element={<HowToUse />} />
+                <Route path="/musa-voice" element={<MusaVoice />} />
 
                 {/* Fallback route for undefined paths */}
                 <Route path="*" element={<NotFound />} />
