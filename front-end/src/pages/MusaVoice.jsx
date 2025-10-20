@@ -1,24 +1,28 @@
-import React from "react";
+import { useState, useEffect } from "react";
+import MusaVoiceStartSurvey from "../components/survey/MusaVoiceStartSurvey";
 
 const MusaVoice = () => {
+  const [showIntro, setShowIntro] = useState(true);
+
+  useEffect(() => {
+    // Hide intro and show survey after 2 seconds
+    const timer = setTimeout(() => setShowIntro(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-4xl mx-auto my-24">
-        {/* Welcome text for voice survey */}
-        <h2 className="text-2xl font-semibold text-lightpink mb-4 text-center">
-        We would like to know a little about your background
-        </h2>
-        <p className="text-lightgray/80 text-sm">
-            Please answer the following questions to begin using the MuSA testing platform. These will provide us with an understanding of your vocal background and calibrate some aspects of the platform to your needs. 
-        </p>
-        <div className="mt-16 bg-lightgray/5 rounded-3xl p-8">
-            <h2 className="text-2xl font-semibold text-lightpink mb-4 text-center">
-                Question 1
-            </h2>
-        </div>
-      </div>
-
+    <div className="flex items-center justify-center min-h-screen">
+      {showIntro ? (
+        <h1 className="text-5xl font-bold text-lightpink animate-zoomIn">
+          Welcome to MusaVoice!
+        </h1>
+      ) : (
+        <MusaVoiceStartSurvey
+          onSubmit={(answers) => {
+            console.log("Survey submitted:", answers);
+          }}
+        />
+      )}
     </div>
   );
 };
