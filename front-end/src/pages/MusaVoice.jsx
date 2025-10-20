@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Survey from "../components/survey/Survey";
+import Survey from "../components/survey/Survey.jsx";
 import musaVoiceSurveyConfig from "../data/musaVoiceSurveyConfig.js";
 
 const MusaVoice = () => {
