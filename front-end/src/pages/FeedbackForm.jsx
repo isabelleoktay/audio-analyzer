@@ -10,15 +10,18 @@ import {
 const FeedbackForm = () => {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
+  const [showThankYou, setShowThankYou] = useState(false);
 
   const handleNext = (answers) => {
     console.log(`Feedback Form answers for step ${step + 1}:`, answers);
 
     // If this was the last step, go home
     if (step >= surveySections.length - 1) {
-      console.log("Feedback form completed.");
-      navigate("/");
-      return;
+      setShowThankYou(true);
+      // Wait 2 seconds, then reroute
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
     }
 
     // Otherwise, move to the next section
@@ -37,17 +40,25 @@ const FeedbackForm = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-4xl p-8 rounded-xl pt-20">
-        <SurveySection
-          config={surveySections[step].config}
-          onSubmit={handleNext}
-          sectionTitle={`${surveySections[step].title} - Section ${
-            step + 1
-          } of ${surveySections.length}`}
-          buttonText={step < surveySections.length - 1 ? "Next" : "Submit"}
-          backButtonClick={step > 0 ? () => setStep((prev) => prev - 1) : null}
-        />
-      </div>
+      {showThankYou ? (
+        <h1 className="text-5xl font-bold text-lightpink animate-zoomIn text-center">
+          Thank you for providing feedback to the MuSA Development team!
+        </h1>
+      ) : (
+        <div className="w-full max-w-4xl p-8 rounded-xl pt-20">
+          <SurveySection
+            config={surveySections[step].config}
+            onSubmit={handleNext}
+            sectionTitle={`${surveySections[step].title} - Section ${
+              step + 1
+            } of ${surveySections.length}`}
+            buttonText={step < surveySections.length - 1 ? "Next" : "Submit"}
+            backButtonClick={
+              step > 0 ? () => setStep((prev) => prev - 1) : null
+            }
+          />
+        </div>
+      )}
     </div>
   );
 };
