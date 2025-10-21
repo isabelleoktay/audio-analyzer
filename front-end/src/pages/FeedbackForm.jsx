@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Survey from "../components/survey/Survey.jsx";
+import SurveySection from "../components/survey/SurveySection.jsx";
 import {
   feedbackForm1Config,
   feedbackForm2Config,
@@ -38,7 +38,7 @@ const FeedbackForm = () => {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="w-full max-w-4xl p-8 rounded-xl pt-20">
-        <Survey
+        <SurveySection
           config={surveySections[step].config}
           onSubmit={handleNext}
           sectionTitle={`${surveySections[step].title} - Section ${

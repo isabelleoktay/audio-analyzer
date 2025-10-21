@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Survey from "../components/survey/Survey.jsx";
+import SurveySection from "../components/survey/SurveySection.jsx";
 import musaVoiceSurveyConfig from "../data/musaVoiceSurveyConfig.js";
 
 const MusaVoice = () => {
@@ -26,7 +26,10 @@ const MusaVoice = () => {
         </h1>
       ) : showSurvey ? (
         <div className="w-full max-w-4xl p-8 rounded-xl pt-20">
-          <Survey config={musaVoiceSurveyConfig} onSubmit={handleSubmit} />
+          <SurveySection
+            config={musaVoiceSurveyConfig}
+            onSubmit={handleSubmit}
+          />
         </div>
       ) : (
         <div className="w-full h-full" />

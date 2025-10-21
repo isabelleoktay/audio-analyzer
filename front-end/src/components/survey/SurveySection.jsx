@@ -14,7 +14,7 @@ const componentMap = {
   statementRating: SurveyStatementRating,
 };
 
-const Survey = ({
+const SurveySection = ({
   config,
   onSubmit,
   sectionTitle,
@@ -65,4 +65,4 @@ const Survey = ({
   );
 };
 
-export default Survey;
+export default SurveySection;
