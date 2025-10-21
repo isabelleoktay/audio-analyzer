@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Survey from "../components/survey/Survey.jsx";
 import {
   feedbackForm1Config,
@@ -8,9 +9,19 @@ import {
 
 const FeedbackForm = () => {
   const [step, setStep] = useState(0);
+  const navigate = useNavigate();
 
   const handleNext = (answers) => {
-    console.log("Feedback Form answers for step", step + 1, ":", answers);
+    console.log(`Feedback Form answers for step ${step + 1}:`, answers);
+
+    // If this was the last step, go home
+    if (step >= surveySections.length - 1) {
+      console.log("Feedback form completed.");
+      navigate("/");
+      return;
+    }
+
+    // Otherwise, move to the next section
     setStep((prev) => prev + 1);
     window.scrollTo(0, 0);
   };
@@ -24,11 +35,6 @@ const FeedbackForm = () => {
     { config: feedbackForm3Config, title: "Technology Awareness" },
   ];
 
-  if (step >= surveySections.length) {
-    // All steps completed
-    return <div className="w-full h-full" />;
-  }
-
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="w-full max-w-4xl p-8 rounded-xl pt-20">
@@ -39,6 +45,7 @@ const FeedbackForm = () => {
             step + 1
           } of ${surveySections.length}`}
           buttonText={step < surveySections.length - 1 ? "Next" : "Submit"}
+          backButtonClick={step > 0 ? () => setStep((prev) => prev - 1) : null}
         />
       </div>
     </div>

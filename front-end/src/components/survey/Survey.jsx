@@ -14,7 +14,13 @@ const componentMap = {
   statementRating: SurveyStatementRating,
 };
 
-const Survey = ({ config, onSubmit, sectionTitle, buttonText }) => {
+const Survey = ({
+  config,
+  onSubmit,
+  sectionTitle,
+  buttonText,
+  backButtonClick,
+}) => {
   const [answers, setAnswers] = useState({});
 
   const handleAnswerChange = (question, answer) => {
@@ -42,7 +48,15 @@ const Survey = ({ config, onSubmit, sectionTitle, buttonText }) => {
         );
       })}
 
-      <div className="flex justify-center mt-6">
+      <div className="flex justify-center mt-6 gap-6">
+        {backButtonClick && (
+          <SecondaryButton
+            onClick={backButtonClick}
+            className="ml-4 bg-lightpink/50 hover:bg-lightpink/70"
+          >
+            Back
+          </SecondaryButton>
+        )}
         <SecondaryButton onClick={onSubmit}>
           {buttonText || "Submit"}
         </SecondaryButton>
