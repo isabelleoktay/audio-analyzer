@@ -1,13 +1,37 @@
 import { useState, useEffect, useRef } from "react";
 import SurveyCheckbox from "../buttons/SurveyCheckbox";
 
-const SurveyMultiSelect = ({ question, options = [], onChange, allowOther = true }) => {
+const SurveyMultiSelect = ({
+  question,
+  options = [],
+  onChange,
+  allowOther = true,
+  value = [],
+}) => {
+  const containerRef = useRef(null);
+  const [columnWidth, setColumnWidth] = useState(150);
+
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [otherText, setOtherText] = useState("");
-  const [columnWidth, setColumnWidth] = useState(150); // default min
-  const containerRef = useRef(null);
 
-  // Measure the longest option text
+  // Track first load to avoid overwriting user input
+  const firstLoad = useRef(true);
+
+  useEffect(() => {
+    // Only update state on first load, or if value changed externally
+    if (!value || !value.length) return;
+
+    if (firstLoad.current) {
+      const regularOptions = value.filter((v) => options.includes(v));
+      const otherValue = value.find((v) => !options.includes(v));
+      setSelectedOptions([...regularOptions, ...(otherValue ? ["Other"] : [])]);
+      setOtherText(otherValue || "");
+      firstLoad.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, options]);
+
+  // Measure longest option for responsive layout
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -15,7 +39,7 @@ const SurveyMultiSelect = ({ question, options = [], onChange, allowOther = true
     tempSpan.style.visibility = "hidden";
     tempSpan.style.position = "absolute";
     tempSpan.style.whiteSpace = "nowrap";
-    tempSpan.style.fontSize = "14px"; // same as label
+    tempSpan.style.fontSize = "14px";
     document.body.appendChild(tempSpan);
 
     let maxWidth = 150;
@@ -24,6 +48,7 @@ const SurveyMultiSelect = ({ question, options = [], onChange, allowOther = true
       const width = tempSpan.getBoundingClientRect().width + 32; // add checkbox + padding
       if (width > maxWidth) maxWidth = width;
     });
+
     if (allowOther) {
       tempSpan.innerText = "Other";
       const width = tempSpan.getBoundingClientRect().width + 32;
@@ -44,10 +69,12 @@ const SurveyMultiSelect = ({ question, options = [], onChange, allowOther = true
 
   const toggleOther = () => {
     const hasOther = selectedOptions.includes("Other");
-    const updated = hasOther ? selectedOptions.filter((o) => o !== "Other") : [...selectedOptions, "Other"];
+    const updated = hasOther
+      ? selectedOptions.filter((o) => o !== "Other")
+      : [...selectedOptions, "Other"];
     if (hasOther) setOtherText("");
     setSelectedOptions(updated);
-    triggerChange(updated, otherText);
+    triggerChange(updated, hasOther ? "" : otherText);
   };
 
   const handleOtherTextChange = (e) => {
@@ -62,8 +89,13 @@ const SurveyMultiSelect = ({ question, options = [], onChange, allowOther = true
   };
 
   return (
-    <div className="bg-bluegray/25 rounded-3xl p-8 flex flex-col items-center" ref={containerRef}>
-      <h4 className="text-xl font-semibold text-lightpink mb-6 text-center">{question}</h4>
+    <div
+      className="bg-bluegray/25 rounded-3xl p-8 flex flex-col items-center"
+      ref={containerRef}
+    >
+      <h4 className="text-xl font-semibold text-lightpink mb-6 text-center">
+        {question}
+      </h4>
 
       <div
         className="grid gap-4 w-full justify-center"

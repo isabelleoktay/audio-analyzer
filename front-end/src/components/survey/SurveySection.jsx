@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SurveySingleSelect from "./SurveySingleSelect";
 import SurveyMultiSelect from "./SurveyMultiSelect";
 import SurveyMultiScale from "./SurveyMultiScale";
@@ -20,11 +20,22 @@ const SurveySection = ({
   sectionTitle,
   buttonText,
   backButtonClick,
+  savedAnswers = {},
 }) => {
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(savedAnswers || {});
+
+  useEffect(() => {
+    if (savedAnswers) {
+      setAnswers(savedAnswers);
+    }
+  }, [savedAnswers]);
 
   const handleAnswerChange = (question, answer) => {
     setAnswers((prev) => ({ ...prev, [question]: answer }));
+  };
+
+  const handleSubmit = () => {
+    onSubmit(answers);
   };
 
   return (
@@ -44,6 +55,7 @@ const SurveySection = ({
             key={index}
             {...item}
             onChange={(val) => handleAnswerChange(item.question, val)}
+            value={answers[item.question]}
           />
         );
       })}
@@ -51,13 +63,13 @@ const SurveySection = ({
       <div className="flex justify-center mt-6 gap-6">
         {backButtonClick && (
           <SecondaryButton
-            onClick={backButtonClick}
+            onClick={() => backButtonClick(answers)}
             className="ml-4 bg-lightpink/50 hover:bg-lightpink/70"
           >
             Back
           </SecondaryButton>
         )}
-        <SecondaryButton onClick={onSubmit}>
+        <SecondaryButton onClick={handleSubmit}>
           {buttonText || "Submit"}
         </SecondaryButton>
       </div>

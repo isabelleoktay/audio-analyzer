@@ -9,11 +9,13 @@ import {
 
 const FeedbackForm = () => {
   const [step, setStep] = useState(0);
-  const navigate = useNavigate();
   const [showThankYou, setShowThankYou] = useState(false);
+  const [answers, setAnswers] = useState({});
+  const navigate = useNavigate();
 
   const handleNext = (answers) => {
     console.log(`Feedback Form answers for step ${step + 1}:`, answers);
+    setAnswers((prev) => ({ ...prev, [step]: answers }));
 
     // If this was the last step, go home
     if (step >= surveySections.length - 1) {
@@ -26,6 +28,18 @@ const FeedbackForm = () => {
 
     // Otherwise, move to the next section
     setStep((prev) => prev + 1);
+    window.scrollTo(0, 0);
+  };
+
+  const handleBack = (currentAnswers) => {
+    // Save the current section's answers
+    setAnswers((prev) => ({
+      ...prev,
+      [step]: currentAnswers,
+    }));
+
+    // Go back one step
+    setStep((prev) => Math.max(prev - 1, 0));
     window.scrollTo(0, 0);
   };
 
@@ -53,9 +67,8 @@ const FeedbackForm = () => {
               step + 1
             } of ${surveySections.length}`}
             buttonText={step < surveySections.length - 1 ? "Next" : "Submit"}
-            backButtonClick={
-              step > 0 ? () => setStep((prev) => prev - 1) : null
-            }
+            backButtonClick={handleBack}
+            savedAnswers={answers[step] || {}}
           />
         </div>
       )}

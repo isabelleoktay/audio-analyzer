@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export default function SurveyTextAnswer({ question, onChange }) {
-  const [value, setValue] = useState("");
+export default function SurveyTextAnswer({ question, onChange, value }) {
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    setText(value || "");
+  }, [value]);
 
   const handleChange = (e) => {
-    setValue(e.target.value);
+    setText(e.target.value);
     onChange?.(e.target.value);
   };
 
@@ -18,7 +22,7 @@ export default function SurveyTextAnswer({ question, onChange }) {
       {/* Input field */}
       <input
         type="text"
-        value={value}
+        value={text}
         onChange={handleChange}
         placeholder="Add your answer here..."
         className="

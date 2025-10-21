@@ -6,10 +6,17 @@ const SurveyStatementRating = ({
   statements = [],
   scaleLabels = ["1", "2", "3", "4", "5"],
   onChange,
+  value,
 }) => {
-  const [ratings, setRatings] = useState({}); // { option: value }
+  const [ratings, setRatings] = useState([]);
   const containerRef = useRef(null);
   const [scaleWidth, setScaleWidth] = useState(0);
+
+  useEffect(() => {
+    if (value) {
+      setRatings(value);
+    }
+  }, [value]);
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver(() => {
