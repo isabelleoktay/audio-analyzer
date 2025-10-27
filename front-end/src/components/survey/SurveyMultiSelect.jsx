@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import SurveyCheckbox from "../buttons/SurveyCheckbox";
 
-const SurveyMultiSelect = ({ question, options = [], onChange, allowOther = true }) => {
+const SurveyMultiSelect = ({
+  question,
+  options = [],
+  onChange,
+  allowOther = true,
+  columns = null, // New prop for fixed number of columns
+  className = "",
+}) => {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [otherText, setOtherText] = useState("");
   const [columnWidth, setColumnWidth] = useState(150); // default min
@@ -9,7 +16,7 @@ const SurveyMultiSelect = ({ question, options = [], onChange, allowOther = true
 
   // Measure the longest option text
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || columns) return; // Skip if using fixed columns
 
     const tempSpan = document.createElement("span");
     tempSpan.style.visibility = "hidden";
@@ -32,7 +39,7 @@ const SurveyMultiSelect = ({ question, options = [], onChange, allowOther = true
 
     document.body.removeChild(tempSpan);
     setColumnWidth(maxWidth);
-  }, [options, allowOther]);
+  }, [options, allowOther, columns]);
 
   const toggleOption = (option) => {
     const updated = selectedOptions.includes(option)
@@ -44,7 +51,9 @@ const SurveyMultiSelect = ({ question, options = [], onChange, allowOther = true
 
   const toggleOther = () => {
     const hasOther = selectedOptions.includes("Other");
-    const updated = hasOther ? selectedOptions.filter((o) => o !== "Other") : [...selectedOptions, "Other"];
+    const updated = hasOther
+      ? selectedOptions.filter((o) => o !== "Other")
+      : [...selectedOptions, "Other"];
     if (hasOther) setOtherText("");
     setSelectedOptions(updated);
     triggerChange(updated, otherText);
@@ -61,14 +70,28 @@ const SurveyMultiSelect = ({ question, options = [], onChange, allowOther = true
     onChange?.(output);
   };
 
+  // Determine grid template columns based on prop
+  const getGridTemplateColumns = () => {
+    if (columns) {
+      return `repeat(${columns}, 1fr)`; // Fixed number of equal columns
+    } else {
+      return `repeat(auto-fit, minmax(${columnWidth}px, 1fr))`; // Auto-fit based on content
+    }
+  };
+
   return (
-    <div className="bg-bluegray/25 rounded-3xl p-8 flex flex-col items-center" ref={containerRef}>
-      <h4 className="text-xl font-semibold text-lightpink mb-6 text-center">{question}</h4>
+    <div
+      className={`bg-bluegray/25 rounded-3xl p-8 flex flex-col items-center ${className}`}
+      ref={containerRef}
+    >
+      <h4 className="text-xl font-semibold text-lightpink mb-6 text-center">
+        {question}
+      </h4>
 
       <div
         className="grid gap-4 w-full justify-center"
         style={{
-          gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidth}px, 1fr))`,
+          gridTemplateColumns: getGridTemplateColumns(),
         }}
       >
         {options.map((opt, index) => (
