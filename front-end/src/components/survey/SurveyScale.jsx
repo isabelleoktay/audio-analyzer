@@ -17,10 +17,16 @@ const SurveyScale = ({
             className={`
               flex-1 h-10 rounded-md font-semibold transition-colors
               relative flex items-center justify-center
-              ${isSelected ? "bg-darkpink text-white" : "bg-lightgray text-blueblack hover:bg-lightpink"}
+              ${isSelected ? "bg-darkpink" : "bg-lightgray hover:bg-lightpink"}
             `}
           >
-            <span className="absolute text-blueblack">{label}</span>
+            <span
+              className={`absolute text-sm ${
+                isSelected ? "text-white" : "text-darkgray"
+              }`}
+            >
+              {label}
+            </span>
           </button>
         );
       })}

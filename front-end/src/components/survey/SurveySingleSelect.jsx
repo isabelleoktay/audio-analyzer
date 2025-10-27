@@ -1,12 +1,49 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SurveyButton from "../buttons/SurveyButton";
 
-export default function SurveySingleSelect({ question, options = [], onSelect }) {
-  const [selected, setSelected] = useState(null); // <-- rename correctly
+export default function SurveySingleSelect({
+  question,
+  options = [],
+  onChange,
+  allowOther = false,
+  value = null,
+}) {
+  const [selected, setSelected] = useState(null);
+  const [otherText, setOtherText] = useState("");
+
+  useEffect(() => {
+    if (value && !options.includes(value)) {
+      setSelected("Other");
+      setOtherText(value);
+    } else {
+      setSelected(value || null);
+      setOtherText("");
+    }
+  }, [value, options]);
 
   const handleSelect = (option) => {
     setSelected(option);
-    onSelect?.(option);
+    setOtherText("");
+    onChange?.(option);
+  };
+
+  const toggleOther = () => {
+    const isOtherSelected = selected === "Other";
+    if (isOtherSelected) {
+      setSelected(null);
+      setOtherText("");
+      onChange?.(null);
+    } else {
+      setSelected("Other");
+      onChange?.(otherText || "");
+    }
+  };
+
+  const handleOtherTextChange = (e) => {
+    const text = e.target.value;
+    setOtherText(text);
+    setSelected("Other");
+    onChange?.(text);
   };
 
   return (
@@ -15,17 +52,36 @@ export default function SurveySingleSelect({ question, options = [], onSelect })
         {question}
       </h4>
 
-      <div className="flex flex-wrap justify-center gap-6">
+      <div className="flex flex-wrap justify-center gap-4 items-center">
         {options.map((opt, index) => (
           <SurveyButton
             key={index}
             onClick={() => handleSelect(opt)}
-            isActive={true}
-            isSelected={selected === opt} // <-- compare state value
+            isSelected={selected === opt}
           >
             {opt}
           </SurveyButton>
         ))}
+
+        {allowOther && (
+          <div className="flex items-center gap-2">
+            <SurveyButton
+              onClick={toggleOther}
+              isSelected={selected === "Other"}
+            >
+              Other
+            </SurveyButton>
+            {selected === "Other" && (
+              <input
+                type="text"
+                value={otherText}
+                onChange={handleOtherTextChange}
+                className="p-2 rounded-md border border-gray-300 w-28 text-center text-sm focus:outline-none focus:ring-2 focus:ring-lightpink"
+                placeholder="Type here"
+              />
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
