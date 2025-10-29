@@ -118,6 +118,7 @@ const Analyzer = ({
   // Handles the selection of an audio analysis feature.
   const handleAnalysisFeatureSelect = (feature) => {
     setSelectedAnalysisFeature(feature);
+    console.log("Selected analysis feature:", feature);
   };
 
   // Downloads the currently recorded or uploaded audio file.

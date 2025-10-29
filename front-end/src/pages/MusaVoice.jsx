@@ -3,12 +3,16 @@ import SurveySection from "../components/survey/SurveySection.jsx";
 import musaVoiceSurveyConfig from "../data/musaVoiceSurveyConfig.js";
 // import UploadAudioCard from "../components/cards/UploadAudioCard";
 import AnalysisButtons from "../components/buttons/AnalysisButtons.jsx";
+import RecordAudioSection from "../components/sections/RecordAudioSection.jsx";
+import FileUploadSection from "../components/sections/FileUploadSection.jsx";
 import TertiaryButton from "../components/buttons/TertiaryButton.jsx";
 import OverlayGraphWithWaveform from "../components/visualizations/OverlayGraphWithWaveform.jsx";
+import SimilarityScoreCard from "../components/cards/SimilarityScoreCard";
+import SelectedVocalTechniquesCard from "../components/cards/SelectedVocalTechniquesCard";
 import {
   mockInputFeatures,
   mockReferenceFeatures,
-} from "../mock/mockFeatureData";
+} from "../mock/index.js";
 
 /**
  * The `MusaVoice` component is the main page for analyzing vocal audio files.
@@ -41,18 +45,18 @@ import {
  * @returns {JSX.Element} The rendered `Analyzer` component.
  */
 
-const MusaVoice = (
-  uploadedFile,
+const MusaVoice = ({
+  uploadedFile = "front-end/public/audio/development/input.wav",
   setUploadedFile,
   inRecordMode,
   setInRecordMode,
   audioBlob,
   setAudioBlob,
-  audioName,
-  setAudioName,
-  inputAudioURL,
+  inputAudioName,
+  setInputAudioName,
+  inputAudioURL = "front-end/public/audio/development/input.wav",
   setInputAudioURL,
-  referenceAudioURL,
+  referenceAudioURL = "front-end/public/audio/development/reference.wav",
   setReferenceAudioURL,
   selectedAnalysisFeature = "vocal tone",
   setSelectedAnalysisFeature,
@@ -64,10 +68,10 @@ const MusaVoice = (
   setAudioUuid,
   uploadsEnabled,
   tooltipMode,
-  setUploadsEnabled
-) => {
+  setUploadsEnabled,
+}) => {
   const [showIntro, setShowIntro] = useState(true);
-  const [showSurvey, setShowSurvey] = useState(true);
+  const [showSurvey, setShowSurvey] = useState(true);  
 
   useEffect(() => {
     // Hide intro and show survey after 2 seconds
@@ -91,7 +95,7 @@ const MusaVoice = (
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      {showIntro ? (
+      {/* {showIntro ? (
         <h1 className="text-5xl font-bold text-lightpink animate-zoomIn">
           Welcome to MusaVoice!
         </h1>
@@ -102,75 +106,83 @@ const MusaVoice = (
             onSubmit={handleSubmitSurvey}
           />
         </div>
-      ) : (
-        <div className="flex flex-col items-center w-full space-y-8">
-          {/* <div className="flex flex-col items-center justify-center min-h-screen text-lightgray px-8">
+      ) : ( */}
+
+        {/* <div className="flex flex-col items-center justify-center min-h-screen text-lightgray px-8">
             <UploadAudioCard 
               label="Reference Audio" 
               onSubmit={handleSubmitAudio}
             />
           </div> */}
-          <AnalysisButtons
-            selectedInstrument={"voice"}
-            selectedAnalysisFeature={selectedAnalysisFeature}
-            onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
-            uploadedFile={uploadedFile}
-            audioFeatures={inputAudioFeatures}
-            setAudioFeatures={setInputAudioFeatures}
-            audioUuid={audioUuid}
-            setAudioUuid={setAudioUuid}
-            uploadsEnabled={uploadsEnabled}
-          />
-          {selectedAnalysisFeature && (
-            <div className="flex flex-col w-full lg:w-fit">
-              <div className="text-xl font-semibold text-lightpink mb-1">
-                {uploadedFile.name}
+
+      {/* Display uploaded file, analysis buttons, and visualization for selected analysis feature */}
+        {uploadedFile && (<div>
+        
+        <AnalysisButtons
+          selectedInstrument={"voice"}
+          selectedAnalysisFeature={selectedAnalysisFeature}
+          onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
+          uploadedFile={uploadedFile}
+          audioFeatures={inputAudioFeatures}
+          setAudioFeatures={setInputAudioFeatures}
+          audioUuid={audioUuid}
+          setAudioUuid={setAudioUuid}
+          uploadsEnabled={uploadsEnabled}
+        />
+        {selectedAnalysisFeature && (
+          <div className="flex flex-col w-full lg:w-fit pt-6 space-y-4">
+            <div className="text-xl font-semibold text-lightpink mb-1">
+              {uploadedFile.name}
+            </div>
+            <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
+              {/* Add overflow-x-auto on mobile only */}
+              <div className="w-full lg:min-w-[800px]">
+                {/* Ensure 800px minimum width */}
+                <OverlayGraphWithWaveform
+                  inputAudioURL={
+                    inputAudioFeatures[selectedAnalysisFeature]?.inputAudioUrl
+                  }
+                  referenceAudioURL={
+                    referenceAudioFeatures[selectedAnalysisFeature]
+                      ?.referenceAudioUrl
+                  }
+                  inputFeatureData={
+                    inputAudioFeatures[selectedAnalysisFeature]?.data || []
+                  }
+                  referenceFeatureData={
+                    referenceAudioFeatures[selectedAnalysisFeature]?.data || []
+                  }
+                  selectedAnalysisFeature={selectedAnalysisFeature}
+                  inputAudioDuration={
+                    inputAudioFeatures[selectedAnalysisFeature]?.duration
+                  }
+                  tooltipMode={tooltipMode}
+                />
               </div>
-              <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
-                {/* Add overflow-x-auto on mobile only */}
-                <div className="w-full lg:min-w-[800px]">
-                  {/* Ensure 800px minimum width */}
-                  <OverlayGraphWithWaveform
-                    inputAudioURL={
-                      inputAudioFeatures[selectedAnalysisFeature]?.inputAudioUrl
-                    }
-                    referenceAudioURL={
-                      referenceAudioFeatures[selectedAnalysisFeature]
-                        ?.referenceAudioUrl
-                    }
-                    inputFeatureData={
-                      inputAudioFeatures[selectedAnalysisFeature]?.data || []
-                    }
-                    referenceFeatureData={
-                      referenceAudioFeatures[selectedAnalysisFeature]?.data ||
-                      []
-                    }
-                    selectedAnalysisFeature={selectedAnalysisFeature}
-                    inputAudioDuration={
-                      inputAudioFeatures[selectedAnalysisFeature]?.duration
-                    }
-                    tooltipMode={tooltipMode}
-                  />
-                </div>
-              </div>
-              <div className="flex w-full flex-col lg:flex-row justify-end gap-2 items-center mt-2">
-                {/* <TertiaryButton
+              <div className="pt-4 pb-4 flex flex-col lg:flex-row gap-4 justify-start items-start">
+                <SimilarityScoreCard similarityScore={50.3} />
+                <SelectedVocalTechniquesCard />
+            </div>
+            </div>
+            <div className="flex w-full flex-col lg:flex-row justify-end gap-2 items-center mt-2">
+              {/* <TertiaryButton
                   onClick={handleDownloadRecording}
                   className="w-full lg:w-auto"
                 >
                   download file
                 </TertiaryButton> */}
-                {/* <TertiaryButton
+              {/* <TertiaryButton
                   onClick={handleChangeFile}
                   className="w-full lg:w-auto"
                 >
                   change file
                 </TertiaryButton> */}
-              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+      </div>
       )}
+      {/* )} */}
     </div>
   );
 };

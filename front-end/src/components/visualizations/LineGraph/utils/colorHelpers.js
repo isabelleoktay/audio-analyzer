@@ -22,10 +22,13 @@ export const getFeatureColorStops = (feature) => {
   return colorMaps[feature] || [];
 };
 
-export const getDefaultLineGradientStops = () => [
-  { offset: "0%", color: "#FF89BB", opacity: 0.4 },
-  { offset: "100%", color: "#90F1EF", opacity: 0 },
-];
+export function getDefaultLineGradientStops(lineColor = "#FF89BB") {
+  return [
+    { offset: "0%", color: lineColor, opacity: 0.8 },
+    { offset: "40%", color: lineColor, opacity: 0.4 },
+    { offset: "100%", color: lineColor, opacity: 0 },
+  ];
+}
 
 export const getTooltipColors = (isSilence) => ({
   bgColor: isSilence ? "#E0E0E0" : "#FF89BB",

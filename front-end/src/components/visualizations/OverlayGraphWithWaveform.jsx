@@ -1,19 +1,23 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import LineGraph from "./LineGraph/LineGraph";
+import OverlayLineGraph from "./LineGraph/OverlayLineGraph";
 import WaveformPlayer from "./WaveformPlayer";
 import LoadingSpinner from "../LoadingSpinner";
 import Tooltip from "../text/Tooltip";
+
+import {
+  mockInputFeatures,
+  mockReferenceFeatures,
+} from "../../mock/index";
 
 const width = 800;
 const graphHeight = 400;
 
 const OverlayGraphWithWaveform = ({
   inputAudioURL,
-  referenceAudioURL,
-  inputFeatureData, // input audio feature data
-  referenceFeatureData, // new: reference performance feature data
+  inputFeatureData = mockInputFeatures, // input audio feature data
+  referenceFeatureData = mockReferenceFeatures, // optional: reference performance feature data
   selectedAnalysisFeature,
-  inputAudioDuration,
+  audioDuration,
   tooltipMode,
 }) => {
   const [selectedDataIndex, setSelectedDataIndex] = useState(0);
@@ -24,9 +28,9 @@ const OverlayGraphWithWaveform = ({
     setChartState(changeData);
   }, []);
 
-  // Convert frame index to time
-  const frameToTime = (frameIndex, duration, numFrames) => {
-    return frameIndex * (duration / numFrames);
+  // Function to convert frame indices to time using your original formula
+  const frameToTime = (frameIndex, audioDuration, numFrames) => {
+    return frameIndex * (audioDuration / numFrames);
   };
 
   const handleButtonClick = (index) => {
@@ -43,8 +47,35 @@ const OverlayGraphWithWaveform = ({
     return Math.max(0, Math.min(...positiveValues) - 10);
   };
 
-  const activeFeature = inputFeatureData[selectedDataIndex];
-  const referenceFeature = referenceFeatureData?.[selectedDataIndex];
+  // Active feature data
+  const inputFeature = inputFeatureData?.[selectedDataIndex] || null;
+  const referenceFeature = referenceFeatureData?.[selectedDataIndex] || null;
+
+  const hasInputFeatureData =
+    inputFeature &&
+    Array.isArray(inputFeature.data) &&
+    inputFeature.data.length > 0;
+
+  const hasReference = !!(
+    referenceFeature &&
+    referenceFeature.data &&
+    referenceFeature.data.length > 0
+  );
+
+  // Compute yMin/yMax safely based on whichever datasets exist
+  const yMin = hasReference
+    ? Math.min(
+        ...inputFeature.data,
+        ...referenceFeature.data.filter((d) => d !== null && !isNaN(d))
+      )
+    : Math.min(...inputFeature.data.filter((d) => d !== null && !isNaN(d)));
+
+  const yMax = hasReference
+    ? Math.max(
+        ...inputFeature.data,
+        ...referenceFeature.data.filter((d) => d !== null && !isNaN(d))
+      )
+    : Math.max(...inputFeature.data.filter((d) => d !== null && !isNaN(d)));
 
   return (
     <div
@@ -60,10 +91,10 @@ const OverlayGraphWithWaveform = ({
           Not enough data to compute
         </div>
       ) : (
-        activeFeature && (
+        inputFeature && (
           <>
             {/* Header and feature selector */}
-            <div className="flex flex-row items-end w-full justify-between">
+            <div className="flex flex-row items-end w-full justify-between mb-4">
               <ul className="text-sm text-lightgray">
                 <li className="font-bold text-lightpink">
                   Click and drag on the graph area to zoom in!
@@ -98,79 +129,60 @@ const OverlayGraphWithWaveform = ({
                   className="w-full flex items-center justify-center"
                   style={{ height: graphHeight }}
                 >
-                  {/* Reference LineGraph in gray */}
-                  {referenceFeature && (
-                    <LineGraph
-                      key={`reference-${selectedDataIndex}`}
-                      feature={referenceFeature.label}
-                      data={referenceFeature.data}
-                      lineColor="#CCCCCC" // grey reference
+                  {/* Conditionally render OverlayLineGraph */}
+                  {hasInputFeatureData && (
+                    <OverlayLineGraph
+                      key={`graph-${selectedDataIndex}`}
+                      feature={inputFeature.label}
+                      primaryData={inputFeature.data}
+                      secondaryData={hasReference ? referenceFeature.data : []}
+                      primaryLineColor="#FF89BB" // pink input
+                      secondaryColor="#CCCCCC" // grey reference
                       width={width}
                       height={graphHeight}
                       xLabel="time (s)"
                       yLabel={selectedAnalysisFeature}
                       highlightedSections={emptyHighlightedSections}
+                      yMin={yMin}
+                      yMax={yMax}
                       onZoomChange={handleZoomChange}
-                      yMin={Math.min(...referenceFeature.data)}
-                      yMax={Math.max(...referenceFeature.data)}
-                      style={{ position: "absolute", zIndex: 1, opacity: 0.7 }}
+                      style={{ position: "absolute", zIndex: 1 }}
                     />
                   )}
-
-                  {/* Input LineGraph in pink */}
-                  <LineGraph
-                    key={`input-${selectedDataIndex}`}
-                    feature={activeFeature.label}
-                    data={activeFeature.data}
-                    lineColor="#FF89BB" // pink input overlay
-                    width={width}
-                    height={graphHeight}
-                    xLabel="time (s)"
-                    yLabel={selectedAnalysisFeature}
-                    highlightedSections={
-                      activeFeature.highlighted?.data?.length > 0
-                        ? activeFeature.highlighted.data
-                        : emptyHighlightedSections
-                    }
-                    onZoomChange={handleZoomChange}
-                    yMin={calculatePitchYMin(activeFeature.data)}
-                    yMax={Math.max(...activeFeature.data) + 50}
-                    style={{ position: "absolute", zIndex: 2 }}
-                  />
                 </div>
               </Tooltip>
 
               {/* Waveform player below */}
               <WaveformPlayer
-                feature={activeFeature.label}
+                feature={inputFeature.label}
                 key={inputAudioURL}
                 inputAudioURL={inputAudioURL}
                 highlightedSections={
-                  activeFeature.highlighted?.audio?.length > 0
-                    ? activeFeature.highlighted.audio
+                  inputFeature.highlighted?.audio?.length > 0
+                    ? inputFeature.highlighted.audio
                     : []
                 }
                 waveColor="#E0E0E0"
                 progressColor="#90F1EF"
                 startTime={
-                  chartState?.zoom?.isZoomed && inputAudioDuration
+                  chartState?.zoom?.isZoomed && audioDuration
                     ? frameToTime(
                         chartState.zoom.startIndex,
-                        inputAudioDuration,
-                        activeFeature.data.length
+                        audioDuration,
+                        inputFeature.data.length
                       )
                     : 0
                 }
                 endTime={
-                  chartState?.zoom?.isZoomed && inputAudioDuration
+                  chartState?.zoom?.isZoomed && audioDuration
                     ? frameToTime(
                         chartState.zoom.endIndex,
-                        inputAudioDuration,
-                        activeFeature.data.length
+                        audioDuration,
+                        inputFeature.data.length
                       )
-                    : inputAudioDuration || undefined
+                    : audioDuration || undefined
                 }
-                inputAudioDuration={inputAudioDuration}
+                audioDuration={audioDuration}
               />
             </div>
           </>

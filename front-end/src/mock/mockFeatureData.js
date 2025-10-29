@@ -15,7 +15,7 @@ const generateWaveData = (
       Math.random() * amplitude * 0.2
   );
 
-const generateRandomData = (numPoints, min = 0, max = 1, smoothness = 0.05) => {
+const generateRandomData = (numPoints, min = 0, max = 1, smoothness = 0.08) => {
   const data = [];
   let value = min + Math.random() * (max - min); // start point
 
@@ -42,29 +42,29 @@ const mockInputAudioFeatures = {
     audioUrl: inputAudioURL,
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3, // seconds
-    data: [{ label: "pitch", data: generateWaveData(400, 220, 40, 0.07) }],
+    data: [{ label: "pitch", data: generateWaveData(200, 220, 40, 0.07) }],
   },
   dynamics: {
     audioUrl: inputAudioURL,
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3,
-    data: [{ label: "dynamics", data: generateWaveData(400, -15, 5, 0.04) }],
+    data: [{ label: "dynamics", data: generateWaveData(200, -15, 5, 0.04) }],
   },
   tempo: {
     audioUrl: inputAudioURL,
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3,
-    data: [{ label: "tempo", data: generateWaveData(400, 110, 10, 0.02) }],
+    data: [{ label: "tempo", data: generateWaveData(200, 110, 10, 0.02) }],
   },
   phonation: {
     audioUrl: inputAudioURL,
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3,
     data: [
-      { label: "breathy", data: generateRandomData(400, 0, 100) },
-      { label: "neutral", data: generateRandomData(400, 30, 90) },
-      { label: "flow", data: generateRandomData(400, 10, 50) },
-      { label: "pressed", data: generateRandomData(400, 40, 80) },
+      { label: "breathy", data: generateRandomData(200, 0, 100) },
+      { label: "neutral", data: generateRandomData(200, 30, 90) },
+      { label: "flow", data: generateRandomData(200, 10, 50) },
+      { label: "pressed", data: generateRandomData(200, 40, 80) },
     ],
   },
 
@@ -74,10 +74,10 @@ const mockInputAudioFeatures = {
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3,
     data: [
-      { label: "vibrato", data: generateRandomData(400, 50, 100) },
-      { label: "trill", data: generateRandomData(400, 20, 80) },
-      { label: "trillo", data: generateRandomData(400, 40, 50) },
-      { label: "straight", data: generateRandomData(400, 20, 90) },
+      { label: "vibrato", data: generateRandomData(200, 50, 100) },
+      { label: "trill", data: generateRandomData(200, 20, 80) },
+      { label: "trillo", data: generateRandomData(200, 40, 50) },
+      { label: "straight", data: generateRandomData(200, 20, 90) },
     ],
   },
 
@@ -87,11 +87,11 @@ const mockInputAudioFeatures = {
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3,
     data: [
-      { label: "spoken", data: generateRandomData(400, 30, 100) },
-      { label: "inhaled", data: generateRandomData(400, 20, 60) },
-      { label: "belt", data: generateRandomData(400, 10, 50) },
-      { label: "breathy", data: generateRandomData(400, 30, 70) },
-      { label: "vocal fry", data: generateRandomData(400, 10, 30) },
+      { label: "spoken", data: generateRandomData(200, 30, 100) },
+      { label: "inhaled", data: generateRandomData(200, 20, 100) },
+      { label: "belt", data: generateRandomData(200, 10, 100) },
+      { label: "breathy", data: generateRandomData(200, 40, 100) },
+      { label: "vocal fry", data: generateRandomData(200, 10, 100) },
     ],
   },
 };
@@ -101,29 +101,29 @@ const mockReferenceAudioFeatures = {
     audioUrl: inputAudioURL,
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3, // seconds
-    data: [{ label: "pitch", data: generateWaveData(400, 220, 40, 0.07) }],
+    data: [{ label: "pitch", data: generateWaveData(200, 220, 40, 0.07) }],
   },
   dynamics: {
     audioUrl: inputAudioURL,
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3,
-    data: [{ label: "dynamics", data: generateWaveData(400, -15, 5, 0.04) }],
+    data: [{ label: "dynamics", data: generateWaveData(200, -15, 5, 0.04) }],
   },
   tempo: {
     audioUrl: inputAudioURL,
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3,
-    data: [{ label: "tempo", data: generateWaveData(400, 110, 10, 0.02) }],
+    data: [{ label: "tempo", data: generateWaveData(200, 110, 10, 0.02) }],
   },
   phonation: {
     audioUrl: inputAudioURL,
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3,
     data: [
-      { label: "breathy", data: generateRandomData(400, 0, 90) },
-      { label: "neutral", data: generateRandomData(400, 20, 80) },
-      { label: "flow", data: generateRandomData(400, 20, 60) },
-      { label: "pressed", data: generateRandomData(400, 50, 90) },
+      { label: "breathy", data: generateRandomData(200, 0, 90) },
+      { label: "neutral", data: generateRandomData(200, 20, 80) },
+      { label: "flow", data: generateRandomData(200, 20, 60) },
+      { label: "pressed", data: generateRandomData(200, 50, 90) },
     ],
   },
 
@@ -133,10 +133,10 @@ const mockReferenceAudioFeatures = {
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3,
     data: [
-      { label: "vibrato", data: generateRandomData(400, 60, 90) },
-      { label: "trill", data: generateRandomData(400, 10, 70) },
-      { label: "trillo", data: generateRandomData(400, 30, 40) },
-      { label: "straight", data: generateRandomData(400, 30, 100) },
+      { label: "vibrato", data: generateRandomData(200, 60, 90) },
+      { label: "trill", data: generateRandomData(200, 10, 70) },
+      { label: "trillo", data: generateRandomData(200, 30, 40) },
+      { label: "straight", data: generateRandomData(200, 30, 100) },
     ],
   },
 
@@ -146,11 +146,11 @@ const mockReferenceAudioFeatures = {
     referenceAudioUrl: referenceAudioURL,
     duration: 12.3,
     data: [
-      { label: "spoken", data: generateRandomData(400, 40, 100) },
-      { label: "inhaled", data: generateRandomData(400, 10, 50) },
-      { label: "belt", data: generateRandomData(400, 20, 40) },
-      { label: "breathy", data: generateRandomData(400, 40, 80) },
-      { label: "vocal fry", data: generateRandomData(400, 20, 40) },
+      { label: "spoken", data: generateRandomData(200, 30, 100) },
+      { label: "inhaled", data: generateRandomData(200, 20, 100) },
+      { label: "belt", data: generateRandomData(200, 10, 100) },
+      { label: "breathy", data: generateRandomData(200, 40, 100) },
+      { label: "vocal fry", data: generateRandomData(200, 10, 100) },
     ],
   },
 };
