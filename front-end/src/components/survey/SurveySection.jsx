@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import SurveySingleSelect from "./SurveySingleSelect";
-import SurveyMultiSelect from "./SurveyMultiSelect";
 import SurveyMultiScale from "./SurveyMultiScale";
 import SurveyTextAnswer from "./SurveyTextAnswer";
 import SurveyStatementRating from "./SurveyStatementRating";
 import SecondaryButton from "../buttons/SecondaryButton";
+import MultiSelectCard from "../cards/MultiSelectCard.jsx";
 
 const componentMap = {
   singleselect: SurveySingleSelect,
-  multiselect: SurveyMultiSelect,
+  multiselect: MultiSelectCard,
   multiscale: SurveyMultiScale,
   textAnswer: SurveyTextAnswer,
   statementRating: SurveyStatementRating,

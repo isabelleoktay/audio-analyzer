@@ -1,16 +1,4 @@
-import { useEffect } from "react";
-
-// Default techniques for dev/testing
-const defaultSelectedTechniques = [
-  "belt",
-  "breathy",
-  "vibrato",
-  "straight",
-];
-
-const SelectedVocalTechniquesCard = ({
-  selectedTechniques = defaultSelectedTechniques,
-}) => {
+const SelectedVocalTechniquesCard = ({ selectedTechniques }) => {
   if (!selectedTechniques.length) return null;
 
   return (

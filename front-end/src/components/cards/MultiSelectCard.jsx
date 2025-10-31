@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import SurveyCheckbox from "../buttons/SurveyCheckbox";
 
-const SurveyMultiSelect = ({
+const MultiSelectCard = ({
   question,
   options = [],
   onChange,
   allowOther = true,
   value = [],
+  background_colour = "bg-bluegray/25",
 }) => {
   const containerRef = useRef(null);
   const [columnWidth, setColumnWidth] = useState(150);
@@ -90,7 +91,7 @@ const SurveyMultiSelect = ({
 
   return (
     <div
-      className="bg-bluegray/25 rounded-3xl p-8 flex flex-col items-center"
+      className={`${background_colour} rounded-3xl p-8 flex flex-col items-center`}
       ref={containerRef}
     >
       <h4 className="text-xl font-semibold text-lightpink mb-6 text-center">
@@ -136,4 +137,4 @@ const SurveyMultiSelect = ({
   );
 };
 
-export default SurveyMultiSelect;
+export default MultiSelectCard;

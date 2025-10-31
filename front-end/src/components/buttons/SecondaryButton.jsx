@@ -4,18 +4,38 @@ const SecondaryButton = ({
   onMouseLeave,
   children,
   className = "",
-  isActive = true, // New prop to control active/inactive state
+  isActive = true,
 }) => {
+  // Detect if custom gradient colors (like from-warmyellow / to-darkpink) were passed
+  const hasCustomGradient = /from-|to-/.test(className);
+
+  // Default gradient and hover bright variant
+  const defaultGradient = isActive
+    ? "from-warmyellow/80 to-electricblue/80"
+    : "from-warmyellow/70 to-electricblue/70";
+
+  const defaultHover = isActive
+    ? "hover:from-warmyellow hover:to-electricblue"
+    : "hover:from-warmyellow hover:to-electricblue";
+
+  // Automatically brighten custom gradients on hover
+  const customHover = hasCustomGradient
+    ? className
+        .replace(/from-([^\s]+)/, "hover:from-$20/100")
+        .replace(/to-([^\s]+)/, "hover:to-$20/100")
+    : "";
+
   return (
     <button
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={onClick}
-      className={`bg-radial rounded-full px-4 py-2 text-sm font-semibold text-blueblack transition cursor-pointer ${
-        isActive
-          ? "from-warmyellow to-electricblue hover:opacity-90"
-          : "from-warmyellow/50 to-electricblue/50 hover:from-warmyellow/75 hover:to-electricblue/75"
-      } ${className}`}
+      className={`
+        bg-radial rounded-full px-4 py-2 text-sm font-semibold text-blueblack transition cursor-pointer
+        ${hasCustomGradient ? "" : `${defaultGradient} ${defaultHover}`}
+        ${customHover}
+        ${className}
+      `}
     >
       {children}
     </button>
