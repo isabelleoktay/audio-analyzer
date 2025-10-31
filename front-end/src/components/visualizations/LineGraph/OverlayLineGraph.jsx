@@ -65,7 +65,7 @@ const OverlayLineGraph = ({
     if (!chartData.isValid) {
       console.warn("OverlayLineGraph: No valid data", chartData.error);
       return;
-    } 
+    }
 
     const margin = { top: 20, right: 20, bottom: 20, left: 50 };
     const innerWidth = width - margin.left - margin.right;
@@ -94,7 +94,7 @@ const OverlayLineGraph = ({
     const chartGroup = g.append("g").attr("clip-path", "url(#chart-clip)");
 
     // Background elements
-    if (feature === "pitch" || feature === "vibrato") {
+    if (feature === "pitch") {
       createNoteStripes(g, yScale, yDomain, innerWidth);
     }
     createFeatureBackground(g, defs, feature, yDomain, innerWidth, innerHeight);

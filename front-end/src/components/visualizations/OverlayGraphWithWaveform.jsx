@@ -4,10 +4,7 @@ import WaveformPlayer from "./WaveformPlayer";
 import LoadingSpinner from "../LoadingSpinner";
 import Tooltip from "../text/Tooltip";
 
-import {
-  mockInputFeatures,
-  mockReferenceFeatures,
-} from "../../mock/index";
+import { mockInputFeatures, mockReferenceFeatures } from "../../mock/index";
 
 const width = 800;
 const graphHeight = 400;
@@ -17,12 +14,14 @@ const OverlayGraphWithWaveform = ({
   inputFeatureData = mockInputFeatures, // input audio feature data
   referenceFeatureData = mockReferenceFeatures, // optional: reference performance feature data
   selectedAnalysisFeature,
+  selectedModel,
   audioDuration,
   tooltipMode,
 }) => {
   const [selectedDataIndex, setSelectedDataIndex] = useState(0);
   const [chartState, setChartState] = useState(null);
   const emptyHighlightedSections = useMemo(() => [], []);
+  const [model, setModel] = useState(selectedModel || "CLAP");
 
   const handleZoomChange = useCallback((changeData) => {
     setChartState(changeData);
@@ -48,8 +47,12 @@ const OverlayGraphWithWaveform = ({
   };
 
   // Active feature data
-  const inputFeature = inputFeatureData?.[selectedDataIndex] || null;
-  const referenceFeature = referenceFeatureData?.[selectedDataIndex] || null;
+  const modelInputData = inputFeatureData?.[selectedModel] || inputFeatureData;
+  const modelReferenceData =
+    referenceFeatureData?.[selectedModel] || referenceFeatureData;
+
+  const inputFeature = modelInputData?.[selectedDataIndex] || null;
+  const referenceFeature = modelReferenceData?.[selectedDataIndex] || null;
 
   const hasInputFeatureData =
     inputFeature &&
@@ -63,19 +66,30 @@ const OverlayGraphWithWaveform = ({
   );
 
   // Compute yMin/yMax safely based on whichever datasets exist
-  const yMin = hasReference
-    ? Math.min(
-        ...inputFeature.data,
-        ...referenceFeature.data.filter((d) => d !== null && !isNaN(d))
-      )
-    : Math.min(...inputFeature.data.filter((d) => d !== null && !isNaN(d)));
+  const safeData = (arr) =>
+    Array.isArray(arr) ? arr.filter((d) => d !== null && !isNaN(d)) : [];
 
-  const yMax = hasReference
-    ? Math.max(
-        ...inputFeature.data,
-        ...referenceFeature.data.filter((d) => d !== null && !isNaN(d))
-      )
-    : Math.max(...inputFeature.data.filter((d) => d !== null && !isNaN(d)));
+  const yMin = (() => {
+    if (!hasInputFeatureData) return 0;
+    if (hasReference && referenceFeature?.data) {
+      return Math.min(
+        ...safeData(inputFeature.data),
+        ...safeData(referenceFeature.data)
+      );
+    }
+    return Math.min(...safeData(inputFeature.data));
+  })();
+
+  const yMax = (() => {
+    if (!hasInputFeatureData) return 1;
+    if (hasReference && referenceFeature?.data) {
+      return Math.max(
+        ...safeData(inputFeature.data),
+        ...safeData(referenceFeature.data)
+      );
+    }
+    return Math.max(...safeData(inputFeature.data));
+  })();
 
   return (
     <div
