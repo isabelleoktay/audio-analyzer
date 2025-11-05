@@ -4,7 +4,7 @@ const SelectedVocalTechniquesCard = ({ selectedTechniques }) => {
   return (
     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 max-w-[300px] shadow-lg">
       <h2 className="text-xl font-bold text-lightpink mb-3">
-        Selected Vocal Techniques
+        selected vocal techniques
       </h2>
       <div className="flex flex-wrap gap-2">
         {selectedTechniques.map((tech, idx) => (

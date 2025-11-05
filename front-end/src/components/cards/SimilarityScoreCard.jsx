@@ -22,7 +22,7 @@ const SimilarityScoreCard = ({
       <div>
         {/* Title */}
         <h2 className="text-xl font-bold text-lightpink mb-6">
-          Similarity Score
+          similarity score
         </h2>
 
         {/* Current score */}
@@ -42,7 +42,7 @@ const SimilarityScoreCard = ({
           }`}
         >
           <h3 className="text-sm font-semibold text-lightpink mb-2">
-            Your Top 5 Scores
+            your top 5 scores
           </h3>
           <ul className="text-white space-y-1 text-sm">
             {bestScores.map((score, index) => (

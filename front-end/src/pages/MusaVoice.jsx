@@ -142,32 +142,32 @@ const MusaVoice = ({
       ) : showUploadAudio ? (
         <div className="flex flex-col items-center justify-center min-h-screen text-lightgray px-8">
           <MultiSelectCard
-            question="Select Target Vocal Techniques:"
+            question="select target vocal techniques:"
             options={[
-              "Vibrato",
-              "Straight",
-              "Trill",
-              "Trillo",
-              "Breathy tone",
-              "Belting tone",
-              "Spoken tone",
-              "Inhaled singing",
-              "Vocal fry",
+              "vibrato",
+              "straight",
+              "trill",
+              "trillo",
+              "breathy tone",
+              "belting tone",
+              "spoken tone",
+              "inhaled singing",
+              "vocal fry",
             ]}
             allowOther={false}
             background_color="bg-white/10"
             onChange={(selected) => setSelectedTechniques(selected)}
           />
           <div className="pt-8">
-            <TertiaryButton
+            <SecondaryButton
               onClick={() => {
                 setShowUploadAudio(false);
                 setAnalyzeAudio(true);
               }}
               className="bg-darkpink/70 hover:bg-darkpink/100"
             >
-              Proceed to Audio Analysis
-            </TertiaryButton>
+              proceed to audio analysis
+            </SecondaryButton>
           </div>
         </div>
       ) : analyzeAudio && uploadedFile ? (
@@ -211,7 +211,7 @@ const MusaVoice = ({
                     />
                   ) : (
                     <div className="text-center text-lightgray/70 py-8">
-                      Loading feature data...
+                      loading feature data...
                     </div>
                   )}
                 </div>
@@ -249,13 +249,13 @@ const MusaVoice = ({
                     <SecondaryButton
                       onClick={() => handleAnalyzeNewRecording()}
                     >
-                      Analyze new audio
+                      analyze new audio
                     </SecondaryButton>
                     <SecondaryButton
                       onClick={() => handleAnalyzeNewRecording()}
                       className="from-warmyellow/80 to-darkpink/80"
                     >
-                      New reference audio
+                      new reference audio
                     </SecondaryButton>
                   </div>
                 </div>
