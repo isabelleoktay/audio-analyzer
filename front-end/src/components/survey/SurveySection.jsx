@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import SurveySingleSelect from "./SurveySingleSelect";
 import SurveyMultiSelect from "./SurveyMultiSelect";
 import SurveyMultiScale from "./SurveyMultiScale";
@@ -22,13 +22,7 @@ const SurveySection = ({
   backButtonClick,
   savedAnswers = {},
 }) => {
-  const [answers, setAnswers] = useState(savedAnswers || {});
-
-  useEffect(() => {
-    if (savedAnswers) {
-      setAnswers(savedAnswers);
-    }
-  }, [savedAnswers]);
+  const [answers, setAnswers] = useState(savedAnswers);
 
   const handleAnswerChange = (question, answer) => {
     setAnswers((prev) => ({ ...prev, [question]: answer }));

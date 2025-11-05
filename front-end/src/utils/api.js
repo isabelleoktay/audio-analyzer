@@ -224,6 +224,46 @@ const uploadAudio = async (audioFile, id, instrument, features) => {
   }
 };
 
+/**
+ * Uploads feedback form answers to the backend.
+ *
+ * @param {Object} feedbackData - The feedback answers organized by section.
+ * @returns {Promise<Object>} The response data from the backend.
+ * @throws Will throw an error if the upload fails.
+ */
+const uploadFeedback = async (feedbackData) => {
+  try {
+    const response = await apiClient.post("/api/upload-feedback", {
+      feedback: feedbackData,
+      timestamp: new Date().toISOString(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading feedback:", error);
+    throw error;
+  }
+};
+
+/**
+ * Uploads MusaVoice session data to the backend.
+ *
+ * @param {Object} musaVoiceSessionData - The session data including sessionId, userToken, surveyAnswers, etc.
+ * @returns {Promise<Object>} The response data from the backend.
+ * @throws Will throw an error if the upload fails.
+ */
+const uploadMusaVoiceSessionData = async (musaVoiceSessionData) => {
+  try {
+    const response = await apiClient.post("/api/upload-musa-voice-session", {
+      ...musaVoiceSessionData, // Spread the data directly, don't wrap in sessionData
+      timestamp: musaVoiceSessionData.timestamp || new Date().toISOString(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading Musa voice session data:", error);
+    throw error;
+  }
+};
+
 const cleanupTempFiles = async () => {
   try {
     const response = await pythonClient.post(
@@ -242,4 +282,6 @@ export {
   uploadTestSubject,
   cleanupTempFiles,
   startNewSession,
+  uploadFeedback,
+  uploadMusaVoiceSessionData,
 };
