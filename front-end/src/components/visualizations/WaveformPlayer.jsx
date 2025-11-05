@@ -22,17 +22,23 @@ const WaveformPlayer = ({
   audioDuration,
   feature,
   playIconColorClass = "text-darkpink",
+  showTimeline = true, // New prop with default true
 }) => {
   const containerRef = useRef();
   const timelineRef = useRef();
   const regionsPlugin = useMemo(() => RegionsPlugin.create(), []);
+
+  // Conditionally create timeline plugin
   const timelinePlugin = useMemo(
     () =>
-      TimelinePlugin.create({
-        container: timelineRef.current, // Attach the timeline to this container
-      }),
-    []
+      showTimeline
+        ? TimelinePlugin.create({
+            container: timelineRef.current, // Attach the timeline to this container
+          })
+        : null,
+    [showTimeline]
   );
+
   const zoomPlugin = useMemo(
     () =>
       ZoomPlugin.create({
@@ -40,9 +46,14 @@ const WaveformPlayer = ({
       }),
     []
   );
+
+  // Conditionally include timeline plugin
   const plugins = useMemo(
-    () => [regionsPlugin, timelinePlugin, zoomPlugin],
-    [regionsPlugin, timelinePlugin, zoomPlugin]
+    () =>
+      showTimeline
+        ? [regionsPlugin, timelinePlugin, zoomPlugin]
+        : [regionsPlugin, zoomPlugin],
+    [regionsPlugin, timelinePlugin, zoomPlugin, showTimeline]
   );
 
   const calculateInitialZoom = (audioDuration) => {
@@ -247,7 +258,7 @@ const WaveformPlayer = ({
         }}
       >
         <div ref={containerRef} className="w-full" />
-        <div ref={timelineRef} className="w-full mt-2" />
+        {showTimeline && <div ref={timelineRef} className="w-full mt-2" />}
       </div>
     </div>
   );

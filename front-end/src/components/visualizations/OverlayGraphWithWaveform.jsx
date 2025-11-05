@@ -136,6 +136,7 @@ const OverlayGraphWithWaveform = ({
             }
             audioDuration={referenceAudioDuration}
             playIconColorClass="text-darkgray"
+            showTimeline={false}
           />
         )}
       </>
@@ -302,6 +303,7 @@ const OverlayGraphWithWaveform = ({
                     : inputAudioDuration || undefined
                 }
                 audioDuration={inputAudioDuration}
+                showTimeline={false}
               />
             </div>
           </>
