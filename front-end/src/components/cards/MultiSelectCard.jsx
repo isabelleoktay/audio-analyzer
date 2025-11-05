@@ -7,7 +7,7 @@ const MultiSelectCard = ({
   onChange,
   allowOther = true,
   value = [],
-  background_colour = "bg-bluegray/25",
+  background_color = "bg-bluegray/25",
   isMultiSelect = true,
   showToggle = false,
   miniVersion = false,
@@ -107,7 +107,7 @@ const MultiSelectCard = ({
 
   return (
     <div
-      className={`${background_colour} ${
+      className={`${background_color} ${
         miniVersion
           ? "rounded-lg p-4 flex flex-col items-center w-full"
           : "rounded-3xl p-8 flex flex-col items-center w-full"

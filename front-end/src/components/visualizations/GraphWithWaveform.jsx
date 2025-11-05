@@ -149,7 +149,7 @@ const GraphWithWaveform = ({
                         : featureData[selectedDataIndex]?.label === "tempo"
                         ? "beats per minute (bpm)"
                         : selectedAnalysisFeature === "phonation"
-                        ? "probabilty"
+                        ? "probability"
                         : selectedAnalysisFeature
                     }
                     highlightedSections={

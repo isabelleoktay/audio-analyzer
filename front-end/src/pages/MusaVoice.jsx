@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import SurveySection from "../components/survey/SurveySection.jsx";
 import musaVoiceSurveyConfig from "../data/musaVoiceSurveyConfig.js";
 // import UploadAudioCard from "../components/cards/UploadAudioCard";
-import AnalysisButtons from "../components/buttons/AnalysisButtons.jsx";
-import SecondaryButton from "../components/buttons/SecondaryButton.jsx";
-import TertiaryButton from "../components/buttons/TertiaryButton.jsx";
+import {
+  AnalysisButtons,
+  SecondaryButton,
+  TertiaryButton,
+  ToggleButton,
+} from "../components/buttons";
 import OverlayGraphWithWaveform from "../components/visualizations/OverlayGraphWithWaveform.jsx";
 import SimilarityScoreCard from "../components/cards/SimilarityScoreCard";
 import SelectedVocalTechniquesCard from "../components/cards/SelectedVocalTechniquesCard";
@@ -41,7 +44,7 @@ import { mockInputFeatures, mockReferenceFeatures } from "../mock/index.js";
  */
 
 const MusaVoice = ({
-  uploadedFile = "front-end/public/audio/development/input.wav",
+  uploadedFile = "audio/development/input.wav",
   setUploadedFile,
   inRecordMode,
   setInRecordMode,
@@ -49,10 +52,6 @@ const MusaVoice = ({
   setAudioBlob,
   inputAudioName,
   setInputAudioName,
-  inputAudioURL = "front-end/public/audio/development/input.wav",
-  setInputAudioURL,
-  referenceAudioURL = "front-end/public/audio/development/reference.wav",
-  setReferenceAudioURL,
   audioUuid,
   setAudioUuid,
   uploadsEnabled,
@@ -62,8 +61,15 @@ const MusaVoice = ({
   const [showIntro, setShowIntro] = useState(true);
   const [showSurvey, setShowSurvey] = useState(true);
   const [showUploadAudio, setShowUploadAudio] = useState(false);
-  const [analyseAudio, setAnalyseAudio] = useState(false);
+  const [analyzeAudio, setAnalyzeAudio] = useState(false);
   const [selectedTechniques, setSelectedTechniques] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [inputAudioURL, setInputAudioURL] = useState(
+    "/audio/development/input.wav"
+  );
+  const [referenceAudioURL, setReferenceAudioURL] = useState(
+    "/audio/development/reference.wav"
+  );
   const [selectedAnalysisFeature, setSelectedAnalysisFeature] =
     useState("vocal tone");
   const [inputAudioFeatures, setInputAudioFeatures] =
@@ -81,6 +87,7 @@ const MusaVoice = ({
 
   const handleSubmitSurvey = (answers) => {
     console.log("Survey answers:", answers);
+    setAnswers((prev) => ({ ...prev, answers }));
     setShowSurvey(false);
     setShowUploadAudio(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -88,7 +95,7 @@ const MusaVoice = ({
 
   const handleAnalyzeNewRecording = (file) => {
     setShowUploadAudio(true);
-    setAnalyseAudio(false);
+    setAnalyzeAudio(false);
   };
 
   const handleSubmitAudio = (audioBlob) => {
@@ -148,14 +155,14 @@ const MusaVoice = ({
               "Vocal fry",
             ]}
             allowOther={false}
-            background_colour="bg-white/10"
+            background_color="bg-white/10"
             onChange={(selected) => setSelectedTechniques(selected)}
           />
           <div className="pt-8">
             <TertiaryButton
               onClick={() => {
                 setShowUploadAudio(false);
-                setAnalyseAudio(true);
+                setAnalyzeAudio(true);
               }}
               className="bg-darkpink/70 hover:bg-darkpink/100"
             >
@@ -163,8 +170,8 @@ const MusaVoice = ({
             </TertiaryButton>
           </div>
         </div>
-      ) : analyseAudio && uploadedFile ? (
-        <div className="flex flex-col items-center justify-center min-h-screen text-lightgray px-8 pt-20">
+      ) : analyzeAudio && uploadedFile ? (
+        <div className="flex flex-col h-auto items-center justify-center min-h-screen text-lightgray px-8 pt-20">
           <AnalysisButtons
             selectedInstrument={"voice"}
             selectedAnalysisFeature={selectedAnalysisFeature}
@@ -183,7 +190,7 @@ const MusaVoice = ({
                 {uploadedFile.name}
               </div>
 
-              <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
+              <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 pt-10">
                 <div className="w-full lg:min-w-[800px]">
                   {inputData && referenceData ? (
                     <OverlayGraphWithWaveform
@@ -194,6 +201,10 @@ const MusaVoice = ({
                       selectedAnalysisFeature={selectedAnalysisFeature}
                       inputAudioDuration={
                         inputAudioFeatures[selectedAnalysisFeature]?.duration
+                      }
+                      referenceAudioDuration={
+                        referenceAudioFeatures[selectedAnalysisFeature]
+                          ?.duration
                       }
                       selectedModel={selectedModel}
                       tooltipMode={tooltipMode}
@@ -222,11 +233,11 @@ const MusaVoice = ({
                       selectedAnalysisFeature?.toLowerCase()
                     ) && (
                       <div>
-                        <MultiSelectCard
+                        <ToggleButton
                           question="Select Model:"
                           options={["CLAP", "Whisper"]}
                           allowOther={false}
-                          background_colour="bg-white/10"
+                          background_color="bg-white/10"
                           onChange={(selected) => setSelectedModel(selected)}
                           isMultiSelect={false}
                           showToggle={false}
@@ -238,11 +249,11 @@ const MusaVoice = ({
                     <SecondaryButton
                       onClick={() => handleAnalyzeNewRecording()}
                     >
-                      Analyse new audio
+                      Analyze new audio
                     </SecondaryButton>
                     <SecondaryButton
                       onClick={() => handleAnalyzeNewRecording()}
-                      className="from-warmyellow to-darkpink"
+                      className="from-warmyellow/80 to-darkpink/80"
                     >
                       New reference audio
                     </SecondaryButton>

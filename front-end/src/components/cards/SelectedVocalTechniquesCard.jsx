@@ -2,7 +2,7 @@ const SelectedVocalTechniquesCard = ({ selectedTechniques }) => {
   if (!selectedTechniques.length) return null;
 
   return (
-    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 max-w-[200px] shadow-lg">
+    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 max-w-[300px] shadow-lg">
       <h2 className="text-xl font-bold text-lightpink mb-3">
         Selected Vocal Techniques
       </h2>

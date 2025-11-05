@@ -11,25 +11,34 @@ const graphHeight = 400;
 
 const OverlayGraphWithWaveform = ({
   inputAudioURL,
+  referenceAudioURL,
   inputFeatureData = mockInputFeatures, // input audio feature data
   referenceFeatureData = mockReferenceFeatures, // optional: reference performance feature data
   selectedAnalysisFeature,
   selectedModel,
-  audioDuration,
+  inputAudioDuration,
+  referenceAudioDuration,
   tooltipMode,
 }) => {
   const [selectedDataIndex, setSelectedDataIndex] = useState(0);
   const [chartState, setChartState] = useState(null);
   const emptyHighlightedSections = useMemo(() => [], []);
-  const [model, setModel] = useState(selectedModel || "CLAP");
 
   const handleZoomChange = useCallback((changeData) => {
     setChartState(changeData);
   }, []);
 
   // Function to convert frame indices to time using your original formula
-  const frameToTime = (frameIndex, audioDuration, numFrames) => {
-    return frameIndex * (audioDuration / numFrames);
+  const frameToTime = (frameIndex, inputAudioDuration, numFrames) => {
+    return frameIndex * (inputAudioDuration / numFrames);
+  };
+
+  const referenceFrameToTime = (
+    frameIndex,
+    referenceAudioDuration,
+    numFrames
+  ) => {
+    return frameIndex * (referenceAudioDuration / numFrames);
   };
 
   const handleButtonClick = (index) => {
@@ -92,10 +101,45 @@ const OverlayGraphWithWaveform = ({
   })();
 
   return (
-    <div
-      className="flex flex-col items-center justify-center w-full"
-      style={{ width, height: graphHeight + 100 }}
-    >
+    <div className="flex flex-col items-center justify-center w-full">
+      {/* Reference Waveform player above */}
+      <>
+        {referenceAudioURL && (
+          <WaveformPlayer
+            feature={inputFeature.label}
+            key={referenceAudioURL}
+            audioUrl={referenceAudioURL}
+            highlightedSections={
+              inputFeature.highlighted?.audio?.length > 0
+                ? inputFeature.highlighted.audio
+                : []
+            }
+            waveColor="#E0E0E0"
+            progressColor="#A0A0A0"
+            startTime={
+              chartState?.zoom?.isZoomed && referenceAudioDuration
+                ? referenceFrameToTime(
+                    chartState.zoom.startIndex,
+                    referenceAudioDuration,
+                    inputFeature.data.length
+                  )
+                : 0
+            }
+            endTime={
+              chartState?.zoom?.isZoomed && referenceAudioDuration
+                ? referenceFrameToTime(
+                    chartState.zoom.endIndex,
+                    referenceAudioDuration,
+                    inputFeature.data.length
+                  )
+                : referenceAudioDuration || undefined
+            }
+            audioDuration={referenceAudioDuration}
+            playIconColorClass="text-darkgray"
+          />
+        )}
+      </>
+
       {!selectedAnalysisFeature ? (
         <div>Select an analysis feature above to start analyzing audio.</div>
       ) : inputFeatureData.length === 0 && selectedAnalysisFeature ? (
@@ -108,7 +152,7 @@ const OverlayGraphWithWaveform = ({
         inputFeature && (
           <>
             {/* Header and feature selector */}
-            <div className="flex flex-row items-end w-full justify-between mb-4">
+            <div className="flex flex-row items-end w-full justify-between pt-4 mb-4">
               <ul className="text-sm text-lightgray">
                 <li className="font-bold text-lightpink">
                   Click and drag on the graph area to zoom in!
@@ -132,7 +176,7 @@ const OverlayGraphWithWaveform = ({
             </div>
 
             {/* Graph */}
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center pb-6">
               <Tooltip
                 text="click and drag to zoom in on the graph"
                 position="top"
@@ -155,10 +199,71 @@ const OverlayGraphWithWaveform = ({
                       width={width}
                       height={graphHeight}
                       xLabel="time (s)"
-                      yLabel={selectedAnalysisFeature}
-                      highlightedSections={emptyHighlightedSections}
-                      yMin={yMin}
-                      yMax={yMax}
+                      yLabel={
+                        inputFeatureData[selectedDataIndex]?.label === "pitch"
+                          ? "pitch (note)"
+                          : inputFeatureData[selectedDataIndex]?.label ===
+                            "dynamics"
+                          ? "amplitude (dB)"
+                          : inputFeatureData[selectedDataIndex]?.label ===
+                              "rates" ||
+                            inputFeatureData[selectedDataIndex]?.label ===
+                              "extents"
+                          ? "hz"
+                          : inputFeatureData[selectedDataIndex]?.label ===
+                            "tempo"
+                          ? "beats per minute (bpm)"
+                          : selectedAnalysisFeature === "phonation" ||
+                            selectedAnalysisFeature === "vocal tone" ||
+                            selectedAnalysisFeature === "pitch mod."
+                          ? "probability"
+                          : selectedAnalysisFeature
+                      }
+                      highlightedSections={
+                        inputFeatureData[selectedDataIndex]?.highlighted
+                          ?.data &&
+                        inputFeatureData[selectedDataIndex]?.highlighted.data
+                          .length > 0
+                          ? inputFeatureData[selectedDataIndex]?.highlighted
+                              ?.data
+                          : emptyHighlightedSections
+                      }
+                      yMin={
+                        inputFeatureData[selectedDataIndex]?.label === "pitch"
+                          ? calculatePitchYMin(
+                              inputFeatureData[selectedDataIndex].data
+                            )
+                          : inputFeatureData[selectedDataIndex]?.label ===
+                            "tempo"
+                          ? Math.max(
+                              0,
+                              Math.min(
+                                ...inputFeatureData[selectedDataIndex].data
+                              ) - 50
+                            )
+                          : selectedAnalysisFeature === "phonation" ||
+                            selectedAnalysisFeature === "vocal tone" ||
+                            selectedAnalysisFeature === "pitch mod."
+                          ? 0
+                          : Math.min(
+                              ...inputFeatureData[selectedDataIndex].data
+                            )
+                      }
+                      yMax={
+                        inputFeatureData[selectedDataIndex]?.label ===
+                          "tempo" ||
+                        inputFeatureData[selectedDataIndex]?.label === "pitch"
+                          ? Math.max(
+                              ...inputFeatureData[selectedDataIndex].data
+                            ) + 50
+                          : selectedAnalysisFeature === "phonation" ||
+                            selectedAnalysisFeature === "vocal tone" ||
+                            selectedAnalysisFeature === "pitch mod."
+                          ? 1
+                          : Math.max(
+                              ...inputFeatureData[selectedDataIndex].data
+                            )
+                      }
                       onZoomChange={handleZoomChange}
                       style={{ position: "absolute", zIndex: 1 }}
                     />
@@ -166,37 +271,37 @@ const OverlayGraphWithWaveform = ({
                 </div>
               </Tooltip>
 
-              {/* Waveform player below */}
+              {/* Input Audio Waveform player below */}
               <WaveformPlayer
                 feature={inputFeature.label}
                 key={inputAudioURL}
-                inputAudioURL={inputAudioURL}
+                audioUrl={inputAudioURL}
                 highlightedSections={
                   inputFeature.highlighted?.audio?.length > 0
                     ? inputFeature.highlighted.audio
                     : []
                 }
                 waveColor="#E0E0E0"
-                progressColor="#90F1EF"
+                progressColor="#FF89BB"
                 startTime={
-                  chartState?.zoom?.isZoomed && audioDuration
+                  chartState?.zoom?.isZoomed && inputAudioDuration
                     ? frameToTime(
                         chartState.zoom.startIndex,
-                        audioDuration,
+                        inputAudioDuration,
                         inputFeature.data.length
                       )
                     : 0
                 }
                 endTime={
-                  chartState?.zoom?.isZoomed && audioDuration
+                  chartState?.zoom?.isZoomed && inputAudioDuration
                     ? frameToTime(
                         chartState.zoom.endIndex,
-                        audioDuration,
+                        inputAudioDuration,
                         inputFeature.data.length
                       )
-                    : audioDuration || undefined
+                    : inputAudioDuration || undefined
                 }
-                audioDuration={audioDuration}
+                audioDuration={inputAudioDuration}
               />
             </div>
           </>

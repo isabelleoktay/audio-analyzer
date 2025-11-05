@@ -21,6 +21,7 @@ const WaveformPlayer = ({
   endTime,
   audioDuration,
   feature,
+  playIconColorClass = "text-darkpink",
 }) => {
   const containerRef = useRef();
   const timelineRef = useRef();
@@ -231,7 +232,7 @@ const WaveformPlayer = ({
         <IconButton
           icon={isPlaying ? FaPause : FaPlay}
           onClick={handlePlayPause}
-          colorClass="text-electricblue"
+          colorClass={playIconColorClass}
           bgClass="bg-transparent"
           sizeClass="w-10 h-10"
           ariaLabel="play audio"

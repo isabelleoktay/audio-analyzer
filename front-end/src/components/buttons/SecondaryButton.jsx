@@ -6,24 +6,17 @@ const SecondaryButton = ({
   className = "",
   isActive = true,
 }) => {
-  // Detect if custom gradient colors (like from-warmyellow / to-darkpink) were passed
-  const hasCustomGradient = /from-|to-/.test(className);
+  // Detect gradient colors in className (like from-darkpink / to-lightpink)
+  const fromMatch = className.match(/from-[\w-/]+/);
+  const toMatch = className.match(/to-[\w-/]+/);
 
-  // Default gradient and hover bright variant
-  const defaultGradient = isActive
-    ? "from-warmyellow/80 to-electricblue/80"
-    : "from-warmyellow/70 to-electricblue/70";
+  // Extract them or use defaults
+  const fromColor = fromMatch ? fromMatch[0] : "from-warmyellow/80";
+  const toColor = toMatch ? toMatch[0] : "to-electricblue/80";
 
-  const defaultHover = isActive
-    ? "hover:from-warmyellow hover:to-electricblue"
-    : "hover:from-warmyellow hover:to-electricblue";
-
-  // Automatically brighten custom gradients on hover
-  const customHover = hasCustomGradient
-    ? className
-        .replace(/from-([^\s]+)/, "hover:from-$20/100")
-        .replace(/to-([^\s]+)/, "hover:to-$20/100")
-    : "";
+  // Construct hover states dynamically (remove transparency if present)
+  const hoverFrom = fromColor.replace(/\/\d+/, ""); // e.g. from-warmyellow
+  const hoverTo = toColor.replace(/\/\d+/, ""); // e.g. to-electricblue
 
   return (
     <button
@@ -31,9 +24,11 @@ const SecondaryButton = ({
       onMouseLeave={onMouseLeave}
       onClick={onClick}
       className={`
-        bg-radial rounded-full px-4 py-2 text-sm font-semibold text-blueblack transition cursor-pointer
-        ${hasCustomGradient ? "" : `${defaultGradient} ${defaultHover}`}
-        ${customHover}
+        bg-radial ${fromColor} ${toColor}
+        hover:${hoverFrom} hover:${hoverTo}
+        text-blueblack font-semibold text-sm rounded-full
+        px-4 py-2 transition-all duration-200
+        ${isActive ? "" : "opacity-60 cursor-not-allowed"}
         ${className}
       `}
     >

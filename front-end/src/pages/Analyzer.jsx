@@ -6,7 +6,7 @@ import InstrumentButton from "../components/buttons/InstrumentButton.jsx";
 import RecordAudioSection from "../components/sections/RecordAudioSection.jsx";
 import FileUploadSection from "../components/sections/FileUploadSection.jsx";
 import AnalysisButtons from "../components/buttons/AnalysisButtons.jsx";
-import GraphWithWaveform from "../components/visualizations/GraphWithWaveform.jsx";
+import OverlayGraphWithWaveform from "../components/visualizations/OverlayGraphWithWaveform.jsx";
 import TertiaryButton from "../components/buttons/TertiaryButton.jsx";
 import Tooltip from "../components/text/Tooltip.jsx";
 import ConsentModal from "../components/modals/ConsentModal.jsx";
@@ -245,16 +245,16 @@ const Analyzer = ({
                       {/* Add overflow-x-auto on mobile only */}
                       <div className="w-full lg:min-w-[800px]">
                         {/* Ensure 800px minimum width */}
-                        <GraphWithWaveform
+                        <OverlayGraphWithWaveform
                           key={audioFeatures[selectedAnalysisFeature]?.audioUrl}
-                          audioURL={
+                          inputAudioURL={
                             audioFeatures[selectedAnalysisFeature]?.audioUrl
                           }
-                          featureData={
+                          inputFeatureData={
                             audioFeatures[selectedAnalysisFeature]?.data || []
                           }
                           selectedAnalysisFeature={selectedAnalysisFeature}
-                          audioDuration={
+                          inputAudioDuration={
                             audioFeatures[selectedAnalysisFeature]?.duration
                           }
                           tooltipMode={tooltipMode}
