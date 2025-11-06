@@ -5,4 +5,4 @@ export * from "./ChartBackground";
 export * from "./HighlightedSections";
 export * from "./ChartLine";
 export * from "./SilenceIndicators";
-export {updateMainChartNew, createMainChartNew} from "./ChartLineNew";
+export { updateMainChart, createMainChart } from "./ChartLine";

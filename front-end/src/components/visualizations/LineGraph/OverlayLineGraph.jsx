@@ -3,7 +3,7 @@ import * as d3 from "d3";
 
 // Import utilities
 import {
-  processChartDataNew,
+  processChartData,
   createXScale,
   createGradient,
   getDefaultLineGradientStops,
@@ -19,8 +19,8 @@ import {
   createAxes,
   createNoteStripes,
   createFeatureBackground,
-  createMainChartNew,
-  updateMainChartNew,
+  createMainChart,
+  updateMainChart,
 } from "./components";
 
 const OverlayLineGraph = ({
@@ -54,7 +54,7 @@ const OverlayLineGraph = ({
     svg.selectAll("*").remove(); // clear previous render
 
     // Process chart data safely
-    const chartData = processChartDataNew(
+    const chartData = processChartData(
       primaryData,
       Array.isArray(secondaryData) ? secondaryData : [],
       yMin,
@@ -103,7 +103,7 @@ const OverlayLineGraph = ({
     createAxes(g, xScale, yScale, yDomain, feature, innerHeight, yLabel);
 
     // Main chart (primary + optional secondary)
-    createMainChartNew(
+    createMainChart(
       chartGroup,
       filteredPrimaryData,
       primaryLineColor,
@@ -119,7 +119,7 @@ const OverlayLineGraph = ({
 
     // Redraw function (for zoom or updates)
     const redrawChart = (newXScale) => {
-      updateMainChartNew(
+      updateMainChart(
         chartGroup,
         filteredPrimaryData,
         filteredSecondaryData,

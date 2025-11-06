@@ -4,7 +4,7 @@ import ConsentCard from "../components/testing/ConsentCard";
 import IntroductionSection from "../components/testing/IntroductionSection";
 import InstructionsSection from "../components/testing/InstructionsSection";
 import RecordAudioSection from "../components/sections/RecordAudioSection";
-import GraphWithWaveform from "../components/visualizations/GraphWithWaveform";
+import OverlayGraphWithWaveform from "../components/visualizations/OverlayGraphWithWaveform";
 import SecondaryButton from "../components/buttons/SecondaryButton";
 import TertiaryButton from "../components/buttons/TertiaryButton";
 import TestingCompleted from "../components/testing/TestingCompleted";
@@ -552,7 +552,7 @@ const Testing = ({ setUploadsEnabled }) => {
               </div>
               <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
                 <div className="w-full lg:min-w-[800px]">
-                  <GraphWithWaveform
+                  <OverlayGraphWithWaveform
                     key={audioFeatures?.audioUrl}
                     audioURL={audioFeatures?.audioUrl}
                     featureData={audioFeatures?.data || []}

@@ -4,4 +4,4 @@ export * from "./silenceHandling";
 export * from "./scaleHelpers";
 export * from "./chartElements";
 export * from "./colorHelpers";
-export * from "./dataProcessingNew";
+export * from "./dataProcessing";
