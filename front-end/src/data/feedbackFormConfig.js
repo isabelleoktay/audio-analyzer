@@ -71,7 +71,7 @@ export const feedbackForm2Config = [
       "I would use a tool like this in my practice.",
       "I understood the provided feedback.",
     ],
-    scaleLabels: ["Strongly disagree", "", "", "", "Strongly agree"],
+    scaleLabels: ["Strongly disagree", "", "", "", "", "Strongly agree"],
   },
   {
     type: "textAnswer",
@@ -103,7 +103,7 @@ export const feedbackForm2Config = [
       "Articulation",
       "Style",
     ],
-    scaleLabels: ["Not helpful", "", "", "", "Very helpful"],
+    scaleLabels: ["Not helpful", "", "", "", "", "Very helpful"],
   },
 ];
 
