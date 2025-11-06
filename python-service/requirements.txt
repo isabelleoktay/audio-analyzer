@@ -25,6 +25,8 @@ tensorflow-hub==0.15.0
 librosa==0.10.2.post1
 essentia-tensorflow
 soundfile==0.12.1
+torch==2.2.2
+transformers==4.57.1
 
 # Scientific stack
 numpy==1.26.4

@@ -7,6 +7,14 @@ __all__ = [
     'CREPE_MODEL_PATH',
     'TEMPO_MODEL_PATH', 
     'PHONATION_MODEL_PATH',
+    'CLAP_MALE_PITCH_MODEL_PATH',
+    'CLAP_FEMALE_PITCH_MODEL_PATH',
+    'CLAP_MALE_TIMBRE_MODEL_PATH',
+    'CLAP_FEMALE_FEMALE_MODEL_PATH',
+    'WHISPER_MALE_PITCH_MODEL_PATH',
+    'WHISPER_FEMALE_PITCH_MODEL_PATH',
+    'WHISPER_MALE_TIMBRE_MODEL_PATH',
+    'WHISPER_FEMALE_TIMBRE_MODEL_PATH',
     
     # CREPE settings
     'CREPE_HOP_SIZE_MS',
@@ -17,6 +25,12 @@ __all__ = [
     'PHONATION_FRAME_DURATION_SEC', 
     'PHONATION_VGGISH_URL',
     
+    # CLAP settings
+    
+
+    # Whisper settings 
+
+
     # Audio processing settings
     'HOP_SIZE',
     'HOP_LENGTH',
