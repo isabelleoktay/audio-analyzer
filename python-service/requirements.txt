@@ -27,6 +27,7 @@ essentia-tensorflow
 soundfile==0.12.1
 torch==2.2.2
 transformers==4.57.1
+msclap==1.3.4
 
 # Scientific stack
 numpy==1.26.4
