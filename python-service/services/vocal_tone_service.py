@@ -19,7 +19,7 @@ def process_vocal_tone(audio_bytes, gender):
     transposed_clap = clap_predictions.T
 
     result = {
-        "vocal_tone": {
+        "vocalTone": {
             "CLAP": {
                 "audioUrl": audio_url,
                 "duration": audio_duration,

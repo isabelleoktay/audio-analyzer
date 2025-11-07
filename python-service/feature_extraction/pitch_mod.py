@@ -6,8 +6,7 @@ from config import CLAP_MALE_PITCH_MODEL_PATH, CLAP_FEMALE_PITCH_MODEL_PATH, WHI
 
 logging.basicConfig(level=logging.INFO)
 
-
-def extract_vocal_tone(audio_path, gender):
+def extract_pitch_mod(audio_path, gender):
 
     if gender == "male":
         best_whisper_model_weights_path = WHISPER_MALE_PITCH_MODEL_PATH
@@ -19,7 +18,7 @@ def extract_vocal_tone(audio_path, gender):
         raise ValueError(f"Gender {gender} not recognised.")
     
     # Get Whisper predictions 
-    whisper_class_names, whisper_probs_array, whisper_window_times = whisper_extract_features_and_predict(
+    whisper_class_names, whisper_probs_array, __ = whisper_extract_features_and_predict(
         audio_path,
         best_model_weights_path=best_whisper_model_weights_path,
         classify = "pitch",
@@ -27,11 +26,12 @@ def extract_vocal_tone(audio_path, gender):
     )
 
     # get CLAP predictions 
-    clap_class_names, clap_pros_array, clap_window_times = clap_extract_features_and_predict(
+    clap_class_names, clap_pros_array, __ = clap_extract_features_and_predict(
         audio_path,
         best_model_weights_path=best_clap_model_weights_path,
         classify = "pitch",
         model_selected_data = gender,
     )
 
-    # return both 
+     # return both 
+    return whisper_class_names, whisper_probs_array, clap_class_names, clap_pros_array 

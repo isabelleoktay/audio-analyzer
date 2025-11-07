@@ -92,8 +92,7 @@ def get_clap_embeddings_from_audio_array(
     return embeddings, times
 
 
-
-def extract_features_and_predict(
+def clap_extract_features_and_predict(
     audio_path: str,
     best_model_weights_path: str,
     classify: str = "pitch",

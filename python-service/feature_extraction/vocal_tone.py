@@ -19,7 +19,7 @@ def extract_vocal_tone(audio_path, gender):
         raise ValueError(f"Gender {gender} not recognised.")
     
     # Get Whisper predictions 
-    whisper_class_names, whisper_probs_array, whisper_window_times = whisper_extract_features_and_predict(
+    whisper_class_names, whisper_probs_array, __ = whisper_extract_features_and_predict(
         audio_path,
         best_model_weights_path=best_whisper_model_weights_path,
         classify = "timbre",
@@ -27,7 +27,7 @@ def extract_vocal_tone(audio_path, gender):
     )
 
     # get CLAP predictions 
-    clap_class_names, clap_pros_array, clap_window_times = clap_extract_features_and_predict(
+    clap_class_names, clap_pros_array, __ = clap_extract_features_and_predict(
         audio_path,
         best_model_weights_path=best_clap_model_weights_path,
         classify = "timbre",
@@ -35,4 +35,4 @@ def extract_vocal_tone(audio_path, gender):
     )
 
     # return both 
-    whisper_class_names, whisper_probs_array, clap_class_names, clap_pros_array
+    return whisper_class_names, whisper_probs_array, clap_class_names, clap_pros_array
