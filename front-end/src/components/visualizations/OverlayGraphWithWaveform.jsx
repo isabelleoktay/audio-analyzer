@@ -15,6 +15,7 @@ const OverlayGraphWithWaveform = ({
   inputFeatureData = mockInputFeatures, // input audio feature data
   referenceFeatureData = mockReferenceFeatures, // optional: reference performance feature data
   selectedAnalysisFeature,
+  selectedVoiceType,
   selectedModel,
   inputAudioDuration,
   referenceAudioDuration,

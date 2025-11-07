@@ -63,6 +63,7 @@ const MusaVoice = ({
   const [showUploadAudio, setShowUploadAudio] = useState(false);
   const [analyzeAudio, setAnalyzeAudio] = useState(false);
   const [selectedTechniques, setSelectedTechniques] = useState([]);
+  const [selectedVoiceType, setSelectedVoiceType] = useState([]);
   const [answers, setAnswers] = useState({});
   const [inputAudioURL, setInputAudioURL] = useState(
     "/audio/development/input.wav"
@@ -141,23 +142,34 @@ const MusaVoice = ({
         </div>
       ) : showUploadAudio ? (
         <div className="flex flex-col items-center justify-center min-h-screen text-lightgray px-8">
-          <MultiSelectCard
-            question="select target vocal techniques:"
-            options={[
-              "vibrato",
-              "straight",
-              "trill",
-              "trillo",
-              "breathy tone",
-              "belting tone",
-              "spoken tone",
-              "inhaled singing",
-              "vocal fry",
-            ]}
-            allowOther={false}
-            background_color="bg-white/10"
-            onChange={(selected) => setSelectedTechniques(selected)}
-          />
+          <div className="pb-8">
+            <MultiSelectCard
+              question="select voice type of input file:"
+              options={["bass", "tenor", "alto", "soprano"]}
+              allowOther={false}
+              background_color="bg-white/10"
+              onChange={(selected) => setSelectedVoiceType(selected)}
+            />
+          </div>
+          <div className="pb-8">
+            <MultiSelectCard
+              question="select target vocal techniques:"
+              options={[
+                "vibrato",
+                "straight",
+                "trill",
+                "trillo",
+                "breathy tone",
+                "belting tone",
+                "spoken tone",
+                "inhaled singing",
+                "vocal fry",
+              ]}
+              allowOther={false}
+              background_color="bg-white/10"
+              onChange={(selected) => setSelectedTechniques(selected)}
+            />
+          </div>
           <div className="pt-8">
             <SecondaryButton
               onClick={() => {
@@ -199,6 +211,7 @@ const MusaVoice = ({
                       inputFeatureData={inputData}
                       referenceFeatureData={referenceData}
                       selectedAnalysisFeature={selectedAnalysisFeature}
+                      selectedVoiceType={selectedVoiceType}
                       inputAudioDuration={
                         inputAudioFeatures[selectedAnalysisFeature]?.duration
                       }
