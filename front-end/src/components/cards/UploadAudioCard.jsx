@@ -5,6 +5,7 @@ import AudioUploadSection from "./AudioUploadSection";
 import AudioRecordSection from "./AudioRecordSection";
 import AudioDivider from "./AudioDivider";
 import RecordingControls from "./RecordingControls";
+import AudioSourceSelector from "../selectors/AudioSourceSelector";
 
 const SCROLLING_WAVEFORM = true;
 const CONTINUOUS_WAVEFORM = false;
@@ -21,7 +22,7 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
-  const [selectedAudioSource, setSelectedAudioSource] = useState("upload"); // 'upload' or 'record'
+  const [selectedAudioSource, setSelectedAudioSource] = useState("upload"); // Default to upload
 
   const fileInputRef = useRef(null);
   const waveSurferRef = useRef(null);
@@ -30,27 +31,55 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
   const handleSelectAudioSource = (source) => {
     setSelectedAudioSource(source);
     onAudioSourceChange?.(source);
+
+    // Send the appropriate audio data based on selection
+    if (source === "upload" && selectedFile) {
+      onAudioDataChange?.({
+        source: "upload",
+        file: selectedFile,
+        blob: null,
+        url: null,
+      });
+    } else if (source === "record" && audioBlob) {
+      onAudioDataChange?.({
+        source: "recording",
+        file: null,
+        blob: audioBlob,
+        url: URL.createObjectURL(audioBlob),
+        name: recordingName,
+      });
+    } else {
+      // Clear data if switching to a source that doesn't have content
+      onAudioDataChange?.({
+        source: source,
+        file: null,
+        blob: null,
+        url: null,
+      });
+    }
   };
 
   // Handle file upload
   const handleFileUpload = (files) => {
-    // Filter to accept only audio files
     const audioFiles = Array.from(files).filter((file) =>
       file.type.startsWith("audio/")
     );
 
     if (audioFiles.length > 0) {
       console.log("Audio file(s) selected:", audioFiles);
-      setSelectedFile(audioFiles[0]); // Store the first selected audio file
-      onAudioDataChange?.({
-        source: "upload",
-        file: audioFiles[0],
-        blob: null,
-        url: null,
-      });
+      setSelectedFile(audioFiles[0]);
+
+      // Only send data if upload is the selected source
+      if (selectedAudioSource === "upload") {
+        onAudioDataChange?.({
+          source: "upload",
+          file: audioFiles[0],
+          blob: null,
+          url: null,
+        });
+      }
     } else {
       console.warn("No audio files were selected");
-      // Optional: Show error message to user
     }
   };
 
@@ -63,12 +92,16 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
   const handleResetFile = () => {
     setSelectedFile(null);
     fileInputRef.current.value = "";
-    onAudioDataChange?.({
-      source: "upload",
-      file: null,
-      blob: null,
-      url: null,
-    });
+
+    // Only clear data if upload is the selected source
+    if (selectedAudioSource === "upload") {
+      onAudioDataChange?.({
+        source: "upload",
+        file: null,
+        blob: null,
+        url: null,
+      });
+    }
   };
 
   // Recording handlers
@@ -83,16 +116,13 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
 
   const handleRecordButtonClick = async () => {
     if (isRecording) {
-      // If currently recording, stop the recording
       await handleStopRecording();
     } else if (audioBlob) {
-      // If we have a previous recording, reset and start new recording
       handleResetRecording();
       setTimeout(() => {
         handleStartRecording();
       }, 100);
     } else {
-      // If no recording exists, start recording
       handleStartRecording();
     }
   };
@@ -110,12 +140,16 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
   const handleResetRecording = () => {
     setAudioBlob(null);
     waveSurferRef.current.empty();
-    onAudioDataChange?.({
-      source: "recording",
-      file: null,
-      blob: null,
-      url: null,
-    });
+
+    // Only clear data if record is the selected source
+    if (selectedAudioSource === "record") {
+      onAudioDataChange?.({
+        source: "recording",
+        file: null,
+        blob: null,
+        url: null,
+      });
+    }
   };
 
   const handlePlayPause = () => {
@@ -189,13 +223,18 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         const url = URL.createObjectURL(blob);
         setAudioBlob(blob);
         setIsPlaying(false);
-        onAudioDataChange?.({
-          source: "recording",
-          file: null,
-          blob: blob,
-          url: url,
-          name: recordingName,
-        });
+
+        // Only send data if record is the selected source
+        if (selectedAudioSource === "record") {
+          onAudioDataChange?.({
+            source: "recording",
+            file: null,
+            blob: blob,
+            url: url,
+            name: recordingName,
+          });
+        }
+
         waveSurfer.loadBlob(blob).then(() => {
           waveSurfer.seekTo(0);
           waveSurfer.toggleInteraction(true);
@@ -216,6 +255,7 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
     recordingName,
     audioBlob,
     isRecordingMode,
+    selectedAudioSource,
   ]);
 
   useEffect(() => {
@@ -247,10 +287,8 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         onDrop={handleDrop}
       >
         {isRecordingMode ? (
-          /* Recording Mode Layout */
           <div id="waveform" className="w-full items-center"></div>
         ) : (
-          /* Normal Upload/Record Choice Layout */
           <div className="flex flex-row w-full h-full items-center justify-center text-lightgray">
             <AudioUploadSection
               selectedFile={selectedFile}
@@ -258,24 +296,18 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
               onUploadClick={handleUploadClick}
               onResetFile={handleResetFile}
               onFileInputChange={handleFileInputChange}
-              selectedAudioSource={selectedAudioSource}
-              onSelectAudioSource={handleSelectAudioSource}
             />
             <AudioDivider />
             <AudioRecordSection
               audioBlob={audioBlob}
               recordingName={recordingName}
               onRecordClick={handleRecordClick}
-              selectedAudioSource={selectedAudioSource}
-              onSelectAudioSource={handleSelectAudioSource}
             />
           </div>
         )}
       </div>
       <div className="h-12 mt-1">
-        {" "}
-        {/* Fixed height container */}
-        {isRecordingMode && (
+        {isRecordingMode ? (
           <RecordingControls
             audioBlob={audioBlob}
             isPlaying={isPlaying}
@@ -286,6 +318,13 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
             onRecordButtonClick={handleRecordButtonClick}
             onRecordingNameChange={setRecordingName}
             onCancelRecord={handleCancelRecord}
+          />
+        ) : (
+          <AudioSourceSelector
+            selectedSource={selectedAudioSource}
+            onSourceChange={handleSelectAudioSource}
+            hasUploadedFile={!!selectedFile}
+            hasRecordedAudio={!!audioBlob}
           />
         )}
       </div>

@@ -20,7 +20,6 @@ const MultiAudio = () => {
   const [referenceAudioData, setReferenceAudioData] = useState(null);
   const [userAudioSource, setUserAudioSource] = useState(null);
   const [userAudioData, setUserAudioData] = useState(null);
-  const [showError, setShowError] = useState(false);
 
   const handleAudioSourceChange = (source, type) => {
     console.log(`${type} audio source changed to:`, source);
@@ -38,53 +37,35 @@ const MultiAudio = () => {
     } else if (type === "user") {
       setUserAudioData(audioData);
     }
-    // Now you have access to:
-    // - audioData.source: 'upload' or 'recording'
-    // - audioData.file: File object (for uploads)
-    // - audioData.blob: Blob object (for recordings)
-    // - audioData.url: Object URL (for playback)
-    // - audioData.name: Recording name
   };
 
-  const getAudioError = (audioSource, audioData) => {
-    if (!audioSource) {
-      return "Please select upload or record";
-    }
+  // Check if audio is ready for analysis
+  const isAudioReady = (audioSource, audioData) => {
+    if (!audioSource) return false;
 
     if (audioSource === "upload") {
-      if (!audioData?.file) {
-        return "No audio file uploaded";
-      }
+      return audioData?.file !== null && audioData?.file !== undefined;
     } else if (audioSource === "record") {
-      if (!audioData?.blob) {
-        return "No audio recorded";
-      }
+      return audioData?.blob !== null && audioData?.blob !== undefined;
     }
 
-    return null;
+    return false;
   };
 
-  const referenceError = getAudioError(
+  const isReferenceReady = isAudioReady(
     referenceAudioSource,
     referenceAudioData
   );
-  const userError = getAudioError(userAudioSource, userAudioData);
-  const isFormValid = !referenceError && !userError;
+  const isUserReady = isAudioReady(userAudioSource, userAudioData);
+  const isFormValid = isReferenceReady && isUserReady;
 
   const handleAnalyzeClick = () => {
-    if (!isFormValid) {
-      setShowError(true);
-      return;
+    if (isFormValid) {
+      console.log("Analyzing...");
+      // Proceed with analysis
+      console.log("Reference:", referenceAudioData);
+      console.log("User:", userAudioData);
     }
-    // Proceed with analysis
-    console.log("Analyzing...");
-  };
-
-  const getErrorMessage = () => {
-    const errors = [];
-    if (referenceError) errors.push(`Reference audio: ${referenceError}`);
-    if (userError) errors.push(`Latest recording: ${userError}`);
-    return errors.length > 0 ? errors.join(" • ") : null;
   };
 
   return (
@@ -121,21 +102,16 @@ const MultiAudio = () => {
         columns={3}
         allowOther={false}
       />
-      <div className="flex flex-col items-center gap-1">
-        <SecondaryButton
-          className="h-fit text-xl tracking-widest"
-          onClick={handleAnalyzeClick}
-        >
-          analyze similarity
-        </SecondaryButton>
-        <div className="h-12 flex items-center">
-          {showError && getErrorMessage() && (
-            <div className="px-4 py-2 bg-darkpink/20 rounded-3xl text-darkpink text-sm">
-              {getErrorMessage()}
-            </div>
-          )}
-        </div>
-      </div>
+
+      <SecondaryButton
+        className={`h-fit text-xl tracking-widest transition-all duration-200 ${
+          !isFormValid ? "opacity-50 cursor-not-allowed" : "hover:scale-105"
+        }`}
+        onClick={handleAnalyzeClick}
+        disabled={!isFormValid}
+      >
+        analyze similarity
+      </SecondaryButton>
     </div>
   );
 };
