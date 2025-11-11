@@ -41,34 +41,27 @@ export const createMainChart = (
         .attr("opacity", 0.7)
         .attr("d", line);
     } catch (err) {
-      console.warn("⚠️ Failed to draw secondary line:", err);
+      console.warn("Failed to draw secondary line:", err);
     }
   }
 
-  // --- Draw main dataset (in front) ---
-  let areaPath = null;
-  let linePath = null;
+  // --- Draw main dataset (in front) ---;
+  const areaPath = chartGroup
+    .append("path")
+    .datum(filteredPrimaryData)
+    .attr("class", "main-area")
+    .attr("fill", "url(#line-gradient)")
+    .attr("opacity", 0.3)
+    .attr("d", area);
 
-  if (filteredPrimaryData.length > 0) {
-    areaPath = chartGroup
-      .append("path")
-      .datum(filteredPrimaryData)
-      .attr("class", "main-area")
-      .attr("fill", "url(#line-gradient)")
-      .attr("opacity", 0.3)
-      .attr("d", area);
-
-    linePath = chartGroup
-      .append("path")
-      .datum(filteredPrimaryData)
-      .attr("class", "main-line")
-      .attr("fill", "none")
-      .attr("stroke", primaryLineColor)
-      .attr("stroke-width", 2)
-      .attr("d", line);
-  } else {
-    console.warn("⚠️ createMainChart: No primary data to render.");
-  }
+  const linePath = chartGroup
+    .append("path")
+    .datum(filteredPrimaryData)
+    .attr("class", "main-line")
+    .attr("fill", "none")
+    .attr("stroke", primaryLineColor)
+    .attr("stroke-width", 2)
+    .attr("d", line);
 
   return { areaPath, linePath, secondaryDataAreaPath, secondaryDataLinePath };
 };
@@ -79,36 +72,22 @@ export const createMainChart = (
  */
 export const updateMainChart = (
   chartGroup,
-  filteredPrimaryData = [],
-  filteredSecondaryData = [],
+  filteredPrimaryData,
+  filteredSecondaryData = null,
   newXScale,
   currentYScale,
   yDomain
 ) => {
   const line = createLineGenerator(newXScale, currentYScale);
-  const area = createAreaGenerator(newXScale, currentYScale, yDomain?.[0] ?? 0);
+  const area = createAreaGenerator(newXScale, currentYScale, yDomain?.[0]);
 
-  // --- Update main data paths (only if they exist) ---
-  const mainArea = chartGroup.select(".main-area");
-  const mainLine = chartGroup.select(".main-line");
-
-  if (!mainArea.empty() && filteredPrimaryData.length > 0) {
-    mainArea.datum(filteredPrimaryData).attr("d", area);
-  }
-
-  if (!mainLine.empty() && filteredPrimaryData.length > 0) {
-    mainLine.datum(filteredPrimaryData).attr("d", line);
-  }
+  // --- Update main line and area ---
+  chartGroup.select(".main-area").datum(filteredPrimaryData).attr("d", area);
+  chartGroup.select(".main-line").datum(filteredPrimaryData).attr("d", line);
 
   // --- Update secondary/reference paths if they exist ---
-  const secondaryArea = chartGroup.select(".ref-area");
-  const secondaryLine = chartGroup.select(".ref-line");
-
-  if (!secondaryArea.empty() && filteredSecondaryData.length > 0) {
-    secondaryArea.datum(filteredSecondaryData).attr("d", area);
-  }
-
-  if (!secondaryLine.empty() && filteredSecondaryData.length > 0) {
-    secondaryLine.datum(filteredSecondaryData).attr("d", line);
+  if (filteredSecondaryData && filteredSecondaryData.length > 0) {
+    chartGroup.select(".ref-area").datum(filteredSecondaryData).attr("d", area);
+    chartGroup.select(".ref-line").datum(filteredSecondaryData).attr("d", line);
   }
 };

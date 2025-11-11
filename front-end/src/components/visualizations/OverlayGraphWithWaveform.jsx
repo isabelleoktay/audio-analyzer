@@ -50,10 +50,18 @@ const OverlayGraphWithWaveform = ({
     setSelectedDataIndex(0);
   }, [selectedAnalysisFeature]);
 
+  useEffect(() => {
+    console.log("ChartState changed:", chartState);
+  }, [chartState]);
+
   const calculatePitchYMin = (data) => {
-    const positiveValues = data.filter((v) => v > 0);
-    if (positiveValues.length === 0) return 0;
-    return Math.max(0, Math.min(...positiveValues) - 10);
+    // Filter out values that are 0 or negative
+    const positiveValues = data.filter((value) => value > 0);
+    if (positiveValues.length === 0) {
+      return 0; // Fallback if no positive values
+    }
+    const minPositiveValue = Math.min(...positiveValues);
+    return Math.max(0, minPositiveValue - 10);
   };
 
   // Active feature data
@@ -75,70 +83,49 @@ const OverlayGraphWithWaveform = ({
     referenceFeature.data.length > 0
   );
 
-  // Compute yMin/yMax safely based on whichever datasets exist
-  const safeData = (arr) =>
-    Array.isArray(arr) ? arr.filter((d) => d !== null && !isNaN(d)) : [];
-
-  const yMin = (() => {
-    if (!hasInputFeatureData) return 0;
-    if (hasReference && referenceFeature?.data) {
-      return Math.min(
-        ...safeData(inputFeature.data),
-        ...safeData(referenceFeature.data)
-      );
-    }
-    return Math.min(...safeData(inputFeature.data));
-  })();
-
-  const yMax = (() => {
-    if (!hasInputFeatureData) return 1;
-    if (hasReference && referenceFeature?.data) {
-      return Math.max(
-        ...safeData(inputFeature.data),
-        ...safeData(referenceFeature.data)
-      );
-    }
-    return Math.max(...safeData(inputFeature.data));
-  })();
-
   return (
     <div className="flex flex-col items-center justify-center w-full">
       {/* Reference Waveform player above */}
       <>
         {referenceAudioURL && (
-          <WaveformPlayer
-            feature={inputFeature.label}
-            key={referenceAudioURL}
-            audioUrl={referenceAudioURL}
-            highlightedSections={
-              inputFeature.highlighted?.audio?.length > 0
-                ? inputFeature.highlighted.audio
-                : []
-            }
-            waveColor="#E0E0E0"
-            progressColor="#A0A0A0"
-            startTime={
-              chartState?.zoom?.isZoomed && referenceAudioDuration
-                ? referenceFrameToTime(
-                    chartState.zoom.startIndex,
-                    referenceAudioDuration,
-                    inputFeature.data.length
-                  )
-                : 0
-            }
-            endTime={
-              chartState?.zoom?.isZoomed && referenceAudioDuration
-                ? referenceFrameToTime(
-                    chartState.zoom.endIndex,
-                    referenceAudioDuration,
-                    inputFeature.data.length
-                  )
-                : referenceAudioDuration || undefined
-            }
-            audioDuration={referenceAudioDuration}
-            playIconColorClass="text-darkgray"
-            showTimeline={false}
-          />
+          <div>
+            <ul className="text-sm pb-2 pt-2">
+              <li className="font-bold text-darkgray">reference audio</li>
+            </ul>
+            <WaveformPlayer
+              feature={inputFeature.label}
+              key={referenceAudioURL}
+              audioUrl={referenceAudioURL}
+              highlightedSections={
+                inputFeature.highlighted?.audio?.length > 0
+                  ? inputFeature.highlighted.audio
+                  : []
+              }
+              waveColor="#E0E0E0"
+              progressColor="#A0A0A0"
+              startTime={
+                chartState?.zoom?.isZoomed && referenceAudioDuration
+                  ? referenceFrameToTime(
+                      chartState.zoom.startIndex,
+                      referenceAudioDuration,
+                      inputFeature.data.length
+                    )
+                  : 0
+              }
+              endTime={
+                chartState?.zoom?.isZoomed && referenceAudioDuration
+                  ? referenceFrameToTime(
+                      chartState.zoom.endIndex,
+                      referenceAudioDuration,
+                      inputFeature.data.length
+                    )
+                  : referenceAudioDuration || undefined
+              }
+              audioDuration={referenceAudioDuration}
+              playIconColorClass="text-darkgray"
+              showTimeline={false}
+            />
+          </div>
         )}
       </>
 
@@ -156,7 +143,7 @@ const OverlayGraphWithWaveform = ({
             {/* Header and feature selector */}
             <div className="flex flex-row items-end w-full justify-between pt-4 mb-4">
               <ul className="text-sm text-lightgray">
-                <li className="font-bold text-lightpink">
+                <li className="font-bold text-lightpink pt-2">
                   Click and drag on the graph area to zoom in!
                 </li>
               </ul>
@@ -266,6 +253,7 @@ const OverlayGraphWithWaveform = ({
                               ...inputFeatureData[selectedDataIndex].data
                             )
                       }
+                      zoomDomain={chartState?.zoom ? [chartState.zoom.startIndex, chartState.zoom.endIndex] : null}
                       onZoomChange={handleZoomChange}
                       style={{ position: "absolute", zIndex: 1 }}
                     />
@@ -274,38 +262,43 @@ const OverlayGraphWithWaveform = ({
               </Tooltip>
 
               {/* Input Audio Waveform player below */}
-              <WaveformPlayer
-                feature={inputFeature.label}
-                key={inputAudioURL}
-                audioUrl={inputAudioURL}
-                highlightedSections={
-                  inputFeature.highlighted?.audio?.length > 0
-                    ? inputFeature.highlighted.audio
-                    : []
-                }
-                waveColor="#E0E0E0"
-                progressColor="#FF89BB"
-                startTime={
-                  chartState?.zoom?.isZoomed && inputAudioDuration
-                    ? frameToTime(
-                        chartState.zoom.startIndex,
-                        inputAudioDuration,
-                        inputFeature.data.length
-                      )
-                    : 0
-                }
-                endTime={
-                  chartState?.zoom?.isZoomed && inputAudioDuration
-                    ? frameToTime(
-                        chartState.zoom.endIndex,
-                        inputAudioDuration,
-                        inputFeature.data.length
-                      )
-                    : inputAudioDuration || undefined
-                }
-                audioDuration={inputAudioDuration}
-                showTimeline={false}
-              />
+              <div>
+                <ul className="text-sm pb-2 pt-2">
+                  <li className="font-bold text-darkpink">performance audio</li>
+                </ul>
+                <WaveformPlayer
+                  feature={inputFeature.label}
+                  key={inputAudioURL}
+                  audioUrl={inputAudioURL}
+                  highlightedSections={
+                    inputFeature.highlighted?.audio?.length > 0
+                      ? inputFeature.highlighted.audio
+                      : []
+                  }
+                  waveColor="#E0E0E0"
+                  progressColor="#FF89BB"
+                  startTime={
+                    chartState?.zoom?.isZoomed && inputAudioDuration
+                      ? frameToTime(
+                          chartState.zoom.startIndex,
+                          inputAudioDuration,
+                          inputFeature.data.length
+                        )
+                      : 0
+                  }
+                  endTime={
+                    chartState?.zoom?.isZoomed && inputAudioDuration
+                      ? frameToTime(
+                          chartState.zoom.endIndex,
+                          inputAudioDuration,
+                          inputFeature.data.length
+                        )
+                      : inputAudioDuration || undefined
+                  }
+                  audioDuration={inputAudioDuration}
+                  showTimeline={false}
+                />
+              </div>
             </div>
           </>
         )

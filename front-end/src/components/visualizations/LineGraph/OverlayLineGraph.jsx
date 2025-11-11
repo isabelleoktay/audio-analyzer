@@ -1,16 +1,15 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import * as d3 from "d3";
 
-// Import utilities
 import {
   processChartData,
   createXScale,
+  createZoomedXScale,
   createGradient,
   getDefaultLineGradientStops,
   createClipPath,
 } from "./utils";
 
-// Import components
 import {
   createTooltip,
   updateTooltip,
@@ -19,8 +18,12 @@ import {
   createAxes,
   createNoteStripes,
   createFeatureBackground,
+  createHighlightedSections,
+  updateHighlightedSections,
   createMainChart,
   updateMainChart,
+  createSilenceIndicators,
+  updateSilenceIndicators,
 } from "./components";
 
 const OverlayLineGraph = ({
@@ -33,33 +36,39 @@ const OverlayLineGraph = ({
   height = 400,
   xLabel,
   yLabel,
+  highlightedSections = [],
   yMin,
   yMax,
   xLabels,
+  zoomDomain,
   onZoomChange,
 }) => {
-  const svgRef = useRef();
+  const ref = useRef();
   const lastChangeRef = useRef(null);
 
+  const margin = useMemo(
+    () => ({ top: 20, right: 20, bottom: 20, left: 50 }),
+    []
+  );
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
+
+  // X scale (applies zoomDomain if provided)
+  const xScale = useMemo(() => {
+    const scale = createXScale(primaryData, xLabels, innerWidth);
+    if (zoomDomain) scale.domain(zoomDomain);
+    return scale;
+  }, [primaryData, xLabels, innerWidth, zoomDomain]);
+
   useEffect(() => {
-    // Safety: don't render if no primary data
     if (!primaryData || primaryData.length === 0) return;
 
-    const svg = d3
-      .select(svgRef.current)
-      .attr("width", width)
-      .attr("height", height)
-      .style("background", "transparent");
-
-    svg.selectAll("*").remove(); // clear previous render
-
-    // Process chart data safely
     const chartData = processChartData(
       primaryData,
       Array.isArray(secondaryData) ? secondaryData : [],
       yMin,
       yMax,
-      height - 40
+      innerHeight
     );
 
     if (!chartData.isValid) {
@@ -67,42 +76,49 @@ const OverlayLineGraph = ({
       return;
     }
 
-    const margin = { top: 20, right: 20, bottom: 20, left: 50 };
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-
     const { filteredPrimaryData, filteredSecondaryData, yDomain, yScale } =
       chartData;
 
-    // Create scales
-    const xScale = createXScale(primaryData, xLabels, innerWidth);
+    const svg = d3.select(ref.current);
+    svg.selectAll("*").remove();
 
-    // Container group
     const g = svg
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Definitions and clip path
     const defs = svg.append("defs");
     createClipPath(defs, "chart-clip", innerWidth, innerHeight);
 
     if (feature !== "rates" && feature !== "extents") {
-      const gradientStops = getDefaultLineGradientStops();
-      createGradient(defs, "line-gradient", gradientStops);
+      createGradient(defs, "line-gradient", getDefaultLineGradientStops());
     }
+
+    let currentXScale = xScale;
 
     const chartGroup = g.append("g").attr("clip-path", "url(#chart-clip)");
 
-    // Background elements
-    if (feature === "pitch") {
-      createNoteStripes(g, yScale, yDomain, innerWidth);
-    }
+    if (feature === "pitch") createNoteStripes(g, yScale, yDomain, innerWidth);
     createFeatureBackground(g, defs, feature, yDomain, innerWidth, innerHeight);
 
-    // Axes
-    createAxes(g, xScale, yScale, yDomain, feature, innerHeight, yLabel);
+    // eslint-disable-next-line no-unused-vars
+    const { xAxisGroup, yAxisGroup } = createAxes(
+      g,
+      xScale,
+      yScale,
+      yDomain,
+      feature,
+      innerHeight,
+      yLabel
+    );
 
-    // Main chart (primary + optional secondary)
+    createHighlightedSections(
+      chartGroup,
+      highlightedSections,
+      xScale,
+      innerHeight,
+      feature
+    );
+
     createMainChart(
       chartGroup,
       filteredPrimaryData,
@@ -114,22 +130,81 @@ const OverlayLineGraph = ({
       yDomain
     );
 
-    // Tooltip
+    createSilenceIndicators(
+      chartGroup,
+      filteredPrimaryData,
+      xScale,
+      innerHeight
+    );
+
     const focus = createTooltip(g);
 
-    // Redraw function (for zoom or updates)
-    const redrawChart = (newXScale) => {
-      updateMainChart(
-        chartGroup,
-        filteredPrimaryData,
-        filteredSecondaryData,
-        newXScale,
-        yScale,
-        yDomain
-      );
+    const calculateZoomCoordinates = (scale) => {
+      const domain = scale.domain();
+      return {
+        startIndex: Math.max(0, Math.round(domain[0])),
+        endIndex: Math.min(primaryData.length - 1, Math.round(domain[1])),
+        startX: scale(domain[0]),
+        endX: scale(domain[1]),
+        zoomLevel: domain,
+        isZoomed: scale !== xScale,
+        visibleDataPercentage:
+          ((domain[1] - domain[0]) / (primaryData.length - 1)) * 100,
+      };
     };
 
-    // Brush (zoom) functionality
+    const notifyChange = (newXScale) => {
+      const zoomCoordinates = calculateZoomCoordinates(newXScale);
+      const changeData = { zoom: zoomCoordinates };
+      const changeString = JSON.stringify(changeData);
+
+      if (lastChangeRef.current !== changeString) {
+        lastChangeRef.current = changeString;
+        onZoomChange?.(changeData);
+      }
+    };
+
+    function redrawChart(newXScale, currentYScale) {
+      currentXScale = newXScale;
+
+      const [startIndex, endIndex] = newXScale
+        .domain()
+        .map((d) =>
+          Math.max(0, Math.min(filteredPrimaryData.length - 1, Math.round(d)))
+        );
+
+      const zoomedPrimaryData = filteredPrimaryData.slice(
+        startIndex,
+        endIndex + 1
+      );
+      const zoomedSecondaryData = filteredSecondaryData.length
+        ? filteredSecondaryData.slice(startIndex, endIndex + 1)
+        : [];
+
+      updateMainChart(
+        chartGroup,
+        zoomedPrimaryData,
+        zoomedSecondaryData,
+        newXScale,
+        currentYScale,
+        yDomain
+      );
+
+      xAxisGroup.call(d3.axisBottom(newXScale));
+
+      if (highlightedSections.length > 0) {
+        updateHighlightedSections(chartGroup, newXScale);
+      }
+
+      updateSilenceIndicators(
+        chartGroup,
+        filteredPrimaryData,
+        newXScale,
+        innerHeight
+      );
+      notifyChange(newXScale);
+    }
+
     const brush = d3
       .brushX()
       .extent([
@@ -138,45 +213,79 @@ const OverlayLineGraph = ({
       ])
       .on("end", function (event) {
         if (!event.selection) return;
-        const [x0, x1] = event.selection;
 
-        const newXScale = xScale
-          .copy()
-          .domain([xScale.invert(x0), xScale.invert(x1)]);
+        const [x0, x1] = event.selection;
+        const newXScale = createZoomedXScale(currentXScale, [x0, x1]);
 
         d3.select(this).call(brush.clear);
-        redrawChart(newXScale);
-
-        // Notify parent about zoom
-        if (onZoomChange) {
-          const startIndex = Math.max(0, Math.round(xScale.invert(x0)));
-          const endIndex = Math.min(
-            primaryData.length - 1,
-            Math.round(xScale.invert(x1))
-          );
-          const zoomData = {
-            startIndex,
-            endIndex,
-            isZoomed: true,
-            zoomLevel: [xScale.invert(x0), xScale.invert(x1)],
-          };
-          const changeString = JSON.stringify(zoomData);
-          if (lastChangeRef.current !== changeString) {
-            lastChangeRef.current = changeString;
-            onZoomChange({ zoom: zoomData });
-          }
-        }
+        redrawChart(newXScale, yScale);
+        currentXScale = newXScale;
       });
 
-    chartGroup.append("g").attr("class", "brush").call(brush);
+    const brushOverlay = chartGroup
+      .append("g")
+      .attr("class", "brush")
+      .call(brush);
 
-    // Reset button
-    createResetButton(g, innerWidth, () => redrawChart(xScale));
+    brushOverlay
+      .selectAll(".overlay")
+      .style("cursor", "crosshair")
+      .style("pointer-events", "all");
+
+    brushOverlay
+      .selectAll(".selection")
+      .style("fill", "#90F1EF")
+      .style("fill-opacity", 0.2)
+      .style("stroke", "#90F1EF")
+      .style("stroke-width", 1);
+
+    brushOverlay
+      .on("mouseover", () => focus.style("display", null))
+      .on("mouseout", () => hideTooltip(focus))
+      .on("mousemove", function (event) {
+        const [mx, my] = d3.pointer(event);
+        const x0 = currentXScale.invert(mx);
+        const i = Math.round(x0);
+        const dVal = primaryData[i];
+        const filteredVal = filteredPrimaryData[i];
+
+        if (dVal !== undefined && i >= 0 && i < primaryData.length) {
+          const xCoord = currentXScale(i);
+          const isSilence = filteredVal === null;
+          const yCoord = isSilence ? innerHeight - 5 : yScale(filteredVal);
+          const threshold = isSilence ? 20 : 10;
+          const distance = Math.abs(my - (isSilence ? innerHeight : yCoord));
+
+          if (distance < threshold || (isSilence && my > innerHeight - 30)) {
+            const displayText = isSilence ? "Silence" : dVal.toFixed(2);
+            updateTooltip(focus, xCoord, yCoord, displayText, isSilence);
+          } else hideTooltip(focus);
+        } else hideTooltip(focus);
+      });
+
+    const handleReset = () => {
+      // Reset the scale domain to the full range
+      const resetXScale = createXScale(primaryData, xLabels, innerWidth);
+      currentXScale = resetXScale;
+
+      // Redraw everything with the reset scale
+      redrawChart(resetXScale, yScale);
+
+      // Notify the parent that zoom is cleared
+      notifyChange(resetXScale);
+    };
+
+    createResetButton(g, innerWidth, handleReset);
   }, [
     primaryData,
     secondaryData,
     width,
     height,
+    innerWidth,
+    innerHeight,
+    xScale,
+    margin,
+    highlightedSections,
     xLabel,
     yLabel,
     yMin,
@@ -188,7 +297,7 @@ const OverlayLineGraph = ({
     onZoomChange,
   ]);
 
-  return <svg ref={svgRef} width={width} height={height} />;
+  return <svg ref={ref} width={width} height={height} />;
 };
 
 export default OverlayLineGraph;

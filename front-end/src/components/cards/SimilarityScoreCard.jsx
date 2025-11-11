@@ -5,7 +5,7 @@ const SimilarityScoreCard = ({
   bestScores = [92, 88, 85, 83, 80],
 }) => {
   const [expanded, setExpanded] = useState(false);
-  const topScore = Math.max(...bestScores);
+  //   const topScore = Math.max(...bestScores);
 
   return (
     <div
@@ -14,14 +14,13 @@ const SimilarityScoreCard = ({
     bg-white/10 backdrop-blur-md rounded-2xl p-5 shadow-lg
     w-full max-w-[200px] transition-all duration-500 ease-in-out
     cursor-pointer select-none
-    hover:shadow-lightpink/40 hover:scale-[1.02]
-    flex flex-col justify-between h-full
-  `}
+    flex flex-col justify-center h-full
+  `} // hover:shadow-lightpink/40 hover:scale-[1.02]
     >
       {/* Top section */}
       <div>
         {/* Title */}
-        <h2 className="text-xl font-bold text-lightpink mb-6">
+        <h2 className="text-xl font-bold text-lightpink mb-4">
           similarity score
         </h2>
 
@@ -31,12 +30,12 @@ const SimilarityScoreCard = ({
         </div>
 
         {/* Best score */}
-        <div className="text-sm text-gray-300">
+        {/* <div className="text-sm text-gray-300">
           Best: {topScore.toFixed(2)}%
-        </div>
+        </div> */}
 
         {/* Expandable section */}
-        <div
+        {/* <div
           className={`transition-all duration-500 ease-in-out overflow-hidden ${
             expanded ? "max-h-48 opacity-100 mt-3" : "max-h-0 opacity-0"
           }`}
@@ -51,13 +50,13 @@ const SimilarityScoreCard = ({
               </li>
             ))}
           </ul>
-        </div>
+        </div> */}
       </div>
 
       {/* Bottom hint (anchored) */}
-      <div className="text-xs text-gray-400 mt-3 italic text-center">
+      {/* <div className="text-xs text-gray-400 mt-3 italic text-center">
         {expanded ? "Click to collapse" : "Click to view top 5 scores"}
-      </div>
+      </div> */}
     </div>
   );
 };
