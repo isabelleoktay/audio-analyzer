@@ -50,10 +50,6 @@ const OverlayGraphWithWaveform = ({
     setSelectedDataIndex(0);
   }, [selectedAnalysisFeature]);
 
-  useEffect(() => {
-    console.log("ChartState changed:", chartState);
-  }, [chartState]);
-
   const calculatePitchYMin = (data) => {
     // Filter out values that are 0 or negative
     const positiveValues = data.filter((value) => value > 0);
@@ -253,7 +249,14 @@ const OverlayGraphWithWaveform = ({
                               ...inputFeatureData[selectedDataIndex].data
                             )
                       }
-                      zoomDomain={chartState?.zoom ? [chartState.zoom.startIndex, chartState.zoom.endIndex] : null}
+                      zoomDomain={
+                        chartState?.zoom
+                          ? [
+                              chartState.zoom.startIndex,
+                              chartState.zoom.endIndex,
+                            ]
+                          : null
+                      }
                       onZoomChange={handleZoomChange}
                       style={{ position: "absolute", zIndex: 1 }}
                     />
