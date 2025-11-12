@@ -4,19 +4,15 @@ import WaveformPlayer from "./WaveformPlayer";
 import LoadingSpinner from "../LoadingSpinner";
 import Tooltip from "../text/Tooltip";
 
-import { mockInputFeatures, mockReferenceFeatures } from "../../mock/index";
-
 const width = 800;
 const graphHeight = 400;
 
 const OverlayGraphWithWaveform = ({
   inputAudioURL,
   referenceAudioURL,
-  inputFeatureData = mockInputFeatures, // input audio feature data
-  referenceFeatureData = mockReferenceFeatures, // optional: reference performance feature data
+  inputFeatureData, // input audio feature data
+  referenceFeatureData, // optional: reference performance feature data
   selectedAnalysisFeature,
-  selectedVoiceType,
-  selectedModel,
   inputAudioDuration,
   referenceAudioDuration,
   tooltipMode,
@@ -61,12 +57,8 @@ const OverlayGraphWithWaveform = ({
   };
 
   // Active feature data
-  const modelInputData = inputFeatureData?.[selectedModel] || inputFeatureData;
-  const modelReferenceData =
-    referenceFeatureData?.[selectedModel] || referenceFeatureData;
-
-  const inputFeature = modelInputData?.[selectedDataIndex] || null;
-  const referenceFeature = modelReferenceData?.[selectedDataIndex] || null;
+  const inputFeature = inputFeatureData?.[selectedDataIndex] || null;
+  const referenceFeature = referenceFeatureData?.[selectedDataIndex] || null;
 
   const hasInputFeatureData =
     inputFeature &&

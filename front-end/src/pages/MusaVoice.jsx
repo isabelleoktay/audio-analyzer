@@ -5,7 +5,6 @@ import musaVoiceSurveyConfig from "../data/musaVoiceSurveyConfig.js";
 import {
   AnalysisButtons,
   SecondaryButton,
-  TertiaryButton,
   ToggleButton,
 } from "../components/buttons";
 import OverlayGraphWithWaveform from "../components/visualizations/OverlayGraphWithWaveform.jsx";
@@ -65,12 +64,7 @@ const MusaVoice = ({
   const [selectedTechniques, setSelectedTechniques] = useState([]);
   const [selectedVoiceType, setSelectedVoiceType] = useState([]);
   const [answers, setAnswers] = useState({});
-  const [inputAudioURL, setInputAudioURL] = useState(
-    "/audio/development/input.wav"
-  );
-  const [referenceAudioURL, setReferenceAudioURL] = useState(
-    "/audio/development/reference.wav"
-  );
+
   const [selectedAnalysisFeature, setSelectedAnalysisFeature] =
     useState("vocal tone");
   const [inputAudioFeatures, setInputAudioFeatures] =
@@ -85,6 +79,11 @@ const MusaVoice = ({
     const timer = setTimeout(() => setShowIntro(false), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    console.log("inputAudioFeatures: ", inputAudioFeatures);
+    console.log("referenceAudioFeatures: ", referenceAudioFeatures);
+  });
 
   const handleSubmitSurvey = (answers) => {
     console.log("Survey answers:", answers);
@@ -110,22 +109,6 @@ const MusaVoice = ({
   const featureHasModels = ["vocal tone", "pitch mod."].includes(
     selectedAnalysisFeature
   );
-
-  const inputData =
-    (inputAudioFeatures &&
-      inputAudioFeatures[selectedAnalysisFeature] &&
-      (featureHasModels
-        ? inputAudioFeatures[selectedAnalysisFeature][selectedModel]?.data
-        : inputAudioFeatures[selectedAnalysisFeature]?.data)) ||
-    null;
-
-  const referenceData =
-    (referenceAudioFeatures &&
-      referenceAudioFeatures[selectedAnalysisFeature] &&
-      (featureHasModels
-        ? referenceAudioFeatures[selectedAnalysisFeature][selectedModel]?.data
-        : referenceAudioFeatures[selectedAnalysisFeature]?.data)) ||
-    null;
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -204,12 +187,31 @@ const MusaVoice = ({
 
               <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 pt-10">
                 <div className="w-full lg:min-w-[800px]">
-                  {inputData && referenceData ? (
+                  {inputAudioFeatures[selectedAnalysisFeature] &&
+                  referenceAudioFeatures[selectedAnalysisFeature] ? (
                     <OverlayGraphWithWaveform
-                      inputAudioURL={inputAudioURL}
-                      referenceAudioURL={referenceAudioURL}
-                      inputFeatureData={inputData}
-                      referenceFeatureData={referenceData}
+                      inputAudioURL={
+                        inputAudioFeatures[selectedAnalysisFeature]?.audioUrl
+                      }
+                      referenceAudioURL={
+                        referenceAudioFeatures[selectedAnalysisFeature]
+                          ?.audioUrl
+                      }
+                      inputFeatureData={
+                        (featureHasModels
+                          ? inputAudioFeatures[selectedAnalysisFeature]?.data?.[
+                              selectedModel
+                            ]
+                          : inputAudioFeatures[selectedAnalysisFeature]
+                              ?.data) || []
+                      }
+                      referenceFeatureData={
+                        (featureHasModels
+                          ? referenceAudioFeatures[selectedAnalysisFeature]
+                              ?.data?.[selectedModel]
+                          : referenceAudioFeatures[selectedAnalysisFeature]
+                              ?.data) || []
+                      }
                       selectedAnalysisFeature={selectedAnalysisFeature}
                       selectedVoiceType={selectedVoiceType}
                       inputAudioDuration={
@@ -219,7 +221,6 @@ const MusaVoice = ({
                         referenceAudioFeatures[selectedAnalysisFeature]
                           ?.duration
                       }
-                      selectedModel={selectedModel}
                       tooltipMode={tooltipMode}
                     />
                   ) : (
