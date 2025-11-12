@@ -109,7 +109,7 @@ def clap_extract_features_and_predict(
 
     # Load label encoder
     label_encoder_path = os.path.join(
-        "/content/drive/MyDrive/DATASETS/VOCALSET/ORG_VOCALSET_SPLIT/clap_org_split",
+        "/python-service/models/CLAP/",
         f"{classify}_{str(VTC_FRAME_DURATION_SEC).replace(".", "_")}_label_encoder_classes_gendered.npy",
     )
 

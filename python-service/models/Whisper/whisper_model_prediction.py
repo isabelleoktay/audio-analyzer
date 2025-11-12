@@ -59,7 +59,7 @@ def whisper_extract_features_and_predict(
     # Load label encoder
     label_encoder_path = os.path.join(
         "./models/Whisper",
-        f"whisper_{classify}_{gender}_{str(VTC_FRAME_DURATION_SEC).replace(".", "_")}_label_encoder.joblib",
+        f"{classify}_{gender}_{str(VTC_FRAME_DURATION_SEC).replace(".", "_")}_label_encoder.joblib",
     )
 
     logging.info(f"Loading label encoder from file {label_encoder_path}")
