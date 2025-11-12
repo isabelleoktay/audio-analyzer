@@ -2,9 +2,9 @@ from flask import Blueprint, request, jsonify
 from services.vocal_tone_service import process_vocal_tone
 from utils.json_utils import convert_to_builtin_types
 
-phonation_blueprint = Blueprint('vocal-tone', __name__)
+vocal_tone_blueprint = Blueprint('vocal-tone', __name__)
 
-@phonation_blueprint.route('/python-service/process-vocal-tone', methods=['POST'])
+@vocal_tone_blueprint.route('/python-service/process-vocal-tone', methods=['POST'])
 def handle_vocal_tone():
     audio_file = request.files.get('audioFile')
 

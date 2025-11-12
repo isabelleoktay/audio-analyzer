@@ -19,22 +19,18 @@ def process_pitch_mod(audio_bytes, gender):
     transposed_clap = clap_predictions.T
 
     result = {
-        "pitchMod": {
-            "CLAP": {
-                "audioUrl": audio_url,
-                "duration": audio_duration,
-                "data": [
+        "pitch mod.": {
+            "audioUrl": audio_url,
+            "duration": audio_duration,
+            "data": {
+                "CLAP": [
                     {
                         "label": label,
                         "data": transposed_clap[i].tolist(),
                     }
                     for i, label in enumerate(clap_class_names)
                 ],
-            },
-            "Whisper": {
-                "audioUrl": audio_url,
-                "duration": audio_duration,
-                "data": [
+                "Whisper": [
                     {
                         "label": label,
                         "data": transposed_whisper[i].tolist(),

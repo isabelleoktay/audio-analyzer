@@ -92,6 +92,34 @@ const processFeatures = async (audioFile, feature) => {
         formData
       );
       return response.data;
+    } else if (feature === "vocal tone") {
+      const voiceType = "tenor"; // TO DO: needs to be handled properly - get from frontend selection
+      formData.append("voiceType", voiceType);
+
+      const response = await pythonClient.post(
+        "/python-service/process-vocal-tone",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } else if (feature === "pitch mod.") {
+      const voiceType = "alto"; // TO DO: needs to be handled properly - get from frontend selection
+      formData.append("voiceType", voiceType);
+
+      const response = await pythonClient.post(
+        "/python-service/process-pitch-mod",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
     } else if (feature === "vibrato") {
       const response = await pythonClient.post(
         "/python-service/process-vibrato",

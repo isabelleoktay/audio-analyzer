@@ -2,9 +2,9 @@ from flask import Blueprint, request, jsonify
 from services.pitch_mod_service import process_pitch_mod
 from utils.json_utils import convert_to_builtin_types
 
-phonation_blueprint = Blueprint('pitch-mod', __name__)
+pitch_mod_blueprint = Blueprint('pitch-mod', __name__)
 
-@phonation_blueprint.route('/python-service/process-pitch-mod', methods=['POST'])
+@pitch_mod_blueprint.route('/python-service/process-pitch-mod', methods=['POST'])
 def handle_pitch_mod():
     audio_file = request.files.get('audioFile')
 
