@@ -76,12 +76,12 @@ export const feedbackForm2Config = [
   {
     type: "textAnswer",
     question:
-      "Which features of the MuSA performance analyser were most helpful for you? Why?",
+      "Which features of the MuSA performance analyzer were most helpful for you? Why?",
   },
   {
     type: "textAnswer",
     question:
-      "Were there any features of the MuSA performance analyser that didn't work for you? If so, what issues did you encounter?",
+      "Were there any features of the MuSA performance analyzer that didn't work for you? If so, what issues did you encounter?",
   },
   {
     type: "textAnswer",
