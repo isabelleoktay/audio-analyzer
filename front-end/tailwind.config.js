@@ -1,3 +1,5 @@
+const { dark } = require("@mui/material/styles/createPalette");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
@@ -16,6 +18,7 @@ module.exports = {
         electricblue: "#90F1EF",
         warmyellow: "#FFCB6B",
         lightgray: "#E0E0E0",
+        darkgray: "#A0A0A0",
         lightpink: "#FFD6E8",
         darkpink: "#FF89BB",
       },
