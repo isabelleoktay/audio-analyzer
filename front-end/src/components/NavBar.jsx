@@ -41,7 +41,7 @@ const NavBar = ({
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full h-16 flex items-center justify-between px-4 lg:px-6 py-4 bg-transparent backdrop-blur-lg text-lightgray z-50">
+    <nav className="fixed top-0 left-0 w-full h-16 flex items-center justify-between px-4 lg:px-6 py-4 bg-transparent text-lightgray z-50 mb-24 backdrop-blur-lg">
       {/* Desktop Layout */}
       <div className="hidden lg:flex items-center justify-between w-full">
         {/* Left Section - Desktop */}
@@ -79,6 +79,12 @@ const NavBar = ({
                 to: "/",
                 label: "analyzer",
                 active: isActive("/"),
+              },
+              {
+                type: "center",
+                to: "/multi-audio",
+                label: "multi audio",
+                active: isActive("/multi-audio"),
               },
               {
                 type: "center",
@@ -165,6 +171,12 @@ const NavBar = ({
                   to: "/",
                   label: "analyzer",
                   active: isActive("/"),
+                },
+                {
+                  type: "center",
+                  to: "/multi-audio",
+                  label: "multi audio",
+                  active: isActive("/multi-audio"),
                 },
                 {
                   type: "center",
