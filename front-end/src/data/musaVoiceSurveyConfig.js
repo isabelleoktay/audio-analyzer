@@ -77,7 +77,7 @@ const musaVoiceSurveyConfig = [
       "Falsetto",
       "Pharyngeal",
     ],
-    scaleLabels: ["Not useful", "", "", "", "Very useful"],
+    scaleLabels: ["Not useful", "", "", "", "", "Very useful"],
   },
   {
     type: "singleselect",
