@@ -6,6 +6,8 @@ const SurveyMultiSelect = ({
   options = [],
   onChange,
   allowOther = true,
+  columns = null, // New prop for fixed number of columns
+  className = "",
   value = [],
 }) => {
   const containerRef = useRef(null);
@@ -33,7 +35,7 @@ const SurveyMultiSelect = ({
 
   // Measure longest option for responsive layout
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || columns) return; // Skip if using fixed columns
 
     const tempSpan = document.createElement("span");
     tempSpan.style.visibility = "hidden";
@@ -57,7 +59,7 @@ const SurveyMultiSelect = ({
 
     document.body.removeChild(tempSpan);
     setColumnWidth(maxWidth);
-  }, [options, allowOther]);
+  }, [options, allowOther, columns]);
 
   const toggleOption = (option) => {
     const updated = selectedOptions.includes(option)
@@ -88,9 +90,18 @@ const SurveyMultiSelect = ({
     onChange?.(output);
   };
 
+  // Determine grid template columns based on prop
+  const getGridTemplateColumns = () => {
+    if (columns) {
+      return `repeat(${columns}, 1fr)`; // Fixed number of equal columns
+    } else {
+      return `repeat(auto-fit, minmax(${columnWidth}px, 1fr))`; // Auto-fit based on content
+    }
+  };
+
   return (
     <div
-      className="bg-bluegray/25 rounded-3xl p-8 flex flex-col items-center"
+      className={`bg-bluegray/25 rounded-3xl p-8 flex flex-col items-center ${className}`}
       ref={containerRef}
     >
       <h4 className="text-xl font-semibold text-lightpink mb-6 text-center">
@@ -100,7 +111,7 @@ const SurveyMultiSelect = ({
       <div
         className="grid gap-4 w-full justify-center"
         style={{
-          gridTemplateColumns: `repeat(auto-fit, minmax(${columnWidth}px, 1fr))`,
+          gridTemplateColumns: getGridTemplateColumns(),
         }}
       >
         {options.map((opt, index) => (
