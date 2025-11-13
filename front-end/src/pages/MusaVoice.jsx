@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 import SurveySection from "../components/survey/SurveySection.jsx";
+import { uploadMusaVoiceSessionData } from "../utils/api.js";
 import musaVoiceSurveyConfig from "../data/musaVoiceSurveyConfig.js";
 // import UploadAudioCard from "../components/cards/UploadAudioCard";
 import {
@@ -73,6 +75,8 @@ const MusaVoice = ({
     mockReferenceFeatures
   );
   const [selectedModel, setSelectedModel] = useState("CLAP");
+  const [sessionId, setSessionId] = useState(null);
+  const [userToken, setUserToken] = useState(null);
 
   useEffect(() => {
     // Hide intro and show survey after 2 seconds
@@ -81,16 +85,45 @@ const MusaVoice = ({
   }, []);
 
   useEffect(() => {
-    console.log("inputAudioFeatures: ", inputAudioFeatures);
-    console.log("referenceAudioFeatures: ", referenceAudioFeatures);
-  });
+    // Get or create session ID
+    let currentSessionId = sessionStorage.getItem("musaVoiceSessionId");
+    if (!currentSessionId) {
+      currentSessionId = uuidv4();
+      sessionStorage.setItem("musaVoiceSessionId", currentSessionId);
+    }
+    setSessionId(currentSessionId);
 
-  const handleSubmitSurvey = (answers) => {
+    // Get user token from localStorage
+    const token = localStorage.getItem("audio_analyzer_token");
+    setUserToken(token);
+  }, []);
+
+  const handleSubmit = async (answers) => {
     console.log("Survey answers:", answers);
     setAnswers((prev) => ({ ...prev, answers }));
     setShowSurvey(false);
     setShowUploadAudio(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    console.log("Survey answers:", answers);
+
+    try {
+      const sessionData = {
+        sessionId: sessionId,
+        userToken: userToken,
+        surveyAnswers: answers,
+        timestamp: new Date().toISOString(),
+        type: "musaVoice",
+      };
+
+      await uploadMusaVoiceSessionData(sessionData);
+      console.log("MusaVoice session data uploaded successfully");
+
+      setShowSurvey(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      console.error("Error uploading MusaVoice session data:", error);
+    }
   };
 
   const handleAnalyzeNewRecording = (file) => {

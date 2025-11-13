@@ -6,6 +6,8 @@ const MultiSelectCard = ({
   options = [],
   onChange,
   allowOther = true,
+  columns = null, // New prop for fixed number of columns
+  className = "",
   value = [],
   background_color = "bg-bluegray/25",
   isMultiSelect = true,
@@ -36,7 +38,7 @@ const MultiSelectCard = ({
 
   // Measure column width dynamically
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || columns) return; // Skip if using fixed columns
 
     const tempSpan = document.createElement("span");
     tempSpan.style.visibility = "hidden";
@@ -60,7 +62,7 @@ const MultiSelectCard = ({
 
     document.body.removeChild(tempSpan);
     setColumnWidth(maxWidth);
-  }, [options, allowOther]);
+  }, [options, allowOther, columns]);
 
   const toggleOption = (option) => {
     let updated;
@@ -111,7 +113,7 @@ const MultiSelectCard = ({
         miniVersion
           ? "rounded-lg p-4 flex flex-col items-center w-full"
           : "rounded-3xl p-8 flex flex-col items-center w-full"
-      } transition-all duration-200`}
+      } transition-all duration-200 ${className}`}
       ref={containerRef}
     >
       {/* Header */}

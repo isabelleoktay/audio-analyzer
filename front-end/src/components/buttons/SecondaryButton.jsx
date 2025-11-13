@@ -5,6 +5,7 @@ const SecondaryButton = ({
   children,
   className = "",
   isActive = true,
+  disabled = false,
 }) => {
   // Detect gradient colors in className (like from-darkpink / to-lightpink)
   const fromMatch = className.match(/from-[\w-/]+/);
@@ -20,6 +21,7 @@ const SecondaryButton = ({
 
   return (
     <button
+      disabled={disabled}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={onClick}
