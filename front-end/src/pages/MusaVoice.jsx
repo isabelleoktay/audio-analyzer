@@ -10,9 +10,11 @@ import {
   ToggleButton,
 } from "../components/buttons";
 import OverlayGraphWithWaveform from "../components/visualizations/OverlayGraphWithWaveform.jsx";
+import UploadAudioCard from "../components/cards/UploadAudioCard.jsx";
 import SimilarityScoreCard from "../components/cards/SimilarityScoreCard";
 import SelectedVocalTechniquesCard from "../components/cards/SelectedVocalTechniquesCard";
 import MultiSelectCard from "../components/cards/MultiSelectCard.jsx";
+import InstructionCard from "../components/cards/InstructionCard.jsx";
 import { mockInputFeatures, mockReferenceFeatures } from "../mock/index.js";
 
 /**
@@ -66,6 +68,10 @@ const MusaVoice = ({
   const [selectedTechniques, setSelectedTechniques] = useState([]);
   const [selectedVoiceType, setSelectedVoiceType] = useState([]);
   const [answers, setAnswers] = useState({});
+  const [referenceAudioSource, setReferenceAudioSource] = useState(null);
+  const [referenceAudioData, setReferenceAudioData] = useState(null);
+  const [userAudioSource, setUserAudioSource] = useState(null);
+  const [userAudioData, setUserAudioData] = useState(null);
 
   const [selectedAnalysisFeature, setSelectedAnalysisFeature] =
     useState("vocal tone");
@@ -131,68 +137,164 @@ const MusaVoice = ({
     setAnalyzeAudio(false);
   };
 
-  const handleSubmitAudio = (audioBlob) => {
-    console.log("Audio:", audioBlob);
-  };
-
   const handleAnalysisFeatureSelect = (feature) => {
     setSelectedAnalysisFeature(feature);
+  };
+
+  const handleAudioSourceChange = (source, type) => {
+    console.log(`${type} audio source changed to:`, source);
+    if (type === "reference") {
+      setReferenceAudioSource(source);
+    } else if (type === "user") {
+      setUserAudioSource(source);
+    }
+  };
+
+  const handleAudioDataChange = (audioData, type) => {
+    console.log(`${type} audio data updated:`, audioData);
+    if (type === "reference") {
+      setReferenceAudioData(audioData);
+    } else if (type === "user") {
+      setUserAudioData(audioData);
+    }
+  };
+
+  // Check if audio is ready for analysis
+  const isAudioReady = (audioSource, audioData) => {
+    if (!audioSource) return false;
+
+    if (audioSource === "upload") {
+      return audioData?.file !== null && audioData?.file !== undefined;
+    } else if (audioSource === "record") {
+      return audioData?.blob !== null && audioData?.blob !== undefined;
+    }
+
+    return false;
+  };
+
+  const isReferenceReady = isAudioReady(
+    referenceAudioSource,
+    referenceAudioData
+  );
+  const isUserReady = isAudioReady(userAudioSource, userAudioData);
+  const isVoiceTypeSelected = selectedVoiceType && selectedVoiceType.length > 0;
+  const isTechniquesSelected =
+    selectedTechniques && selectedTechniques.length > 0;
+  const isFormValid =
+    isReferenceReady &&
+    isUserReady &&
+    isVoiceTypeSelected &&
+    isTechniquesSelected;
+
+  const handleAnalyzeClick = () => {
+    if (isFormValid) {
+      setShowUploadAudio(false);
+      setAnalyzeAudio(true);
+      console.log("Analyzing...");
+      // Proceed with analysis
+      console.log("Reference:", referenceAudioData);
+      console.log("User:", userAudioData);
+    }
   };
 
   const featureHasModels = ["vocal tone", "pitch mod."].includes(
     selectedAnalysisFeature
   );
 
+  // showIntro ? (
+  //       <h1 className="text-5xl font-bold text-lightpink animate-zoomIn">
+  //         Welcome to MusaVoice!
+  //       </h1>
+  //     ) :
+
   return (
     <div className="flex items-center justify-center min-h-screen">
-      {showIntro ? (
-        <h1 className="text-5xl font-bold text-lightpink animate-zoomIn">
-          Welcome to MusaVoice!
-        </h1>
-      ) : showSurvey ? (
+      {showSurvey ? (
         <div className="w-full max-w-4xl p-8 rounded-xl pt-20">
           <SurveySection
             config={musaVoiceSurveyConfig}
-            onSubmit={handleSubmitSurvey}
+            onSubmit={handleSubmit}
           />
         </div>
       ) : showUploadAudio ? (
-        <div className="flex flex-col items-center justify-center min-h-screen text-lightgray px-8">
-          <div className="pb-8">
-            <MultiSelectCard
-              question="select voice type of input file:"
-              options={["bass", "tenor", "alto", "soprano"]}
-              allowOther={false}
-              background_color="bg-white/10"
-              onChange={(selected) => setSelectedVoiceType(selected)}
-            />
-          </div>
-          <div className="pb-8">
-            <MultiSelectCard
-              question="select target vocal techniques:"
-              options={[
-                "vibrato",
-                "straight",
-                "trill",
-                "trillo",
-                "breathy tone",
-                "belting tone",
-                "spoken tone",
-                "inhaled singing",
-                "vocal fry",
-              ]}
-              allowOther={false}
-              background_color="bg-white/10"
-              onChange={(selected) => setSelectedTechniques(selected)}
-            />
+        <div className="flex flex-col items-center justify-center min-h-screen text-lightgray px-8 w-full">
+          {/* <div className="flex flex-row w-full gap-8 justify-center items-center"> */}
+          {/* <div className="flex flex-col gap-2 items-center mb-4 h-full w-full">
+            <div className="font-bold text-5xl text-electricblue text-center">
+              upload audio
+            </div>
+            <div className="text-lightgray text-xl w-3/4 text-center">
+              the system will analyse how closely your test audio matches the
+              vocal techniques in the uploaded/recorded reference audio.
+            </div>
+          </div> */}
+          <div className="flex flex-row w-full gap-8 justify-center items-stretch min-h-[400px]">
+            <div className="flex flex-col w-full gap-3">
+              <InstructionCard
+                stepNumber={1}
+                title="upload your input and reference audios"
+                description="the system will analyse how closely your input audio matches the vocal techniques in the uploaded/recorded reference audio."
+              />
+              <UploadAudioCard
+                label="input audio"
+                onAudioSourceChange={(source) =>
+                  handleAudioSourceChange(source, "user")
+                }
+                onAudioDataChange={(data) =>
+                  handleAudioDataChange(data, "user")
+                }
+              />
+              <UploadAudioCard
+                label="reference audio"
+                onAudioSourceChange={(source) =>
+                  handleAudioSourceChange(source, "reference")
+                }
+                onAudioDataChange={(data) =>
+                  handleAudioDataChange(data, "reference")
+                }
+              />
+            </div>
+            <div className="self-stretch w-px bg-darkgray/70"></div>
+            <div className="flex flex-col w-1/3 gap-3">
+              <InstructionCard
+                stepNumber={2}
+                title="select vocal specifics"
+                description="the system will use this information to calibrate the analysis."
+              />
+              <div className="flex flex-row w-full gap-2">
+                <MultiSelectCard
+                  question="select voice type of input audio:"
+                  options={["bass", "tenor", "alto", "soprano"]}
+                  allowOther={false}
+                  background_color="bg-white/10"
+                  onChange={(selected) => setSelectedVoiceType(selected)}
+                />
+                <MultiSelectCard
+                  question="select target vocal techniques:"
+                  options={[
+                    "vibrato",
+                    "straight",
+                    "trill",
+                    "trillo",
+                    "breathy tone",
+                    "belting tone",
+                    "spoken tone",
+                    "inhaled singing",
+                    "vocal fry",
+                  ]}
+                  allowOther={false}
+                  background_color="bg-white/10"
+                  onChange={(selected) => setSelectedTechniques(selected)}
+                />
+              </div>
+            </div>
           </div>
           <div className="pt-8">
             <SecondaryButton
-              onClick={() => {
-                setShowUploadAudio(false);
-                setAnalyzeAudio(true);
-              }}
-              className="bg-darkpink/70 hover:bg-darkpink/100"
+              className={`h-fit text-xl transition-all duration-200 ${
+                !isFormValid && "opacity-50 cursor-not-allowed"
+              }`}
+              onClick={handleAnalyzeClick}
             >
               proceed to audio analysis
             </SecondaryButton>

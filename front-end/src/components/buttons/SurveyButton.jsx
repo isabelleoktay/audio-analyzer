@@ -5,9 +5,13 @@ const SurveyButton = ({
   isActive = true,
   isSelected = false,
 }) => {
+  const handleClick = (e) => {
+    onClick?.(e);
+  };
+
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       disabled={!isActive}
       className={`
         rounded-full px-4 py-2 text-sm font-semibold text-blueblack transition-all duration-200 cursor-pointer

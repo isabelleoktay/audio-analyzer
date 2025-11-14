@@ -1,6 +1,6 @@
 import { useState } from "react";
 import UploadAudioCard from "../components/cards/UploadAudioCard";
-import SurveyMultiSelect from "../components/survey/SurveyMultiSelect";
+// import SurveyMultiSelect from "../components/survey/SurveyMultiSelect";
 import SecondaryButton from "../components/buttons/SecondaryButton";
 
 const VOICE_OPTIONS = [
@@ -96,12 +96,12 @@ const MultiAudio = () => {
         />
       </div>
 
-      <SurveyMultiSelect
+      {/* <SurveyMultiSelect
         question="select target technique"
         options={VOICE_OPTIONS}
         columns={3}
         allowOther={false}
-      />
+      /> */}
 
       <SecondaryButton
         className={`h-fit text-xl tracking-widest transition-all duration-200 ${

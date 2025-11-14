@@ -24,20 +24,12 @@ const SurveySection = ({
 }) => {
   const [answers, setAnswers] = useState(savedAnswers || {});
 
-  useEffect(() => {
-    if (
-      savedAnswers &&
-      JSON.stringify(savedAnswers) !== JSON.stringify(answers)
-    ) {
-      setAnswers(savedAnswers);
-    }
-  }, [savedAnswers]);
-
   const handleAnswerChange = useCallback((question, answer) => {
     setAnswers((prev) => ({ ...prev, [question]: answer }));
   }, []);
 
   const handleSubmit = () => {
+    console.log(answers);
     onSubmit(answers);
   };
 
@@ -50,7 +42,7 @@ const SurveySection = ({
         </h2>
       )}
 
-      {config.map((item, index) => {
+      {config.map((item) => {
         const Component = componentMap[item.type];
         if (!Component) return null; // skip unknown types
         return (
