@@ -12,7 +12,7 @@ export const createAxes = (
 ) => {
   // Setup yAxis
   let yAxis;
-  if (feature === "pitch" || feature === "vibrato") {
+  if (feature === "pitch") {
     const { noteTicks } = generateNoteTicks(yDomain);
 
     yAxis = d3

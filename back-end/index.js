@@ -7,6 +7,9 @@ import morgan from "morgan";
 
 import uploadAudioRouter from "./routes/uploadAudioRoutes.js";
 import uploadTestSubjectRouter from "./routes/uploadTestSubjectRoutes.js";
+import uploadFeedbackRouter from "./routes/uploadFeedbackRoutes.js";
+import uploadMusaVoiceSessionRouter from "./routes/uploadMusaVoiceSessionRoutes.js";
+
 import connectDB from "./db.js";
 
 dotenv.config();
@@ -37,6 +40,8 @@ app.get("/api/", (_, res) => {
 // Register routers for handling specific API routes
 app.use("/api", uploadAudioRouter);
 app.use("/api", uploadTestSubjectRouter);
+app.use("/api", uploadFeedbackRouter);
+app.use("/api", uploadMusaVoiceSessionRouter);
 
 const port = process.env.PORT || 5000;
 

@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import SurveySingleSelect from "./SurveySingleSelect";
-import SurveyMultiSelect from "./SurveyMultiSelect";
 import SurveyMultiScale from "./SurveyMultiScale";
 import SurveyTextAnswer from "./SurveyTextAnswer";
 import SurveyStatementRating from "./SurveyStatementRating";
 import SecondaryButton from "../buttons/SecondaryButton";
+import MultiSelectCard from "../cards/MultiSelectCard.jsx";
 
 const componentMap = {
   singleselect: SurveySingleSelect,
-  multiselect: SurveyMultiSelect,
+  multiselect: MultiSelectCard,
   multiscale: SurveyMultiScale,
   textAnswer: SurveyTextAnswer,
   statementRating: SurveyStatementRating,
@@ -25,14 +25,17 @@ const SurveySection = ({
   const [answers, setAnswers] = useState(savedAnswers || {});
 
   useEffect(() => {
-    if (savedAnswers) {
+    if (
+      savedAnswers &&
+      JSON.stringify(savedAnswers) !== JSON.stringify(answers)
+    ) {
       setAnswers(savedAnswers);
     }
   }, [savedAnswers]);
 
-  const handleAnswerChange = (question, answer) => {
+  const handleAnswerChange = useCallback((question, answer) => {
     setAnswers((prev) => ({ ...prev, [question]: answer }));
-  };
+  }, []);
 
   const handleSubmit = () => {
     onSubmit(answers);
@@ -52,7 +55,7 @@ const SurveySection = ({
         if (!Component) return null; // skip unknown types
         return (
           <Component
-            key={index}
+            key={item.question}
             {...item}
             onChange={(val) => handleAnswerChange(item.question, val)}
             value={answers[item.question]}

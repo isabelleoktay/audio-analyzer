@@ -17,7 +17,8 @@ export const analysisButtonConfig = {
     { type: "left", label: "dynamics" },
     { type: "center", label: "pitch" },
     { type: "center", label: "phonation" },
-    { type: "center", label: "vibrato" },
+    { type: "center", label: "vocal tone" },
+    { type: "center", label: "pitch mod." },
     { type: "right", label: "tempo" },
   ],
   polyphonic: [
