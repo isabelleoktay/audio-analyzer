@@ -80,12 +80,12 @@ const NavBar = ({
                 label: "analyzer",
                 active: isActive("/"),
               },
-              {
-                type: "center",
-                to: "/multi-audio",
-                label: "multi audio",
-                active: isActive("/multi-audio"),
-              },
+              // {
+              //   type: "center",
+              //   to: "/multi-audio",
+              //   label: "multi audio",
+              //   active: isActive("/multi-audio"),
+              // },
               {
                 type: "center",
                 to: "/musa-voice",
@@ -172,12 +172,12 @@ const NavBar = ({
                   label: "analyzer",
                   active: isActive("/"),
                 },
-                {
-                  type: "center",
-                  to: "/multi-audio",
-                  label: "multi audio",
-                  active: isActive("/multi-audio"),
-                },
+                // {
+                //   type: "center",
+                //   to: "/multi-audio",
+                //   label: "multi audio",
+                //   active: isActive("/multi-audio"),
+                // },
                 {
                   type: "center",
                   to: "/musa-voice",

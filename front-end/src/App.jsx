@@ -129,10 +129,10 @@ const App = () => {
                   path="/testing"
                   element={<Testing setUploadsEnabled={setUploadsEnabled} />}
                 />
-                <Route
+                {/* <Route
                   path="/multi-audio"
                   element={<MultiAudio setUploadsEnabled={setUploadsEnabled} />}
-                />
+                /> */}
                 <Route path="/how-to-use" element={<HowToUse />} />
                 <Route path="/musa-voice" element={<MusaVoice />} />
                 <Route path="/musa-feedback" element={<FeedbackForm />} />

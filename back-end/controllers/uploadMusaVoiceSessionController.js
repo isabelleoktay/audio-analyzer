@@ -13,16 +13,6 @@ const uploadMusaVoiceSession = async (req, res) => {
   }
 
   try {
-    // Check if session already exists (to prevent duplicates)
-    const existingSession = await MusaVoiceSession.findOne({ sessionId });
-
-    if (existingSession) {
-      return res.status(409).json({
-        error: "Session with this ID already exists",
-        sessionId: sessionId,
-      });
-    }
-
     // Create a new MusaVoice session document
     const newSession = new MusaVoiceSession({
       sessionId,
