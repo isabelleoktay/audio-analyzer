@@ -28,7 +28,7 @@ def get_cached_or_calculated_dynamics(audio_bytes, sample_rate=44100, return_pat
         if '/audio/' in audio_url:
             filename = audio_url.split('/audio/')[-1]
             file_path = os.path.join(current_app.config['AUDIO_FOLDER'], filename)
-            
+
             if not os.path.exists(file_path):
                 print(f"Cached audio file {file_path} no longer exists, recalculating...")
             else:
@@ -37,17 +37,17 @@ def get_cached_or_calculated_dynamics(audio_bytes, sample_rate=44100, return_pat
                 cached_audio = np.array(audio_cache["dynamics"]["audio"]) if audio_cache["dynamics"]["audio"] is not None else None
                 cached_dynamics = np.array(audio_cache["dynamics"]["dynamics"]) if audio_cache["dynamics"]["dynamics"] is not None else None
                 cached_smoothed = np.array(audio_cache["dynamics"]["smoothed_dynamics"]) if audio_cache["dynamics"]["smoothed_dynamics"] is not None else None
-                
+
                 return (cached_audio, audio_cache["dynamics"]["audio_url"], 
                         audio_cache["dynamics"]["sr"], cached_dynamics, cached_smoothed,
                         audio_cache["dynamics"]["highlighted_section"], 
                         audio_cache["dynamics"]["x_axis"])
-    
+
     print(f"Loading audio for dynamics at {sample_rate}Hz")
-    audio, sr, audio_url, error = load_and_process_audio(audio_bytes, sample_rate=sample_rate, return_path=return_path)
+    audio, sr, audio_url, __, error = load_and_process_audio(audio_bytes, sample_rate=sample_rate, return_path=return_path)
     if error:
         return None, None, None, None, None, None, error
-    
+
     # Calculate RMS values
     rms = librosa.feature.rms(y=audio, frame_length=N_FFT, hop_length=HOP_LENGTH)
     data_len = rms.shape[1]

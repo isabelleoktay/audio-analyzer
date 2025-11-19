@@ -4,13 +4,14 @@ const musaVoiceSessionSchema = new mongoose.Schema({
   sessionId: {
     type: String,
     required: true,
+    unique: true,
   },
   userToken: {
     type: String,
-    required: false,
+    required: false, // Optional since user might not have a token
   },
   surveyAnswers: {
-    type: mongoose.Schema.Types.Mixed,
+    type: mongoose.Schema.Types.Mixed, // Stores the nested survey answers object
     required: true,
   },
   timestamp: {

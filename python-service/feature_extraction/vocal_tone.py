@@ -23,7 +23,7 @@ def extract_vocal_tone(audio_path, gender):
         audio_path,
         best_model_weights_path=best_whisper_model_weights_path,
         classify = "timbre",
-        model_selected_data = gender,
+        gender = gender,
     )
 
     # get CLAP predictions 
@@ -31,7 +31,6 @@ def extract_vocal_tone(audio_path, gender):
         audio_path,
         best_model_weights_path=best_clap_model_weights_path,
         classify = "timbre",
-        model_selected_data = gender,
     )
 
     # return both 

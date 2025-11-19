@@ -56,6 +56,11 @@ const OverlayGraphWithWaveform = ({
     return Math.max(0, minPositiveValue - 10);
   };
 
+  useEffect(() => {
+    console.log(referenceFeatureData);
+    console.log(inputFeatureData);
+  } , [referenceFeatureData, inputFeatureData]);
+
   // Active feature data
   const inputFeature = inputFeatureData?.[selectedDataIndex] || null;
   const referenceFeature = referenceFeatureData?.[selectedDataIndex] || null;

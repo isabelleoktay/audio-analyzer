@@ -5,40 +5,39 @@ def process_pitch_mod(audio_bytes, gender):
     clear_cache_if_new_file(audio_bytes)
 
     # Load & preprocess audio
-    audio, sr, audio_url, error = load_and_process_audio(audio_bytes, sample_rate=16000)
+    audio, sr, audio_url, audio_path, error = load_and_process_audio(audio_bytes, sample_rate=16000)
     if error:
         return None, error
 
     audio_duration = len(audio) / sr
 
     # Run both models (Whisper + CLAP)
-    whisper_class_names, whisper_predictions, clap_class_names, clap_predictions = extract_pitch_mod(audio_url, gender)
+    whisper_class_names, whisper_predictions, clap_class_names, clap_predictions = extract_pitch_mod(audio_path, gender)
 
     # Transpose predictions so each class has a vector of probabilities over time
     transposed_whisper = whisper_predictions.T
     transposed_clap = clap_predictions.T
 
     result = {
-        "pitch mod.": {
-            "audioUrl": audio_url,
-            "duration": audio_duration,
-            "data": {
-                "CLAP": [
-                    {
-                        "label": label,
-                        "data": transposed_clap[i].tolist(),
-                    }
-                    for i, label in enumerate(clap_class_names)
-                ],
-                "Whisper": [
-                    {
-                        "label": label,
-                        "data": transposed_whisper[i].tolist(),
-                    }
-                    for i, label in enumerate(whisper_class_names)
-                ],
-            },
-        }
+        'data': {
+            'CLAP': [
+                {
+                    'label': label,
+                    'data': transposed_clap[i].tolist(),
+                }
+                for i, label in enumerate(clap_class_names)
+            ],
+            'Whisper': [
+                {
+                    'label': label,
+                    'data': transposed_whisper[i].tolist(),
+                }
+                for i, label in enumerate(whisper_class_names)
+            ],
+        },
+        'sample_rate': sr,
+        'audio_url': audio_url,
+        'duration': audio_duration
     }
 
     return result, None

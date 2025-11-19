@@ -46,9 +46,11 @@ def whisper_extract_features_and_predict(
     audio_path: str,
     best_model_weights_path: str,
     classify: str = "pitch",
-    gender: str = "male",
-    whisper_base_model_name: str = "openai/whisper-base",
+    gender: str = "female",
     sample_rate: int = 16000,
+    window_len_secs: float = VTC_FRAME_DURATION_SEC,
+    overlap: float = VTC_OVERLAP,
+    whisper_base_model_name: str = "openai/whisper-base",
     device: str = "cuda" if torch.cuda.is_available() else "cpu",
 ):
     """
@@ -56,13 +58,15 @@ def whisper_extract_features_and_predict(
     loaded from a .pth checkpoint (trained in PyTorch).
     """
 
+    logging.info("Extracting Whisper features and predicting...")
+
     # Load label encoder
     label_encoder_path = os.path.join(
         "./models/Whisper",
-        f"{classify}_{gender}_{str(VTC_FRAME_DURATION_SEC).replace(".", "_")}_label_encoder.joblib",
+        f"{classify}_{gender}_{str(window_len_secs).replace('.', '_')}_label_encoder.joblib",
     )
 
-    logging.info(f"Loading label encoder from file {label_encoder_path}")
+    logging.info("Loading label encoder from file %s", label_encoder_path)
     label_encoder = joblib.load(label_encoder_path)
     num_classes = len(label_encoder.classes_)
     class_names = label_encoder.classes_
@@ -86,8 +90,8 @@ def whisper_extract_features_and_predict(
 
     # Load and segment the audio file
     audio, __ = librosa.load(audio_path, sr=sample_rate)
-    window_size = int(VTC_FRAME_DURATION_SEC * sample_rate)
-    step_size = int(window_size * (1 - VTC_OVERLAP))
+    window_size = int(window_len_secs * sample_rate)
+    step_size = int(window_size * (1 - overlap))
     starts = np.arange(0, len(audio) - window_size + 1, step_size)
 
     all_probs, window_times = [], []

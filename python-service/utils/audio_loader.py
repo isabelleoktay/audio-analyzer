@@ -145,8 +145,14 @@ def load_and_process_audio(file_bytes, sample_rate=44100, return_path=True):
         
         file_hash = get_file_hash(file_bytes)
         audio_url = get_audio_url(audio, file_hash, sr=sr)
+
+        # SAVE AUDIO TO TEMP FILE for CLAP and Whisper)
+        temp_wav = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
+        sf.write(temp_wav.name, audio, sr)
+        audio_path = temp_wav.name  
+
         
-        return audio, sr, audio_url, None
+        return audio, sr, audio_url, audio_path, None
         
     except Exception as e:
         print(f"Error loading audio: {e}")

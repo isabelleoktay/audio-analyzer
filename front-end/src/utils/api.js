@@ -61,7 +61,7 @@ const startNewSession = async () => {
   }
 };
 
-const processFeatures = async (audioFile, feature) => {
+const processFeatures = async (audioFile, feature, voiceType) => {
   const formData = new FormData();
   formData.append("audioFile", audioFile);
 
@@ -93,7 +93,6 @@ const processFeatures = async (audioFile, feature) => {
       );
       return response.data;
     } else if (feature === "vocal tone") {
-      const voiceType = "tenor"; // TO DO: needs to be handled properly - get from frontend selection
       formData.append("voiceType", voiceType);
 
       const response = await pythonClient.post(

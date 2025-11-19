@@ -6,7 +6,7 @@ from config import *
 
 def process_tempo(audio_bytes):
     clear_cache_if_new_file(audio_bytes)
-    audio, sr, audio_url, error = load_and_process_audio(audio_bytes, sample_rate=44100)
+    audio, sr, audio_url, __, error = load_and_process_audio(audio_bytes, sample_rate=44100)
 
     if error:
         return None, None, None, error

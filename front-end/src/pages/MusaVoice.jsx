@@ -15,7 +15,7 @@ import SimilarityScoreCard from "../components/cards/SimilarityScoreCard";
 import SelectedVocalTechniquesCard from "../components/cards/SelectedVocalTechniquesCard";
 import MultiSelectCard from "../components/cards/MultiSelectCard.jsx";
 import InstructionCard from "../components/cards/InstructionCard.jsx";
-import { mockInputFeatures, mockReferenceFeatures } from "../mock/index.js";
+// import { mockInputFeatures, mockReferenceFeatures } from "../mock/index.js";
 
 /**
  * The `MusaVoice` component is the main page for analyzing vocal audio files.
@@ -23,8 +23,6 @@ import { mockInputFeatures, mockReferenceFeatures } from "../mock/index.js";
  *
  * @component
  * @param {Object} props - The props passed to the component.
- * @param {File} props.uploadedFile - The uploaded audio file.
- * @param {Function} props.setUploadedFile - Function to update the uploaded file.
  * @param {boolean} props.inRecordMode - Whether a user is recording audio to be uploaded.
  * @param {Function} props.setInRecordMode - Function to toggle recording mode.
  * @param {Blob} props.audioBlob - The audio blob data for recording.
@@ -39,27 +37,25 @@ import { mockInputFeatures, mockReferenceFeatures } from "../mock/index.js";
  * @param {Function} props.setInputAudioFeatures - Function to update the input audio features.
  * @param {Object} props.referenceAudioFeatures - Extracted features from the input audio.
  * @param {Function} props.setReferenceAudioFeatures - Function to update the input audio features.
- * @param {string} props.audioUuid - A unique identifier for the audio session.
- * @param {Function} props.setAudioUuid - Function to update the audio UUID.
+ * @param {Function} props.setSelectedAnalysisFeature - Function to update the selected analysis feature.
+ * @param {string} props.inputAudioUuid - A unique identifier for the audio session.
+ * @param {Function} props.setInputAudioUuid - Function to update the audio UUID.
  * @param {boolean} props.uploadsEnabled - Whether uploads are enabled.
  * @param {string} props.tooltipMode - The mode for displaying tooltips.
  * @returns {JSX.Element} The rendered `Analyzer` component.
  */
 
 const MusaVoice = ({
-  uploadedFile = "audio/development/input.wav",
-  setUploadedFile,
-  inRecordMode,
-  setInRecordMode,
-  audioBlob,
-  setAudioBlob,
-  inputAudioName,
-  setInputAudioName,
-  audioUuid,
-  setAudioUuid,
+  inputAudioUuid,
+  setInputAudioUuid,
   uploadsEnabled,
   tooltipMode,
-  setUploadsEnabled,
+  inputAudioFeatures,
+  setInputAudioFeatures,
+  referenceAudioFeatures,
+  setReferenceAudioFeatures,
+  selectedAnalysisFeature,
+  setSelectedAnalysisFeature,
 }) => {
   const [showIntro, setShowIntro] = useState(true);
   const [showSurvey, setShowSurvey] = useState(true);
@@ -73,13 +69,6 @@ const MusaVoice = ({
   const [userAudioSource, setUserAudioSource] = useState(null);
   const [userAudioData, setUserAudioData] = useState(null);
 
-  const [selectedAnalysisFeature, setSelectedAnalysisFeature] =
-    useState("vocal tone");
-  const [inputAudioFeatures, setInputAudioFeatures] =
-    useState(mockInputFeatures);
-  const [referenceAudioFeatures, setReferenceAudioFeatures] = useState(
-    mockReferenceFeatures
-  );
   const [selectedModel, setSelectedModel] = useState("CLAP");
   const [sessionId, setSessionId] = useState(null);
   const [userToken, setUserToken] = useState(null);
@@ -139,6 +128,7 @@ const MusaVoice = ({
 
   const handleAnalysisFeatureSelect = (feature) => {
     setSelectedAnalysisFeature(feature);
+    console.log("Selected analysis feature:", feature);
   };
 
   const handleAudioSourceChange = (source, type) => {
@@ -154,8 +144,10 @@ const MusaVoice = ({
     console.log(`${type} audio data updated:`, audioData);
     if (type === "reference") {
       setReferenceAudioData(audioData);
+      console.log("REFERENCE AUDIO DATA:", referenceAudioData);
     } else if (type === "user") {
       setUserAudioData(audioData);
+      console.log("INPUT AUDIO DATA:", userAudioData);
     }
   };
 
@@ -207,13 +199,37 @@ const MusaVoice = ({
   //       </h1>
   //     ) :
 
+  const getAudioFileOrBlob = (audioData) => {
+    if (!audioData) return null;
+
+    if (audioData.source === "upload" && audioData.file) {
+      return audioData.file;
+    }
+    if (audioData.source === "recording" && audioData.blob) {
+      // For recorded audio, the backend needs the Blob object
+      return audioData.blob;
+    }
+    return null;
+  };
+
+  const userFileOrBlob = getAudioFileOrBlob(userAudioData);
+  const referenceFileOrBlob = getAudioFileOrBlob(referenceAudioData);
+
+  useEffect(() => {
+    console.log("USER AUDIO DATA CHANGED userFileOrBlob:", userFileOrBlob);
+    console.log(
+      "REFERENCE AUDIO DATA CHANGED referenceFileOrBlob:",
+      referenceFileOrBlob
+    );
+  }, [userFileOrBlob, referenceFileOrBlob]);
+
   return (
     <div className="flex items-center justify-center min-h-screen">
       {showSurvey ? (
         <div className="w-full max-w-4xl p-8 rounded-xl pt-20">
           <SurveySection
             config={musaVoiceSurveyConfig}
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmitSurvey}
           />
         </div>
       ) : showUploadAudio ? (
@@ -300,24 +316,30 @@ const MusaVoice = ({
             </SecondaryButton>
           </div>
         </div>
-      ) : analyzeAudio && uploadedFile ? (
+      ) : analyzeAudio && userFileOrBlob && referenceFileOrBlob ? (
         <div className="flex flex-col h-auto items-center justify-center min-h-screen text-lightgray px-8 pt-20">
           <AnalysisButtons
             selectedInstrument={"voice"}
             selectedAnalysisFeature={selectedAnalysisFeature}
             onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
-            uploadedFile={uploadedFile}
-            audioFeatures={inputAudioFeatures}
-            setAudioFeatures={setInputAudioFeatures}
-            audioUuid={audioUuid}
-            setAudioUuid={setAudioUuid}
+            inputFile={userFileOrBlob}
+            referenceFile={referenceFileOrBlob}
+            inputAudioFeatures={inputAudioFeatures}
+            setInputAudioFeatures={setInputAudioFeatures}
+            referenceAudioFeatures={referenceAudioFeatures}
+            setReferenceAudioFeatures={setReferenceAudioFeatures}
+            inputAudioUuid={inputAudioUuid}
+            setInputAudioUuid={setInputAudioUuid}
             uploadsEnabled={uploadsEnabled}
+            voiceType={selectedVoiceType}
           />
 
           {selectedAnalysisFeature && (
             <div className="flex flex-col w-full lg:w-fit pt-6 space-y-4">
               <div className="text-xl font-semibold text-lightpink mb-1">
-                {uploadedFile.name}
+                {userAudioData?.file?.name ||
+                  userAudioData?.name ||
+                  "Input Audio"}
               </div>
 
               <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 pt-10">

@@ -9,7 +9,7 @@ import {
   HowToUse,
   NotFound,
   MusaVoice,
-  MultiAudio,
+  //   MultiAudio,
   FeedbackForm,
 } from "./pages";
 
@@ -28,27 +28,29 @@ const App = () => {
 
   const [selectedInstrument, setSelectedInstrument] = useState(null);
   const [selectedAnalysisFeature, setSelectedAnalysisFeature] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [inputFile, setInputFile] = useState(null);
+  const [referenceFile, setReferenceFile] = useState(null);
   const [inRecordMode, setInRecordMode] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioName, setAudioName] = useState("untitled.wav");
   const [audioURL, setAudioURL] = useState(null);
-  const [audioUuid, setAudioUuid] = useState(() => uuidv4());
-  const [audioFeatures, setAudioFeatures] = useState({});
+  const [inputAudioUuid, setInputAudioUuid] = useState(() => uuidv4());
+  const [inputAudioFeatures, setInputAudioFeatures] = useState({});
+  const [referenceAudioFeatures, setReferenceAudioFeatures] = useState({});
   const [uploadsEnabled, setUploadsEnabled] = useState(true);
 
   // Reset the application state to its initial values.
   const handleReset = () => {
     setSelectedInstrument(null);
-    setUploadedFile(null);
+    setInputFile(null);
     setInRecordMode(false);
     setAudioBlob(null);
     setAudioName("untitled.wav");
     setAudioURL(null);
     setSelectedAnalysisFeature(null);
-    setAudioFeatures({});
+    setInputAudioFeatures({});
     setTooltipMode("inactive");
-    setAudioUuid(() => uuidv4());
+    setInputAudioUuid(() => uuidv4());
     setUploadsEnabled(false);
   };
 
@@ -101,8 +103,10 @@ const App = () => {
                     <Analyzer
                       selectedInstrument={selectedInstrument}
                       setSelectedInstrument={setSelectedInstrument}
-                      uploadedFile={uploadedFile}
-                      setUploadedFile={setUploadedFile}
+                      inputFile={inputFile}
+                      setInputFile={setInputFile}
+                      referenceFile={referenceFile}
+                      setReferenceFile={setReferenceFile}
                       inRecordMode={inRecordMode}
                       setInRecordMode={setInRecordMode}
                       setAudioBlob={setAudioBlob}
@@ -113,12 +117,14 @@ const App = () => {
                       audioURL={audioURL}
                       selectedAnalysisFeature={selectedAnalysisFeature}
                       setSelectedAnalysisFeature={setSelectedAnalysisFeature}
-                      audioFeatures={audioFeatures}
-                      setAudioFeatures={setAudioFeatures}
+                      inputAudioFeatures={inputAudioFeatures}
+                      setInputAudioFeatures={setInputAudioFeatures}
+                      referenceAudioFeatures={referenceAudioFeatures}
+                      setReferenceAudioFeatures={setReferenceAudioFeatures}
                       handleReset={handleReset}
                       tooltipMode={tooltipMode}
-                      audioUuid={audioUuid}
-                      setAudioUuid={setAudioUuid}
+                      inputAudioUuid={inputAudioUuid}
+                      setInputAudioUuid={setInputAudioUuid}
                       uploadsEnabled={uploadsEnabled}
                       setUploadsEnabled={setUploadsEnabled}
                     />

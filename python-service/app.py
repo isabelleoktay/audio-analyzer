@@ -16,6 +16,8 @@ from routes.audio_route import audio_blueprint
 from routes.vibrato_route import vibrato_blueprint
 from routes.phonation_route import phonation_blueprint
 from routes.auth_route import auth_blueprint
+from routes.vocal_tone_route import vocal_tone_blueprint
+from routes.pitch_mod_route import pitch_mod_blueprint
 
 app = Flask(__name__)
 
@@ -46,6 +48,8 @@ app.register_blueprint(audio_blueprint)
 app.register_blueprint(vibrato_blueprint)
 app.register_blueprint(phonation_blueprint)
 app.register_blueprint(auth_blueprint)
+app.register_blueprint(vocal_tone_blueprint)
+app.register_blueprint(pitch_mod_blueprint)
 
 @app.route('/python-service/')
 def home():

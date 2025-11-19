@@ -22,7 +22,7 @@ def extract_pitch_mod(audio_path, gender):
         audio_path,
         best_model_weights_path=best_whisper_model_weights_path,
         classify = "pitch",
-        model_selected_data = gender,
+        gender = gender,
     )
 
     # get CLAP predictions 
@@ -30,7 +30,6 @@ def extract_pitch_mod(audio_path, gender):
         audio_path,
         best_model_weights_path=best_clap_model_weights_path,
         classify = "pitch",
-        model_selected_data = gender,
     )
 
      # return both 

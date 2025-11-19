@@ -3,13 +3,14 @@ import torch
 import numpy as np
 import torch.nn.functional as F
 import librosa
-import os
+import logging
 import tempfile
-import numpy as np
 import soundfile as sf
 from msclap import CLAP
 from sklearn.preprocessing import LabelEncoder
 from config import VTC_FRAME_DURATION_SEC, VTC_OVERLAP
+
+logging.basicConfig(level=logging.INFO)
 
 
 class ClapClassifier(torch.nn.Module):
@@ -107,15 +108,19 @@ def clap_extract_features_and_predict(
     a trained CLAP classifier loaded from a .pth checkpoint.
     """
 
+    logging.info("Extracting CLAP features and predicting...")
+
     # Load label encoder
     label_encoder_path = os.path.join(
-        "/python-service/models/CLAP/",
-        f"{classify}_{str(VTC_FRAME_DURATION_SEC).replace(".", "_")}_label_encoder_classes_gendered.npy",
+        "./models/CLAP/",
+        f"{classify}_{str(window_len_secs).replace('.', '_')}_label_encoder_gendered.npy",
     )
 
     if not os.path.exists(label_encoder_path):
         raise FileNotFoundError(f"Label encoder not found: {label_encoder_path}")
 
+    logging.info("Loading label encoder from file %s", label_encoder_path)
+    
     class_names = np.load(label_encoder_path, allow_pickle=True)
     num_classes = len(class_names)
     le = LabelEncoder()

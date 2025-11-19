@@ -10,26 +10,20 @@ __all__ = [
     'CLAP_MALE_PITCH_MODEL_PATH',
     'CLAP_FEMALE_PITCH_MODEL_PATH',
     'CLAP_MALE_TIMBRE_MODEL_PATH',
-    'CLAP_FEMALE_FEMALE_MODEL_PATH',
+    'CLAP_FEMALE_TIMBRE_MODEL_PATH',
     'WHISPER_MALE_PITCH_MODEL_PATH',
     'WHISPER_FEMALE_PITCH_MODEL_PATH',
     'WHISPER_MALE_TIMBRE_MODEL_PATH',
     'WHISPER_FEMALE_TIMBRE_MODEL_PATH',
-    
+
     # CREPE settings
     'CREPE_HOP_SIZE_MS',
     'CREPE_HOP_DURATION_SEC',
-    
+
     # Phonation settings
     'PHONATION_DIMENSION',
     'PHONATION_FRAME_DURATION_SEC', 
     'PHONATION_VGGISH_URL',
-    
-    # CLAP settings
-    
-
-    # Whisper settings 
-
 
     # Audio processing settings
     'HOP_SIZE',
@@ -39,10 +33,10 @@ __all__ = [
     'WINDOW_PERCENTAGE',
     'HOP_PERCENTAGE',
     'SEGMENT_PERCENTAGE',
-    
+
     # Other
     'LOOKUP_TABLE',
-    
+
     # Redis function
     'get_redis_client',
 

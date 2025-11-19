@@ -49,7 +49,7 @@ def get_cached_or_calculated_pitch(audio_bytes, sample_rate=16000, method="crepe
     
     print(f"Loading audio for pitch at {sample_rate}Hz")
     # Load audio at 16000 Hz for pitch extraction
-    audio, sr, audio_url, error = load_and_process_audio(audio_bytes, sample_rate=16000)
+    audio, sr, audio_url, __, error = load_and_process_audio(audio_bytes, sample_rate=16000)
     if error:
         return None, None, None, None, None, None, None, None, error
 

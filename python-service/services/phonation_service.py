@@ -5,7 +5,7 @@ def process_phonation(audio_bytes):
     clear_cache_if_new_file(audio_bytes)
 
     # 1) Load & trim audio + get URL
-    audio, sr, audio_url, error = load_and_process_audio(audio_bytes, sample_rate=16000)
+    audio, sr, audio_url, __, error = load_and_process_audio(audio_bytes, sample_rate=16000)
     if error:
         return None, error
     
