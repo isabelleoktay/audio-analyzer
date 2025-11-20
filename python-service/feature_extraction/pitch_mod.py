@@ -16,7 +16,7 @@ def extract_pitch_mod(audio_path, gender):
         best_clap_model_weights_path = CLAP_FEMALE_PITCH_MODEL_PATH
     else:
         raise ValueError(f"Gender {gender} not recognised.")
-    
+
     # Get Whisper predictions 
     whisper_class_names, whisper_probs_array, __ = whisper_extract_features_and_predict(
         audio_path,
@@ -26,11 +26,11 @@ def extract_pitch_mod(audio_path, gender):
     )
 
     # get CLAP predictions 
-    clap_class_names, clap_pros_array, __ = clap_extract_features_and_predict(
+    clap_class_names, clap_probs_array, __ = clap_extract_features_and_predict(
         audio_path,
         best_model_weights_path=best_clap_model_weights_path,
         classify = "pitch",
     )
 
      # return both 
-    return whisper_class_names, whisper_probs_array, clap_class_names, clap_pros_array 
+    return whisper_class_names, whisper_probs_array, clap_class_names, clap_probs_array 

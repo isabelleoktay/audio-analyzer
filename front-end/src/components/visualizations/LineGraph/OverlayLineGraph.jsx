@@ -258,7 +258,14 @@ const OverlayLineGraph = ({
 
           if (distance < threshold || (isSilence && my > innerHeight - 30)) {
             const displayText = isSilence ? "Silence" : dVal.toFixed(2);
-            updateTooltip(focus, xCoord, yCoord, displayText, isSilence);
+            updateTooltip(
+              focus,
+              xCoord,
+              yCoord,
+              displayText,
+              isSilence,
+              innerHeight
+            );
           } else hideTooltip(focus);
         } else hideTooltip(focus);
       });

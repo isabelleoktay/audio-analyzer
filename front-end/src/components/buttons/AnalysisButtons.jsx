@@ -22,12 +22,12 @@ const AnalysisButtons = ({
   uploadsEnabled,
   voiceType,
 }) => {
-  useEffect(() => {
-    console.log(
-      "AnalysisButtons rendered with selectedInstrument:",
-      selectedInstrument
-    );
-  }, [selectedInstrument]);
+  //   useEffect(() => {
+  //     console.log(
+  //       "AnalysisButtons rendered with selectedInstrument:",
+  //       selectedInstrument
+  //     );
+  //   }, [selectedInstrument]);
 
   if (!analysisButtonConfig[selectedInstrument]) return null;
 
@@ -47,7 +47,7 @@ const AnalysisButtons = ({
         featureLabel,
         voiceType
       );
-      console.log(`Received ${featureLabel} features:`, featureResult);
+      //   console.log(`Received ${featureLabel} features:`, featureResult);
 
       let isDataInvalid = false;
 
@@ -59,8 +59,6 @@ const AnalysisButtons = ({
         // Simple features: expect data to be an array
         isDataInvalid = !Array.isArray(featureResult.data);
       } else {
-        // Complex features: expect object {CLAP: [...], Whisper: [...]}
-        console.log("Validating complex feature data structure");
         const clapData = featureResult.data["CLAP"];
         const whisperData = featureResult.data["Whisper"];
 

@@ -7,7 +7,7 @@ import RecordAudioSection from "../components/sections/RecordAudioSection.jsx";
 import FileUploadSection from "../components/sections/FileUploadSection.jsx";
 import AnalysisButtons from "../components/buttons/AnalysisButtons.jsx";
 import OverlayGraphWithWaveform from "../components/visualizations/OverlayGraphWithWaveform.jsx";
-import { TertiaryButton, ToggleButton } from "../components/buttons";
+import TertiaryButton from "../components/buttons/TertiaryButton.jsx";
 import Tooltip from "../components/text/Tooltip.jsx";
 import ConsentModal from "../components/modals/ConsentModal.jsx";
 import { instrumentButtons } from "../config/instrumentButtons.js";
@@ -124,7 +124,6 @@ const Analyzer = ({
   // Handles the selection of an audio analysis feature.
   const handleAnalysisFeatureSelect = (feature) => {
     setSelectedAnalysisFeature(feature);
-    console.log("Selected analysis feature:", feature);
   };
 
   // Downloads the currently recorded or uploaded audio file.
@@ -154,14 +153,6 @@ const Analyzer = ({
     // enable enabling uploads in main application
     setUploadsEnabled(true);
   }, [setUploadsEnabled]);
-
-  useEffect(() => {
-    console.log("Input File updated:", inputFile);
-  }, [inputFile]);
-
-  useEffect(() => {
-    console.log("inputAudioFeatures:", inputAudioFeatures);
-  }, [inputAudioFeatures]);
 
   return (
     <div className="min-h-screen w-full">
@@ -281,25 +272,10 @@ const Analyzer = ({
                               ?.duration
                           }
                           tooltipMode={tooltipMode}
+                          selectedModel={selectedModel}
+                          setSelectedModel={setSelectedModel}
                         />
                       </div>
-                      {["vocal tone", "pitch mod."].includes(
-                        selectedAnalysisFeature?.toLowerCase()
-                      ) && (
-                        <div>
-                          <ToggleButton
-                            question="Select Model:"
-                            options={["CLAP", "Whisper"]}
-                            allowOther={false}
-                            background_color="bg-white/10"
-                            onChange={(selected) => setSelectedModel(selected)}
-                            isMultiSelect={false}
-                            showToggle={false}
-                            miniVersion={true}
-                            selected={selectedModel}
-                          />
-                        </div>
-                      )}
                     </div>
                     <div className="flex w-full flex-col lg:flex-row justify-end gap-2 items-center mt-2">
                       <TertiaryButton

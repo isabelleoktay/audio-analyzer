@@ -17,7 +17,7 @@ WHISPER_FEMALE_PITCH_MODEL_PATH = "./models/Whisper/best_whisper_pitch_female_0_
 WHISPER_MALE_TIMBRE_MODEL_PATH = "./models/Whisper/best_whisper_timbre_male_0_5_model.pth"
 WHISPER_FEMALE_TIMBRE_MODEL_PATH = "./models/Whisper/best_whisper_timbre_female_0_5_model.pth"
 VTC_FRAME_DURATION_SEC = 0.5
-VTC_OVERLAP = 0.25
+VTC_OVERLAP = 0.75
 
 HOP_SIZE = 25
 HOP_LENGTH = 512

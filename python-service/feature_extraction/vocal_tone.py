@@ -27,11 +27,11 @@ def extract_vocal_tone(audio_path, gender):
     )
 
     # get CLAP predictions 
-    clap_class_names, clap_pros_array, __ = clap_extract_features_and_predict(
+    clap_class_names, clap_probs_array, __ = clap_extract_features_and_predict(
         audio_path,
         best_model_weights_path=best_clap_model_weights_path,
         classify = "timbre",
     )
 
     # return both 
-    return whisper_class_names, whisper_probs_array, clap_class_names, clap_pros_array
+    return whisper_class_names, whisper_probs_array, clap_class_names, clap_probs_array

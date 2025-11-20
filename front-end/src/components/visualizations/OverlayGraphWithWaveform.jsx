@@ -3,6 +3,7 @@ import OverlayLineGraph from "./LineGraph/OverlayLineGraph";
 import WaveformPlayer from "./WaveformPlayer";
 import LoadingSpinner from "../LoadingSpinner";
 import Tooltip from "../text/Tooltip";
+import ToggleButton from "../buttons/ToggleButton";
 
 const width = 800;
 const graphHeight = 400;
@@ -16,6 +17,8 @@ const OverlayGraphWithWaveform = ({
   inputAudioDuration,
   referenceAudioDuration,
   tooltipMode,
+  selectedModel,
+  setSelectedModel,
 }) => {
   const [selectedDataIndex, setSelectedDataIndex] = useState(0);
   const [chartState, setChartState] = useState(null);
@@ -55,11 +58,6 @@ const OverlayGraphWithWaveform = ({
     const minPositiveValue = Math.min(...positiveValues);
     return Math.max(0, minPositiveValue - 10);
   };
-
-  useEffect(() => {
-    console.log(referenceFeatureData);
-    console.log(inputFeatureData);
-  } , [referenceFeatureData, inputFeatureData]);
 
   // Active feature data
   const inputFeature = inputFeatureData?.[selectedDataIndex] || null;
@@ -300,6 +298,23 @@ const OverlayGraphWithWaveform = ({
                 />
               </div>
             </div>
+            {["vocal tone", "pitch mod."].includes(
+              selectedAnalysisFeature?.toLowerCase()
+            ) && (
+              <div>
+                <ToggleButton
+                  question="Select Model:"
+                  options={["CLAP", "Whisper"]}
+                  allowOther={false}
+                  background_color="bg-white/10"
+                  onChange={(selected) => setSelectedModel(selected)}
+                  isMultiSelect={false}
+                  showToggle={false}
+                  miniVersion={true}
+                  selected={selectedModel}
+                />
+              </div>
+            )}
           </>
         )
       )}
