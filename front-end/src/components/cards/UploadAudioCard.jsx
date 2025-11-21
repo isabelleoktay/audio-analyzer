@@ -66,7 +66,7 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
     );
 
     if (audioFiles.length > 0) {
-      console.log("Audio file(s) selected:", audioFiles);
+    //   console.log("Audio file(s) selected:", audioFiles);
       setSelectedFile(audioFiles[0]);
 
       // Only send data if upload is the selected source

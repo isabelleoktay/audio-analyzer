@@ -93,6 +93,12 @@ const OverlayLineGraph = ({
       createGradient(defs, "line-gradient", getDefaultLineGradientStops());
     }
 
+    createGradient(
+      defs,
+      "secondary-line-gradient",
+      getDefaultLineGradientStops(secondaryLineColor)
+    );
+
     let currentXScale = xScale;
 
     const chartGroup = g.append("g").attr("clip-path", "url(#chart-clip)");

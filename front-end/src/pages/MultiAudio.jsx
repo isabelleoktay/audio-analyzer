@@ -22,7 +22,7 @@ const MultiAudio = () => {
   const [userAudioData, setUserAudioData] = useState(null);
 
   const handleAudioSourceChange = (source, type) => {
-    console.log(`${type} audio source changed to:`, source);
+    // console.log(`${type} audio source changed to:`, source);
     if (type === "reference") {
       setReferenceAudioSource(source);
     } else if (type === "user") {

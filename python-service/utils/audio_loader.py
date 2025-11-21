@@ -152,8 +152,6 @@ def load_and_process_audio(file_bytes, sample_rate=44100, return_path=True):
         audio_path = temp_wav.name
 
         audio_duration = len(audio) / sr
-        print("Length of audio array:", len(audio))
-        print("audio duratio:", audio_duration)
 
         return audio, sr, audio_url, audio_path, None
         

@@ -84,12 +84,12 @@ const OverlayGraphWithWaveform = ({
               <li className="font-bold text-darkgray">reference audio</li>
             </ul>
             <WaveformPlayer
-              feature={inputFeature.label}
+              feature={referenceFeature.label}
               key={referenceAudioURL}
               audioUrl={referenceAudioURL}
               highlightedSections={
-                inputFeature.highlighted?.audio?.length > 0
-                  ? inputFeature.highlighted.audio
+                referenceFeature.highlighted?.audio?.length > 0
+                  ? referenceFeature.highlighted.audio
                   : []
               }
               waveColor="#E0E0E0"
@@ -99,7 +99,7 @@ const OverlayGraphWithWaveform = ({
                   ? referenceFrameToTime(
                       chartState.zoom.startIndex,
                       referenceAudioDuration,
-                      inputFeature.data.length
+                      referenceFeature.data.length
                     )
                   : 0
               }
@@ -108,7 +108,7 @@ const OverlayGraphWithWaveform = ({
                   ? referenceFrameToTime(
                       chartState.zoom.endIndex,
                       referenceAudioDuration,
-                      inputFeature.data.length
+                      referenceFeature.data.length
                     )
                   : referenceAudioDuration || undefined
               }
@@ -301,7 +301,7 @@ const OverlayGraphWithWaveform = ({
             {["vocal tone", "pitch mod."].includes(
               selectedAnalysisFeature?.toLowerCase()
             ) && (
-              <div>
+              <div className="flex justify-end w-full">
                 <ToggleButton
                   question="Select Model:"
                   options={["CLAP", "Whisper"]}

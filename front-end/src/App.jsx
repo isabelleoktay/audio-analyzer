@@ -140,7 +140,16 @@ const App = () => {
                   element={<MultiAudio setUploadsEnabled={setUploadsEnabled} />}
                 /> */}
                 <Route path="/how-to-use" element={<HowToUse />} />
-                <Route path="/musa-voice" element={<MusaVoice />} />
+                <Route
+                  path="/musa-voice"
+                  element={
+                    <MusaVoice
+                      uploadsEnabled={uploadsEnabled}
+                      setUploadsEnabled={setUploadsEnabled}
+                      tooltipMode={tooltipMode}
+                    />
+                  }
+                />
                 <Route path="/musa-feedback" element={<FeedbackForm />} />
 
                 {/* Fallback route for undefined paths */}

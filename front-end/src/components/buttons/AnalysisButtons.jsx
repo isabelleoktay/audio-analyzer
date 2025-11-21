@@ -95,8 +95,21 @@ const AnalysisButtons = ({
       onAnalysisFeatureSelect(btn.label);
       const featureLabel = btn.label;
       let inputFeatureData = null;
+      let referenceFeatureData = null;
 
-      // 1. Process Input File (Your Audio)
+
+      // Process Reference File (if it exists)
+      if (referenceFile) {
+        referenceFeatureData = await fetchAndSetFeatures(
+          referenceFile,
+          featureLabel,
+          referenceAudioFeatures,
+          setReferenceAudioFeatures,
+          true
+        );
+      }
+
+      // Process Input File (Your Audio)
       if (inputFile) {
         inputFeatureData = await fetchAndSetFeatures(
           inputFile,
@@ -104,17 +117,6 @@ const AnalysisButtons = ({
           inputAudioFeatures,
           setInputAudioFeatures,
           false
-        );
-      }
-
-      // 2. Process Reference File (if it exists)
-      if (referenceFile) {
-        await fetchAndSetFeatures(
-          referenceFile,
-          featureLabel,
-          referenceAudioFeatures,
-          setReferenceAudioFeatures,
-          true
         );
       }
 

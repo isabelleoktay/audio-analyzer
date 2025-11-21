@@ -29,7 +29,7 @@ const SurveySection = ({
   }, []);
 
   const handleSubmit = () => {
-    console.log(answers);
+    // console.log(answers);
     onSubmit(answers);
   };
 

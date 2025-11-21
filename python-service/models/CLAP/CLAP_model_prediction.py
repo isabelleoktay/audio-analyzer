@@ -89,7 +89,6 @@ def get_clap_embeddings_from_audio_array(
     embeddings = np.stack(embeddings)
     times = np.array(times)
 
-    print(f"Extracted embeddings (via temp files): {embeddings.shape}")
     return embeddings, times
 
 
@@ -145,7 +144,6 @@ def clap_extract_features_and_predict(
     # Probe first segment to get embedding dimension
     first_emb = embeddings[0]
     embedding_dim = first_emb.shape[-1]
-    print(f"Embedding dimension: {embedding_dim}")
 
     classifier = ClapClassifier(embedding_dim, num_classes).to(device)
     classifier.load_state_dict(torch.load(best_model_weights_path, map_location=device))

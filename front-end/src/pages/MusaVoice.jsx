@@ -23,40 +23,11 @@ import InstructionCard from "../components/cards/InstructionCard.jsx";
  *
  * @component
  * @param {Object} props - The props passed to the component.
- * @param {boolean} props.inRecordMode - Whether a user is recording audio to be uploaded.
- * @param {Function} props.setInRecordMode - Function to toggle recording mode.
- * @param {Blob} props.audioBlob - The audio blob data for recording.
- * @param {Function} props.setAudioBlob - Function to update the audio blob.
- * @param {string} props.audioName - The name of the audio file.
- * @param {Function} props.setAudioName - Function to update the audio file name.
- * @param {string} props.inputAudioURL - The URL of the uploaded or recorded input audio.
- * @param {Function} props.setInputAudioURL - Function to update the input audio URL.
- * @param {string} props.referenceAudioURL - The URL of the uploaded or recorded reference audio.
- * @param {Function} props.setReferenceAudioURL - Function to update the reference audio URL.
- * @param {Object} props.inputAudioFeatures - Extracted features from the input audio.
- * @param {Function} props.setInputAudioFeatures - Function to update the input audio features.
- * @param {Object} props.referenceAudioFeatures - Extracted features from the input audio.
- * @param {Function} props.setReferenceAudioFeatures - Function to update the input audio features.
- * @param {Function} props.setSelectedAnalysisFeature - Function to update the selected analysis feature.
- * @param {string} props.inputAudioUuid - A unique identifier for the audio session.
- * @param {Function} props.setInputAudioUuid - Function to update the audio UUID.
  * @param {boolean} props.uploadsEnabled - Whether uploads are enabled.
  * @param {string} props.tooltipMode - The mode for displaying tooltips.
- * @returns {JSX.Element} The rendered `Analyzer` component.
  */
 
-const MusaVoice = ({
-  inputAudioUuid,
-  setInputAudioUuid,
-  uploadsEnabled,
-  tooltipMode,
-  inputAudioFeatures,
-  setInputAudioFeatures,
-  referenceAudioFeatures,
-  setReferenceAudioFeatures,
-  selectedAnalysisFeature,
-  setSelectedAnalysisFeature,
-}) => {
+const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
   const [showIntro, setShowIntro] = useState(true);
   const [showSurvey, setShowSurvey] = useState(true);
   const [showUploadAudio, setShowUploadAudio] = useState(false);
@@ -69,6 +40,11 @@ const MusaVoice = ({
   const [userAudioSource, setUserAudioSource] = useState(null);
   const [userAudioData, setUserAudioData] = useState(null);
 
+  const [selectedAnalysisFeature, setSelectedAnalysisFeature] = useState(null);
+  const [inputAudioFeatures, setInputAudioFeatures] = useState({});
+  const [referenceAudioFeatures, setReferenceAudioFeatures] = useState({});
+  const [inputAudioUuid, setInputAudioUuid] = useState(() => uuidv4());
+
   const [selectedModel, setSelectedModel] = useState("CLAP");
   const [sessionId, setSessionId] = useState(null);
   const [userToken, setUserToken] = useState(null);
@@ -78,6 +54,11 @@ const MusaVoice = ({
     const timer = setTimeout(() => setShowIntro(false), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    // disable enabling uploads from main application
+    setUploadsEnabled(false);
+  }, [setUploadsEnabled]);
 
   useEffect(() => {
     // Get or create session ID
@@ -94,13 +75,13 @@ const MusaVoice = ({
   }, []);
 
   const handleSubmitSurvey = async (answers) => {
-    console.log("Survey answers:", answers);
+    // console.log("Survey answers:", answers);
     setAnswers((prev) => ({ ...prev, answers }));
     setShowSurvey(false);
     setShowUploadAudio(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
 
-    console.log("Survey answers:", answers);
+    // console.log("Survey answers:", answers);
 
     try {
       const sessionData = {
@@ -122,17 +103,17 @@ const MusaVoice = ({
   };
 
   const handleAnalyzeNewRecording = (file) => {
+    setSelectedAnalysisFeature(null);
     setShowUploadAudio(true);
     setAnalyzeAudio(false);
   };
 
   const handleAnalysisFeatureSelect = (feature) => {
     setSelectedAnalysisFeature(feature);
-    console.log("Selected analysis feature:", feature);
   };
 
   const handleAudioSourceChange = (source, type) => {
-    console.log(`${type} audio source changed to:`, source);
+    // console.log(`${type} audio source changed to:`, source);
     if (type === "reference") {
       setReferenceAudioSource(source);
     } else if (type === "user") {
@@ -141,13 +122,11 @@ const MusaVoice = ({
   };
 
   const handleAudioDataChange = (audioData, type) => {
-    console.log(`${type} audio data updated:`, audioData);
+    // console.log(`${type} audio data updated:`, audioData);
     if (type === "reference") {
       setReferenceAudioData(audioData);
-      console.log("REFERENCE AUDIO DATA:", referenceAudioData);
     } else if (type === "user") {
       setUserAudioData(audioData);
-      console.log("INPUT AUDIO DATA:", userAudioData);
     }
   };
 
@@ -182,10 +161,10 @@ const MusaVoice = ({
     if (isFormValid) {
       setShowUploadAudio(false);
       setAnalyzeAudio(true);
-      console.log("Analyzing...");
+    //   console.log("Analyzing...");
       // Proceed with analysis
-      console.log("Reference:", referenceAudioData);
-      console.log("User:", userAudioData);
+    //   console.log("Reference:", referenceAudioData);
+    //   console.log("User:", userAudioData);
     }
   };
 
@@ -214,14 +193,6 @@ const MusaVoice = ({
 
   const userFileOrBlob = getAudioFileOrBlob(userAudioData);
   const referenceFileOrBlob = getAudioFileOrBlob(referenceAudioData);
-
-  useEffect(() => {
-    console.log("USER AUDIO DATA CHANGED userFileOrBlob:", userFileOrBlob);
-    console.log(
-      "REFERENCE AUDIO DATA CHANGED referenceFileOrBlob:",
-      referenceFileOrBlob
-    );
-  }, [userFileOrBlob, referenceFileOrBlob]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -344,47 +315,40 @@ const MusaVoice = ({
 
               <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 pt-10">
                 <div className="w-full lg:min-w-[800px]">
-                  {inputAudioFeatures[selectedAnalysisFeature] &&
-                  referenceAudioFeatures[selectedAnalysisFeature] ? (
-                    <OverlayGraphWithWaveform
-                      inputAudioURL={
-                        inputAudioFeatures[selectedAnalysisFeature]?.audioUrl
-                      }
-                      referenceAudioURL={
-                        referenceAudioFeatures[selectedAnalysisFeature]
-                          ?.audioUrl
-                      }
-                      inputFeatureData={
-                        (featureHasModels
-                          ? inputAudioFeatures[selectedAnalysisFeature]?.data?.[
-                              selectedModel
-                            ]
-                          : inputAudioFeatures[selectedAnalysisFeature]
-                              ?.data) || []
-                      }
-                      referenceFeatureData={
-                        (featureHasModels
-                          ? referenceAudioFeatures[selectedAnalysisFeature]
-                              ?.data?.[selectedModel]
-                          : referenceAudioFeatures[selectedAnalysisFeature]
-                              ?.data) || []
-                      }
-                      selectedAnalysisFeature={selectedAnalysisFeature}
-                      selectedVoiceType={selectedVoiceType}
-                      inputAudioDuration={
-                        inputAudioFeatures[selectedAnalysisFeature]?.duration
-                      }
-                      referenceAudioDuration={
-                        referenceAudioFeatures[selectedAnalysisFeature]
-                          ?.duration
-                      }
-                      tooltipMode={tooltipMode}
-                    />
-                  ) : (
-                    <div className="text-center text-lightgray/70 py-8">
-                      loading feature data...
-                    </div>
-                  )}
+                  <OverlayGraphWithWaveform
+                    inputAudioURL={
+                      inputAudioFeatures[selectedAnalysisFeature]?.audioUrl
+                    }
+                    referenceAudioURL={
+                      referenceAudioFeatures[selectedAnalysisFeature]?.audioUrl
+                    }
+                    inputFeatureData={
+                      (featureHasModels
+                        ? inputAudioFeatures[selectedAnalysisFeature]?.data?.[
+                            selectedModel
+                          ]
+                        : inputAudioFeatures[selectedAnalysisFeature]?.data) ||
+                      []
+                    }
+                    referenceFeatureData={
+                      (featureHasModels
+                        ? referenceAudioFeatures[selectedAnalysisFeature]
+                            ?.data?.[selectedModel]
+                        : referenceAudioFeatures[selectedAnalysisFeature]
+                            ?.data) || []
+                    }
+                    selectedAnalysisFeature={selectedAnalysisFeature}
+                    selectedVoiceType={selectedVoiceType}
+                    inputAudioDuration={
+                      inputAudioFeatures[selectedAnalysisFeature]?.duration
+                    }
+                    referenceAudioDuration={
+                      referenceAudioFeatures[selectedAnalysisFeature]?.duration
+                    }
+                    tooltipMode={tooltipMode}
+                    selectedModel={selectedModel}
+                    setSelectedModel={setSelectedModel}
+                  />
                 </div>
 
                 <div className="pt-4 pb-4 flex flex-col lg:flex-row gap-4 w-full">
@@ -400,23 +364,6 @@ const MusaVoice = ({
 
                   {/* Right: buttons aligned to bottom */}
                   <div className="flex flex-col items-end ml-auto mt-auto gap-2">
-                    {["vocal tone", "pitch mod."].includes(
-                      selectedAnalysisFeature?.toLowerCase()
-                    ) && (
-                      <div>
-                        <ToggleButton
-                          question="Select Model:"
-                          options={["CLAP", "Whisper"]}
-                          allowOther={false}
-                          background_color="bg-white/10"
-                          onChange={(selected) => setSelectedModel(selected)}
-                          isMultiSelect={false}
-                          showToggle={false}
-                          miniVersion={true}
-                          selected={selectedModel}
-                        />
-                      </div>
-                    )}
                     <SecondaryButton
                       onClick={() => handleAnalyzeNewRecording()}
                     >
