@@ -42,6 +42,7 @@ const OverlayLineGraph = ({
   xLabels,
   zoomDomain,
   onZoomChange,
+  onSimilarityCalculated,
 }) => {
   const ref = useRef();
   const lastChangeRef = useRef(null);
@@ -79,6 +80,16 @@ const OverlayLineGraph = ({
     const { filteredPrimaryData, filteredSecondaryData, yDomain, yScale } =
       chartData;
 
+    if (filteredSecondaryData && filteredSecondaryData.length > 0) {
+      const similarityScore = similarityFromArea(
+        filteredPrimaryData,
+        filteredSecondaryData
+      );
+      // Send similarity to parent
+      if (typeof onSimilarityCalculated === "function") {
+        onSimilarityCalculated(similarityScore);
+      }
+    }
     const svg = d3.select(ref.current);
     svg.selectAll("*").remove();
 
@@ -169,6 +180,64 @@ const OverlayLineGraph = ({
         onZoomChange?.(changeData);
       }
     };
+
+    function similarityFromArea(curveA, curveB) {
+      if (!curveA || !curveB || curveA.length === 0 || curveB.length === 0)
+        return null;
+
+      const n = Math.min(curveA.length, curveB.length);
+      if (n < 2) return null;
+
+      const isYOnly = typeof curveA[0] === "number";
+
+      // Compute yMin and yMax across both curves
+      let yMin = Infinity;
+      let yMax = -Infinity;
+      for (let i = 0; i < n; i++) {
+        const yA = isYOnly ? curveA[i] : curveA[i][1];
+        const yB = isYOnly ? curveB[i] : curveB[i][1];
+        if (yA != null) {
+          yMin = Math.min(yMin, yA);
+          yMax = Math.max(yMax, yA);
+        }
+        if (yB != null) {
+          yMin = Math.min(yMin, yB);
+          yMax = Math.max(yMax, yB);
+        }
+      }
+
+      if (yMax === yMin) return 100; // curves are identical flat line
+
+      // Calculate area between curves
+      let totalArea = 0;
+      for (let i = 1; i < n; i++) {
+        const x0 = isYOnly ? i - 1 : curveA[i - 1][0];
+        const x1 = isYOnly ? i : curveA[i][0];
+
+        const yA0 = isYOnly ? curveA[i - 1] : curveA[i - 1][1];
+        const yA1 = isYOnly ? curveA[i] : curveA[i][1];
+
+        const yB0 = isYOnly ? curveB[i - 1] : curveB[i - 1][1];
+        const yB1 = isYOnly ? curveB[i] : curveB[i][1];
+
+        const polyX = [x0, x1, x1, x0];
+        const polyY = [yA0, yA1, yB1, yB0];
+
+        // Shoelace formula for quadrilateral area
+        let quadArea = 0;
+        for (let j = 0; j < 4; j++) {
+          const jNext = (j + 1) % 4;
+          quadArea += polyX[j] * polyY[jNext] - polyX[jNext] * polyY[j];
+        }
+        totalArea += Math.abs(quadArea / 2);
+      }
+
+      // Maximum possible area between two curves
+      const maxArea = (yMax - yMin) * (n - 1);
+      const similarity = Math.max(0, 100 * (1 - totalArea / maxArea));
+
+      return similarity;
+    }
 
     function redrawChart(newXScale, currentYScale) {
       currentXScale = newXScale;

@@ -44,6 +44,7 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
   const [inputAudioFeatures, setInputAudioFeatures] = useState({});
   const [referenceAudioFeatures, setReferenceAudioFeatures] = useState({});
   const [inputAudioUuid, setInputAudioUuid] = useState(() => uuidv4());
+  const [similarityScore, setSimilarityScore] = useState(null);
 
   const [selectedModel, setSelectedModel] = useState("CLAP");
   const [sessionId, setSessionId] = useState(null);
@@ -109,6 +110,7 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
   };
 
   const handleAnalysisFeatureSelect = (feature) => {
+    setSimilarityScore(null);
     setSelectedAnalysisFeature(feature);
   };
 
@@ -161,10 +163,10 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
     if (isFormValid) {
       setShowUploadAudio(false);
       setAnalyzeAudio(true);
-    //   console.log("Analyzing...");
+      //   console.log("Analyzing...");
       // Proceed with analysis
-    //   console.log("Reference:", referenceAudioData);
-    //   console.log("User:", userAudioData);
+      //   console.log("Reference:", referenceAudioData);
+      //   console.log("User:", userAudioData);
     }
   };
 
@@ -193,6 +195,14 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
 
   const userFileOrBlob = getAudioFileOrBlob(userAudioData);
   const referenceFileOrBlob = getAudioFileOrBlob(referenceAudioData);
+
+  useEffect(() => {
+    console.log("referenceAudioFeatures: ", referenceAudioFeatures);
+    console.log(
+      "referenceAudioFeatures[selectedAnalysisFeature]?.audioUrl:",
+      referenceAudioFeatures[selectedAnalysisFeature]?.audioUrl
+    );
+  }, [referenceAudioFeatures, selectedAnalysisFeature]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -348,13 +358,15 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
                     tooltipMode={tooltipMode}
                     selectedModel={selectedModel}
                     setSelectedModel={setSelectedModel}
+                    similarityScore={similarityScore}
+                    setSimilarityScore={setSimilarityScore}
                   />
                 </div>
 
                 <div className="pt-4 pb-4 flex flex-col lg:flex-row gap-4 w-full">
                   {/* Left: the two cards side by side */}
                   <div className="flex gap-4">
-                    <SimilarityScoreCard similarityScore={50.3} />
+                    <SimilarityScoreCard similarityScore={similarityScore} />
                     <div className="gap-4">
                       <SelectedVocalTechniquesCard
                         selectedTechniques={selectedTechniques}
@@ -369,12 +381,12 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
                     >
                       analyze new audio
                     </SecondaryButton>
-                    <SecondaryButton
+                    {/* <SecondaryButton
                       onClick={() => handleAnalyzeNewRecording()}
                       className="from-warmyellow/80 to-darkpink/80"
                     >
                       new reference audio
-                    </SecondaryButton>
+                    </SecondaryButton> */}
                   </div>
                 </div>
               </div>

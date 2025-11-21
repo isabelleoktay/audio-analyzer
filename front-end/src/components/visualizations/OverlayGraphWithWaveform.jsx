@@ -19,6 +19,8 @@ const OverlayGraphWithWaveform = ({
   tooltipMode,
   selectedModel,
   setSelectedModel,
+  similarityScore,
+  setSimilarityScore,
 }) => {
   const [selectedDataIndex, setSelectedDataIndex] = useState(0);
   const [chartState, setChartState] = useState(null);
@@ -254,6 +256,10 @@ const OverlayGraphWithWaveform = ({
                       }
                       onZoomChange={handleZoomChange}
                       style={{ position: "absolute", zIndex: 1 }}
+                      similarityScore={similarityScore}
+                      onSimilarityCalculated={(score) =>
+                        setSimilarityScore(score)
+                      }
                     />
                   )}
                 </div>
