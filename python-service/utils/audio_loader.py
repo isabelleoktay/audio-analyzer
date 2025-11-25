@@ -94,16 +94,56 @@ def clear_cache_if_new_file(file_bytes):
                 'audio_url': None,
                 'vibrato_rate': None,
                 'vibrato_extent': None,
+                # 'jitter': None,
+                # 'shimmer': None,
+                # 'hnr': None
                 'highlighted_section': None,
             },
             'phonation': {
                 'audio': None,
                 'sr': None,
                 'audio_url': None,
-                'jitter': None,
-                'shimmer': None,
-                'hnr': None
-            }
+                'breathy': None,
+                'flow': None,
+                'neutral': None,
+                'pressed': None,
+            },
+            'pitch mod.': {
+                'audio': None,
+                'sr': None,
+                'audio_url': None,
+                'CLAP': {
+                    'straight' : None,
+                    'vibrato' : None,
+                    'trill' : None,
+                    'trillo' : None,
+                },
+                'Whisper': {
+                    'straight' : None,
+                    'vibrato' : None,
+                    'trill' : None,
+                    'trillo' : None,
+                },
+            },
+            'vocal tone': {
+                'audio': None,
+                'sr': None,
+                'audio_url': None,
+                'CLAP': {
+                    'breathy': None,
+                    'belt': None,
+                    'vocal_fry': None,
+                    'inhaled': None,
+                    'spoken': None,
+                },
+                'Whisper': {
+                    'breathy': None,
+                    'belt': None,
+                    'vocal_fry': None,
+                    'inhaled': None,
+                    'spoken': None,
+                },
+            },
         }
 
         # Store the new file hash
@@ -150,8 +190,6 @@ def load_and_process_audio(file_bytes, sample_rate=44100, return_path=True):
         temp_wav = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
         sf.write(temp_wav.name, audio, sr)
         audio_path = temp_wav.name
-
-        audio_duration = len(audio) / sr
 
         return audio, sr, audio_url, audio_path, None
         
@@ -203,7 +241,7 @@ def cleanup_old_audio_files(audio_cache):
     """
     Delete old audio files referenced in the cache to prevent folder crowding.
     """
-    feature_types = ['pitch', 'dynamics', 'tempo', 'vibrato', 'phonation']
+    feature_types = ['pitch', 'dynamics', 'tempo', 'vibrato', 'phonation', 'pitch_mod', 'vocal tone']
     
     for feature_type in feature_types:
         if (feature_type in audio_cache and 

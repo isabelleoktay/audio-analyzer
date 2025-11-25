@@ -107,6 +107,16 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
     setSelectedAnalysisFeature(null);
     setShowUploadAudio(true);
     setAnalyzeAudio(false);
+    setInputAudioFeatures({});
+    setReferenceAudioFeatures({});
+    setInputAudioUuid(uuidv4());
+    setSimilarityScore(null);
+    setSelectedModel("CLAP");
+    setUserAudioData(null);
+    setReferenceAudioData(null);
+    setUserAudioSource(null);
+    setReferenceAudioSource(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleAnalysisFeatureSelect = (feature) => {
@@ -196,14 +206,6 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
   const userFileOrBlob = getAudioFileOrBlob(userAudioData);
   const referenceFileOrBlob = getAudioFileOrBlob(referenceAudioData);
 
-  useEffect(() => {
-    console.log("referenceAudioFeatures: ", referenceAudioFeatures);
-    console.log(
-      "referenceAudioFeatures[selectedAnalysisFeature]?.audioUrl:",
-      referenceAudioFeatures[selectedAnalysisFeature]?.audioUrl
-    );
-  }, [referenceAudioFeatures, selectedAnalysisFeature]);
-
   return (
     <div className="flex items-center justify-center min-h-screen">
       {showSurvey ? (
@@ -252,7 +254,7 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
               />
             </div>
             <div className="self-stretch w-px bg-darkgray/70"></div>
-            <div className="flex flex-col w-1/3 gap-3">
+            <div className="flex flex-col gap-3">
               <InstructionCard
                 stepNumber={2}
                 title="select vocal specifics"

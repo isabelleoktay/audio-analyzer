@@ -12,7 +12,7 @@ def handle_vocal_tone():
     if voice_type == "tenor" or voice_type == "bass":
         gender = "male"
     else:
-        gender = "female" 
+        gender = "female"
 
     if not audio_file:
         return jsonify({'error': 'No file uploaded'}), 400

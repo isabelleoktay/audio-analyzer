@@ -81,7 +81,7 @@ const OverlayLineGraph = ({
       chartData;
 
     if (filteredSecondaryData && filteredSecondaryData.length > 0) {
-      const similarityScore = similarityFromArea(
+      const similarityScore = getGraphSimilarity(
         filteredPrimaryData,
         filteredSecondaryData
       );
@@ -181,62 +181,95 @@ const OverlayLineGraph = ({
       }
     };
 
-    function similarityFromArea(curveA, curveB) {
-      if (!curveA || !curveB || curveA.length === 0 || curveB.length === 0)
-        return null;
+    // Similarity calculation based on area implementation
 
-      const n = Math.min(curveA.length, curveB.length);
-      if (n < 2) return null;
+    function getGraphSimilarity(primary, secondary) {
+      const n = Math.min(primary.length, secondary.length);
 
-      const isYOnly = typeof curveA[0] === "number";
+      let areaA = 0;
+      let areaB = 0;
+      let overlap = 0;
 
-      // Compute yMin and yMax across both curves
-      let yMin = Infinity;
-      let yMax = -Infinity;
-      for (let i = 0; i < n; i++) {
-        const yA = isYOnly ? curveA[i] : curveA[i][1];
-        const yB = isYOnly ? curveB[i] : curveB[i][1];
-        if (yA != null) {
-          yMin = Math.min(yMin, yA);
-          yMax = Math.max(yMax, yA);
-        }
-        if (yB != null) {
-          yMin = Math.min(yMin, yB);
-          yMax = Math.max(yMax, yB);
-        }
+      for (let i = 0; i < n - 1; i++) {
+        const yA1 = primary[i];
+        const yA2 = primary[i + 1];
+        const yB1 = secondary[i];
+        const yB2 = secondary[i + 1];
+
+        // area under each graph (dx = 1)
+        areaA += 0.5 * (yA1 + yA2);
+        areaB += 0.5 * (yB1 + yB2);
+
+        // overlap = area under min(yA, yB)
+        const o1 = Math.min(yA1, yB1);
+        const o2 = Math.min(yA2, yB2);
+        overlap += 0.5 * (o1 + o2);
       }
 
-      if (yMax === yMin) return 100; // curves are identical flat line
+      const maxArea = Math.max(areaA, areaB);
+      if (maxArea === 0) return 0;
 
-      // Calculate area between curves
-      let totalArea = 0;
-      for (let i = 1; i < n; i++) {
-        const x0 = isYOnly ? i - 1 : curveA[i - 1][0];
-        const x1 = isYOnly ? i : curveA[i][0];
+      return (overlap / maxArea) * 100;
+    }
 
-        const yA0 = isYOnly ? curveA[i - 1] : curveA[i - 1][1];
-        const yA1 = isYOnly ? curveA[i] : curveA[i][1];
+    // Frechet distance implementation
 
-        const yB0 = isYOnly ? curveB[i - 1] : curveB[i - 1][1];
-        const yB1 = isYOnly ? curveB[i] : curveB[i][1];
+    // Compute Euclidean distance between two sampled points
+    function pointDistance(i, yA, j, yB) {
+      const dx = i - j;
+      const dy = yA - yB;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
 
-        const polyX = [x0, x1, x1, x0];
-        const polyY = [yA0, yA1, yB1, yB0];
+    // Discrete Frechet distance for curves represented by arrays of y-values
+    function discreteFrechet(primary, secondary) {
+      const n = primary.length;
+      const m = secondary.length;
 
-        // Shoelace formula for quadrilateral area
-        let quadArea = 0;
-        for (let j = 0; j < 4; j++) {
-          const jNext = (j + 1) % 4;
-          quadArea += polyX[j] * polyY[jNext] - polyX[jNext] * polyY[j];
+      // dp[i][j] = Frechet distance up to points i, j
+      const dp = Array.from({ length: n }, () => Array(m).fill(-1));
+
+      function compute(i, j) {
+        if (dp[i][j] > -1) return dp[i][j];
+
+        const d = pointDistance(i, primary[i], j, secondary[j]);
+
+        if (i === 0 && j === 0) {
+          dp[i][j] = d;
+        } else if (i === 0) {
+          dp[i][j] = Math.max(compute(0, j - 1), d);
+        } else if (j === 0) {
+          dp[i][j] = Math.max(compute(i - 1, 0), d);
+        } else {
+          dp[i][j] = Math.max(
+            Math.min(
+              compute(i - 1, j),
+              compute(i - 1, j - 1),
+              compute(i, j - 1)
+            ),
+            d
+          );
         }
-        totalArea += Math.abs(quadArea / 2);
+
+        return dp[i][j];
       }
 
-      // Maximum possible area between two curves
-      const maxArea = (yMax - yMin) * (n - 1);
-      const similarity = Math.max(0, 100 * (1 - totalArea / maxArea));
+      return compute(n - 1, m - 1);
+    }
 
-      return similarity;
+    // Convert distance to similarity (0–1)
+    function frechetSimilarity(primary, secondary) {
+      const dist = discreteFrechet(primary, secondary);
+
+      // Normalize similarity: lower distance → higher similarity
+      const maxYPrimary = Math.max(...primary);
+      const maxYSecondary = Math.max(...secondary);
+      const maxPossibleDist = Math.sqrt(
+        (primary.length - 1) ** 2 + Math.max(maxYPrimary, maxYSecondary) ** 2
+      );
+
+      // Similarity = 1 - (dist / maxPossibleDist)
+      return 1 - dist / maxPossibleDist;
     }
 
     function redrawChart(newXScale, currentYScale) {

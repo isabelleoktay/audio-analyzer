@@ -36,18 +36,26 @@ const AnalysisButtons = ({
     file,
     featureLabel,
     currentFeatures,
-    setFeatures,
-    isReference = false
+    setFeatures
   ) => {
     // Only proceed if the feature data doesn't exist yet
     if (!currentFeatures[featureLabel]) {
-      // console.log(`Processing ${isReference ? 'reference' : 'input'} features for: ${featureLabel}`);
+      // Timing: request sent
+      const requestStart = performance.now();
+
       const featureResult = await processFeatures(
         file,
         featureLabel,
         voiceType
       );
-      //   console.log(`Received ${featureLabel} features:`, featureResult);
+
+      // Timing: response received
+      const requestEnd = performance.now();
+      const duration = (requestEnd - requestStart).toFixed(2);
+
+      console.log(
+        `[processFeatures] Received response for "${featureLabel}". Duration: ${duration} ms`
+      );
 
       let isDataInvalid = false;
 
@@ -96,7 +104,6 @@ const AnalysisButtons = ({
       const featureLabel = btn.label;
       let inputFeatureData = null;
       let referenceFeatureData = null;
-
 
       // Process Reference File (if it exists)
       if (referenceFile) {

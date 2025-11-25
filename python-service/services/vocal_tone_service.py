@@ -29,7 +29,7 @@ def process_vocal_tone(audio_bytes, gender):
     for c in range(len(whisper_class_names)):
         smoothed_whisper[:, c] = smooth_data(
             whisper_predictions[:, c],
-            window_size=3,             
+            window_size=3,  
             filter_type="median"
         )
 
