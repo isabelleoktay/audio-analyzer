@@ -172,6 +172,8 @@ const MusaVoice = ({
     return false;
   };
 
+  // doesn't automatically enable the analyze button when all conditions are met - needs a user action to re-check
+  // TODO - FIX
   const isReferenceReady = isAudioReady(
     referenceAudioSource,
     referenceAudioData
