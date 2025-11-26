@@ -14,6 +14,10 @@ const musaVoiceSessionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed, // Stores the nested survey answers object
     required: true,
   },
+  audioData: {
+    type: mongoose.Schema.Types.Mixed,
+    required: false,
+  },
   timestamp: {
     type: Date,
     default: Date.now,

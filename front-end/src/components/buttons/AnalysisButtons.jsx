@@ -21,6 +21,7 @@ const AnalysisButtons = ({
   setInputAudioUuid,
   uploadsEnabled,
   voiceType,
+  musaVoiceSessionId,
 }) => {
   //   useEffect(() => {
   //     console.log(
@@ -36,7 +37,9 @@ const AnalysisButtons = ({
     file,
     featureLabel,
     currentFeatures,
-    setFeatures
+    setFeatures,
+    sessionId = null,
+    fileKey = "input"
   ) => {
     // Only proceed if the feature data doesn't exist yet
     if (!currentFeatures[featureLabel]) {
@@ -46,7 +49,9 @@ const AnalysisButtons = ({
       const featureResult = await processFeatures(
         file,
         featureLabel,
-        voiceType
+        voiceType,
+        sessionId,
+        fileKey
       );
 
       // Timing: response received
@@ -112,7 +117,8 @@ const AnalysisButtons = ({
           featureLabel,
           referenceAudioFeatures,
           setReferenceAudioFeatures,
-          true
+          musaVoiceSessionId, // pass session
+          "reference" // fileKey for backend
         );
       }
 
@@ -123,7 +129,8 @@ const AnalysisButtons = ({
           featureLabel,
           inputAudioFeatures,
           setInputAudioFeatures,
-          false
+          musaVoiceSessionId,
+          "input"
         );
       }
 
@@ -132,7 +139,6 @@ const AnalysisButtons = ({
       // and we use the *newest* feature data (which is either the one we just calculated
       // or the one already in state if we skipped calculation).
       if (uploadsEnabled && inputFile && inputFeatureData) {
-        // console.log("Uploading audio and features...");
         const featuresToUpload = {
           ...inputAudioFeatures,
           [featureLabel]: inputFeatureData,
@@ -141,7 +147,8 @@ const AnalysisButtons = ({
           inputFile,
           inputAudioUuid,
           selectedInstrument,
-          featuresToUpload
+          featuresToUpload,
+          musaVoiceSessionId
         );
         // console.log(uploadResult);
         setInputAudioUuid(uploadResult.id);

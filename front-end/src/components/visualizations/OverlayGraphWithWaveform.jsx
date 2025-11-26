@@ -26,6 +26,9 @@ const OverlayGraphWithWaveform = ({
   const [chartState, setChartState] = useState(null);
   const emptyHighlightedSections = useMemo(() => [], []);
 
+  console.log("input audio url:", inputAudioURL);
+  console.log("reference audio url:", referenceAudioURL);
+
   const handleZoomChange = useCallback((changeData) => {
     setChartState(changeData);
   }, []);
