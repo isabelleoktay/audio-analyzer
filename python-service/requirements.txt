@@ -39,3 +39,7 @@ sshtunnel==0.4.0
 
 # Config
 python-dotenv==1.0.1
+
+# computational load monitoring 
+psutil==7.1.3
+pynvml==13.0.1

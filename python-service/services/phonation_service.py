@@ -1,5 +1,8 @@
 from utils.audio_loader import load_and_process_audio, clear_cache_if_new_file
 from feature_extraction.phonation import extract_phonation
+from utils.resource_monitoring import ResourceMonitor, get_resource_logger
+
+file_logger = get_resource_logger()
 
 def process_phonation(audio_bytes):
     clear_cache_if_new_file(audio_bytes)
@@ -11,8 +14,16 @@ def process_phonation(audio_bytes):
 
     audio_duration = len(audio) / sr
 
+    monitor = ResourceMonitor(interval=0.1)
+    monitor.start()
+
     phonation_classes = extract_phonation(audio)
     transposed_predictions = phonation_classes.T
+
+    monitor.stop()
+    stats = monitor.summary(feature_type="phonation")
+    print(f"Phonation inference metrics: {stats}")
+    file_logger.info(f"Phonation inference metrics: {stats}")
 
     data = []
     index = 0

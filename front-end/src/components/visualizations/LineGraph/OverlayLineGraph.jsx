@@ -214,63 +214,63 @@ const OverlayLineGraph = ({
 
     // Frechet distance implementation
 
-    // Compute Euclidean distance between two sampled points
-    function pointDistance(i, yA, j, yB) {
-      const dx = i - j;
-      const dy = yA - yB;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
+    // // Compute Euclidean distance between two sampled points
+    // function pointDistance(i, yA, j, yB) {
+    //   const dx = i - j;
+    //   const dy = yA - yB;
+    //   return Math.sqrt(dx * dx + dy * dy);
+    // }
 
-    // Discrete Frechet distance for curves represented by arrays of y-values
-    function discreteFrechet(primary, secondary) {
-      const n = primary.length;
-      const m = secondary.length;
+    // // Discrete Frechet distance for curves represented by arrays of y-values
+    // function discreteFrechet(primary, secondary) {
+    //   const n = primary.length;
+    //   const m = secondary.length;
 
-      // dp[i][j] = Frechet distance up to points i, j
-      const dp = Array.from({ length: n }, () => Array(m).fill(-1));
+    //   // dp[i][j] = Frechet distance up to points i, j
+    //   const dp = Array.from({ length: n }, () => Array(m).fill(-1));
 
-      function compute(i, j) {
-        if (dp[i][j] > -1) return dp[i][j];
+    //   function compute(i, j) {
+    //     if (dp[i][j] > -1) return dp[i][j];
 
-        const d = pointDistance(i, primary[i], j, secondary[j]);
+    //     const d = pointDistance(i, primary[i], j, secondary[j]);
 
-        if (i === 0 && j === 0) {
-          dp[i][j] = d;
-        } else if (i === 0) {
-          dp[i][j] = Math.max(compute(0, j - 1), d);
-        } else if (j === 0) {
-          dp[i][j] = Math.max(compute(i - 1, 0), d);
-        } else {
-          dp[i][j] = Math.max(
-            Math.min(
-              compute(i - 1, j),
-              compute(i - 1, j - 1),
-              compute(i, j - 1)
-            ),
-            d
-          );
-        }
+    //     if (i === 0 && j === 0) {
+    //       dp[i][j] = d;
+    //     } else if (i === 0) {
+    //       dp[i][j] = Math.max(compute(0, j - 1), d);
+    //     } else if (j === 0) {
+    //       dp[i][j] = Math.max(compute(i - 1, 0), d);
+    //     } else {
+    //       dp[i][j] = Math.max(
+    //         Math.min(
+    //           compute(i - 1, j),
+    //           compute(i - 1, j - 1),
+    //           compute(i, j - 1)
+    //         ),
+    //         d
+    //       );
+    //     }
 
-        return dp[i][j];
-      }
+    //     return dp[i][j];
+    //   }
 
-      return compute(n - 1, m - 1);
-    }
+    //   return compute(n - 1, m - 1);
+    // }
 
-    // Convert distance to similarity (0–1)
-    function frechetSimilarity(primary, secondary) {
-      const dist = discreteFrechet(primary, secondary);
+    // // Convert distance to similarity (0–1)
+    // function frechetSimilarity(primary, secondary) {
+    //   const dist = discreteFrechet(primary, secondary);
 
-      // Normalize similarity: lower distance → higher similarity
-      const maxYPrimary = Math.max(...primary);
-      const maxYSecondary = Math.max(...secondary);
-      const maxPossibleDist = Math.sqrt(
-        (primary.length - 1) ** 2 + Math.max(maxYPrimary, maxYSecondary) ** 2
-      );
+    //   // Normalize similarity: lower distance → higher similarity
+    //   const maxYPrimary = Math.max(...primary);
+    //   const maxYSecondary = Math.max(...secondary);
+    //   const maxPossibleDist = Math.sqrt(
+    //     (primary.length - 1) ** 2 + Math.max(maxYPrimary, maxYSecondary) ** 2
+    //   );
 
-      // Similarity = 1 - (dist / maxPossibleDist)
-      return 1 - dist / maxPossibleDist;
-    }
+    //   // Similarity = 1 - (dist / maxPossibleDist)
+    //   return 1 - dist / maxPossibleDist;
+    // }
 
     function redrawChart(newXScale, currentYScale) {
       currentXScale = newXScale;
@@ -410,6 +410,7 @@ const OverlayLineGraph = ({
     primaryLineColor,
     secondaryLineColor,
     onZoomChange,
+    onSimilarityCalculated,
   ]);
 
   return <svg ref={ref} width={width} height={height} />;

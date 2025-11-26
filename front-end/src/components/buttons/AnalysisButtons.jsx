@@ -1,5 +1,4 @@
 // components/AnalysisButtons.jsx
-import { useEffect } from "react";
 import ButtonGroup from "./ButtonGroup.jsx";
 import {
   analysisButtonConfig,

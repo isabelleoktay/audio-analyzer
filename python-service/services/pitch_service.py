@@ -11,10 +11,16 @@ from feature_extraction.pitch_utils import (
     smooth_and_segment_crepe,
     filter_pitch_by_rms
 )
+from utils.resource_monitoring import ResourceMonitor, get_resource_logger
+
+file_logger = get_resource_logger()
 
 def get_cached_or_calculated_pitch(audio_bytes, sample_rate=16000, method="crepe"):
     # Clear cache if new file
     clear_cache_if_new_file(audio_bytes)
+
+    monitor = ResourceMonitor(interval=0.1)
+    monitor.start()
     
     # Check cache first
     audio_cache = get_user_cache()
@@ -79,6 +85,11 @@ def get_cached_or_calculated_pitch(audio_bytes, sample_rate=16000, method="crepe
     # Smooth, replace zeros, find highlight segment
     smoothed_pitch, highlighted = smooth_and_segment_crepe(pitch, hop_sec)
     x_axis = [round(float(t), 2) for t in times]
+
+    monitor.stop()
+    stats = monitor.summary(feature_type="tempo")
+    print(f"Tempo inference metrics: {stats}")
+    file_logger.info(f"Tempo inference metrics: {stats}")
 
     # Store in cache if user is authenticated
     if user_id and audio_cache:
