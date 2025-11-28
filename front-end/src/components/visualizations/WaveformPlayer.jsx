@@ -14,7 +14,7 @@ const height = 50;
 
 const WaveformPlayer = ({
   audioUrl,
-  highlightedSections,
+  highlightedSections = [],
   waveColor = "#FFD6E8",
   progressColor = "#FF89BB",
   startTime,
