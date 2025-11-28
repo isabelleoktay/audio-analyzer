@@ -3,7 +3,7 @@ import FileUploadCard from "../cards/FileUploadCard";
 const FileUploadSection = ({
   handleSwitchToRecordMode,
   handleFileUpload,
-  uploadedFile,
+  inputFile,
   testingEnabled,
   className = "",
 }) => {
@@ -19,7 +19,7 @@ const FileUploadSection = ({
       </div>
       <FileUploadCard
         onFileUpload={handleFileUpload}
-        uploadedFile={uploadedFile}
+        inputFile={inputFile}
         testingEnabled={testingEnabled}
       />
     </div>

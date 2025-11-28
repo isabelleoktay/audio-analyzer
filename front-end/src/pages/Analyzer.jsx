@@ -6,7 +6,7 @@ import InstrumentButton from "../components/buttons/InstrumentButton.jsx";
 import RecordAudioSection from "../components/sections/RecordAudioSection.jsx";
 import FileUploadSection from "../components/sections/FileUploadSection.jsx";
 import AnalysisButtons from "../components/buttons/AnalysisButtons.jsx";
-import GraphWithWaveform from "../components/visualizations/GraphWithWaveform.jsx";
+import OverlayGraphWithWaveform from "../components/visualizations/OverlayGraphWithWaveform.jsx";
 import TertiaryButton from "../components/buttons/TertiaryButton.jsx";
 import Tooltip from "../components/text/Tooltip.jsx";
 import ConsentModal from "../components/modals/ConsentModal.jsx";
@@ -20,8 +20,8 @@ import { instrumentButtons } from "../config/instrumentButtons.js";
  * @param {Object} props - The props passed to the component.
  * @param {string} props.selectedInstrument - The currently selected instrument.
  * @param {Function} props.setSelectedInstrument - Function to update the selected instrument.
- * @param {File} props.uploadedFile - The uploaded audio file.
- * @param {Function} props.setUploadedFile - Function to update the uploaded file.
+ * @param {File} props.inputFile - The uploaded audio file.
+ * @param {Function} props.setInputFile - Function to update the uploaded file.
  * @param {boolean} props.inRecordMode - Whether a user is recording audio to be uploaded.
  * @param {Function} props.setInRecordMode - Function to toggle recording mode.
  * @param {Blob} props.audioBlob - The audio blob data for recording.
@@ -32,10 +32,10 @@ import { instrumentButtons } from "../config/instrumentButtons.js";
  * @param {Function} props.setAudioURL - Function to update the audio URL.
  * @param {string} props.selectedAnalysisFeature - The selected audio analysis feature.
  * @param {Function} props.setSelectedAnalysisFeature - Function to update the selected analysis feature.
- * @param {Object} props.audioFeatures - Extracted features from the audio.
- * @param {Function} props.setAudioFeatures - Function to update the audio features.
- * @param {string} props.audioUuid - A unique identifier for the audio session.
- * @param {Function} props.setAudioUuid - Function to update the audio UUID.
+ * @param {Object} props.inputAudioFeatures - Extracted features from the audio.
+ * @param {Function} props.setInputAudioFeatures - Function to update the audio features.
+ * @param {string} props.inputAudioUuid - A unique identifier for the audio session.
+ * @param {Function} props.setInputAudioUuid - Function to update the audio UUID.
  * @param {boolean} props.uploadsEnabled - Whether uploads are enabled.
  * @param {string} props.tooltipMode - The mode for displaying tooltips.
  * @returns {JSX.Element} The rendered `Analyzer` component.
@@ -43,8 +43,8 @@ import { instrumentButtons } from "../config/instrumentButtons.js";
 const Analyzer = ({
   selectedInstrument,
   setSelectedInstrument,
-  uploadedFile,
-  setUploadedFile,
+  inputFile,
+  setInputFile,
   inRecordMode,
   setInRecordMode,
   audioBlob,
@@ -55,10 +55,10 @@ const Analyzer = ({
   setAudioURL,
   selectedAnalysisFeature,
   setSelectedAnalysisFeature,
-  audioFeatures,
-  setAudioFeatures,
-  audioUuid,
-  setAudioUuid,
+  inputAudioFeatures,
+  setInputAudioFeatures,
+  inputAudioUuid,
+  setInputAudioUuid,
   uploadsEnabled,
   tooltipMode,
   setUploadsEnabled,
@@ -71,6 +71,12 @@ const Analyzer = ({
   const [showConsentModal, setShowConsentModal] = useState(() => {
     return localStorage.getItem("audioAnalyzerConsent") !== "true";
   });
+
+  const [selectedModel, setSelectedModel] = useState("CLAP");
+
+  const featureHasModels = ["vocal tone", "pitch mod."].includes(
+    selectedAnalysisFeature
+  );
 
   // Handle consent response
   const handleConsent = (agreed) => {
@@ -89,15 +95,15 @@ const Analyzer = ({
   const handleInstrumentSelect = (instrument) => {
     startTransition(() => {
       setSelectedInstrument(instrument);
-      if (Object.keys(audioFeatures).length > 0) {
+      if (Object.keys(inputAudioFeatures).length > 0) {
         console.log("Resetting audio features");
-        setUploadedFile(null);
+        setInputFile(null);
         setAudioBlob(null);
         setAudioName("untitled.wav");
         setAudioURL(null);
-        setAudioFeatures({});
+        setInputAudioFeatures({});
         setSelectedAnalysisFeature(null);
-        setAudioUuid(() => uuidv4());
+        setInputAudioUuid(() => uuidv4());
       }
     });
   };
@@ -105,7 +111,7 @@ const Analyzer = ({
   // Handles the upload of an audio file.
   // Updates the uploaded file and generates a URL for it.
   const handleFileUpload = (file) => {
-    setUploadedFile(file);
+    setInputFile(file);
     setAudioURL(URL.createObjectURL(file));
   };
 
@@ -131,16 +137,16 @@ const Analyzer = ({
   // Resets the audio-related state when the user changes the file.
   const handleChangeFile = () => {
     setSelectedAnalysisFeature(null);
-    setUploadedFile(null);
+    setInputFile(null);
     setAudioBlob(null);
 
     const newAudioName = "untitled.wav";
     setAudioName(newAudioName);
 
     setAudioURL(null);
-    setAudioFeatures({});
+    setInputAudioFeatures({});
     setInRecordMode(false);
-    setAudioUuid(() => uuidv4());
+    setInputAudioUuid(() => uuidv4());
   };
 
   useEffect(() => {
@@ -183,7 +189,7 @@ const Analyzer = ({
             <div className="flex flex-col items-center justify-center w-full">
               {inRecordMode ? (
                 <RecordAudioSection
-                  setUploadedFile={setUploadedFile}
+                  setInputFile={setInputFile}
                   setInRecordMode={setInRecordMode}
                   audioBlob={audioBlob}
                   setAudioBlob={setAudioBlob}
@@ -205,7 +211,7 @@ const Analyzer = ({
                     <FileUploadSection
                       handleSwitchToRecordMode={handleSwitchToRecordMode}
                       handleFileUpload={handleFileUpload}
-                      uploadedFile={uploadedFile}
+                      inputFile={inputFile}
                       className="mb-8 w-full"
                     />
                   </Tooltip>
@@ -214,7 +220,7 @@ const Analyzer = ({
             </div>
 
             {/* Display uploaded file, analysis buttons, and visualization for selected analysis feature */}
-            {uploadedFile && (
+            {inputFile && (
               <div className="flex flex-col items-center w-full space-y-8">
                 <Tooltip
                   text="select an analysis feature"
@@ -227,36 +233,47 @@ const Analyzer = ({
                     selectedInstrument={selectedInstrument}
                     selectedAnalysisFeature={selectedAnalysisFeature}
                     onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
-                    uploadedFile={uploadedFile}
-                    audioFeatures={audioFeatures}
-                    setAudioFeatures={setAudioFeatures}
-                    audioUuid={audioUuid}
-                    setAudioUuid={setAudioUuid}
+                    inputFile={inputFile}
+                    inputAudioFeatures={inputAudioFeatures}
+                    setInputAudioFeatures={setInputAudioFeatures}
+                    inputAudioUuid={inputAudioUuid}
+                    setInputAudioUuid={setInputAudioUuid}
                     uploadsEnabled={uploadsEnabled}
                   />
                 </Tooltip>
                 {selectedAnalysisFeature && (
                   <div className="flex flex-col w-full lg:w-fit">
                     <div className="text-xl font-semibold text-lightpink mb-1">
-                      {uploadedFile.name}
+                      {inputFile.name}
                     </div>
                     <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
                       {/* Add overflow-x-auto on mobile only */}
                       <div className="w-full lg:min-w-[800px]">
                         {/* Ensure 800px minimum width */}
-                        <GraphWithWaveform
-                          key={audioFeatures[selectedAnalysisFeature]?.audioUrl}
-                          audioURL={
-                            audioFeatures[selectedAnalysisFeature]?.audioUrl
+                        <OverlayGraphWithWaveform
+                          key={
+                            inputAudioFeatures[selectedAnalysisFeature]
+                              ?.audioUrl
                           }
-                          featureData={
-                            audioFeatures[selectedAnalysisFeature]?.data || []
+                          inputAudioURL={
+                            inputAudioFeatures[selectedAnalysisFeature]
+                              ?.audioUrl
+                          }
+                          inputFeatureData={
+                            (featureHasModels
+                              ? inputAudioFeatures[selectedAnalysisFeature]
+                                  ?.data?.[selectedModel]
+                              : inputAudioFeatures[selectedAnalysisFeature]
+                                  ?.data) || []
                           }
                           selectedAnalysisFeature={selectedAnalysisFeature}
-                          audioDuration={
-                            audioFeatures[selectedAnalysisFeature]?.duration
+                          inputAudioDuration={
+                            inputAudioFeatures[selectedAnalysisFeature]
+                              ?.duration
                           }
                           tooltipMode={tooltipMode}
+                          selectedModel={selectedModel}
+                          setSelectedModel={setSelectedModel}
                         />
                       </div>
                     </div>

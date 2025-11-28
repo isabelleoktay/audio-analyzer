@@ -11,6 +11,11 @@ __pycache__/
 # Environment Variables
 *.env
 
+# Large model files (get from drive and store locally)
+*.pth
+*.joblib
+*.npy
+
 # Logs
 logs/
 *.log

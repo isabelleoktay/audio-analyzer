@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, send_from_directory, abort, request, jsonify
 import os
-from utils.audio_loader import convert_to_wav_if_needed
+from utils.audio_loader import convert_to_wav_if_needed, get_user_id_from_token, get_jwt_manager
 
 audio_blueprint = Blueprint('audio', __name__, url_prefix='/python-service/audio')
 
@@ -9,24 +9,50 @@ def cleanup_temp_files():
     base_folder = current_app.config['AUDIO_FOLDER']
     protected_folders = {"testing", "collected"}  # Add any other protected folders here
 
+    # read clear_cache flag (default = false)
+    clear_cache = request.args.get("clear_cache", "false").lower() == "true"
+
     try:
-        # Iterate through the files and folders in the base folder
+        # ---------------------------------------------------------
+        # 1. Delete non-protected files and folders from AUDIO_FOLDER
+        # ---------------------------------------------------------
         for item in os.listdir(base_folder):
             item_path = os.path.join(base_folder, item)
 
-            # Skip protected folders
+            # skip protected folders
             if os.path.isdir(item_path) and item in protected_folders:
                 continue
 
-            # Delete files or non-protected folders
+            # delete files
             if os.path.isfile(item_path):
                 os.remove(item_path)
+            # delete folders (only if empty)
             elif os.path.isdir(item_path):
-                os.rmdir(item_path)  # Only removes empty directories
+                try:
+                    os.rmdir(item_path)
+                except OSError:
+                    pass  # ignore: folder not empty
 
-        return jsonify({"message": "Temporary files cleaned up successfully"}), 200
+        # ---------------------------------------------------------
+        # 2. Also clear the user's entire cache if clear_cache=true
+        # ---------------------------------------------------------
+        if clear_cache:
+            user_id = get_user_id_from_token()
+            if user_id:
+                jwt_manager = get_jwt_manager()
+                jwt_manager.update_user_cache(user_id, {})  # wipe everything
+            else:
+                return jsonify({"error": "Could not clear cache: no valid user token"}), 400
+
+        # ---------------------------------------------------------
+        return jsonify({
+            "message": "Temporary files cleaned successfully",
+            "cache_cleared": clear_cache
+        }), 200
+
     except Exception as e:
         return jsonify({"error": f"Failed to clean up temporary files: {str(e)}"}), 500
+
     
 @audio_blueprint.route('/upload', methods=['POST'])
 def upload_audio():

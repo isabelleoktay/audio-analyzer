@@ -10,50 +10,147 @@ const AnalysisButtons = ({
   selectedInstrument,
   selectedAnalysisFeature,
   onAnalysisFeatureSelect,
-  uploadedFile,
-  audioFeatures,
-  setAudioFeatures,
-  audioUuid,
-  setAudioUuid,
+  inputFile,
+  referenceFile,
+  inputAudioFeatures,
+  setInputAudioFeatures,
+  referenceAudioFeatures,
+  setReferenceAudioFeatures,
+  inputAudioUuid,
+  setInputAudioUuid,
   uploadsEnabled,
+  voiceType,
+  musaVoiceSessionId,
 }) => {
+  //   useEffect(() => {
+  //     console.log(
+  //       "AnalysisButtons rendered with selectedInstrument:",
+  //       selectedInstrument
+  //     );
+  //   }, [selectedInstrument]);
+
   if (!analysisButtonConfig[selectedInstrument]) return null;
+
+  // Helper function to process features for a given file
+  const fetchAndSetFeatures = async (
+    file,
+    featureLabel,
+    currentFeatures,
+    setFeatures,
+    sessionId = null,
+    fileKey = "input"
+  ) => {
+    // Only proceed if the feature data doesn't exist yet
+    if (!currentFeatures[featureLabel]) {
+      // Timing: request sent
+      const requestStart = performance.now();
+
+      const featureResult = await processFeatures(
+        file,
+        featureLabel,
+        voiceType,
+        sessionId,
+        fileKey
+      );
+
+      // Timing: response received
+      const requestEnd = performance.now();
+      const duration = (requestEnd - requestStart).toFixed(2);
+
+      console.log(
+        `[processFeatures] Received response for "${featureLabel}". Duration: ${duration} ms`
+      );
+
+      let isDataInvalid = false;
+
+      const featureHasModels = ["vocal tone", "pitch mod."].includes(
+        featureLabel
+      );
+
+      if (!featureHasModels) {
+        // Simple features: expect data to be an array
+        isDataInvalid = !Array.isArray(featureResult.data);
+      } else {
+        const clapData = featureResult.data["CLAP"];
+        const whisperData = featureResult.data["Whisper"];
+
+        isDataInvalid =
+          !clapData ||
+          !whisperData ||
+          !Array.isArray(clapData) ||
+          !Array.isArray(whisperData) ||
+          clapData.length === 0 ||
+          whisperData.length === 0;
+      }
+
+      const featureData = {
+        data: isDataInvalid ? "invalid" : featureResult.data,
+        sampleRate: featureResult.sample_rate,
+        audioUrl: featureResult.audio_url || "",
+        duration: featureResult.duration || 0,
+      };
+
+      setFeatures((prev) => ({
+        ...prev,
+        [featureLabel]: featureData,
+      }));
+
+      return featureData;
+    }
+    return currentFeatures[featureLabel];
+  };
 
   const buttons = analysisButtonConfig[selectedInstrument].map((btn) => ({
     ...btn,
     asButton: true,
     onClick: async () => {
       onAnalysisFeatureSelect(btn.label);
-      if (!audioFeatures[btn.label]) {
-        const featureResult = await processFeatures(uploadedFile, btn.label);
+      const featureLabel = btn.label;
+      let inputFeatureData = null;
+      let referenceFeatureData = null;
 
-        const isDataInvalid = !Array.isArray(featureResult.data);
+      // Process Reference File (if it exists)
+      if (referenceFile) {
+        referenceFeatureData = await fetchAndSetFeatures(
+          referenceFile,
+          featureLabel,
+          referenceAudioFeatures,
+          setReferenceAudioFeatures,
+          musaVoiceSessionId, // pass session
+          "reference" // fileKey for backend
+        );
+      }
 
-        const featureData = {
-          data: isDataInvalid ? "invalid" : featureResult.data, // Set to "invalid" if all values are NaN
-          sampleRate: featureResult.sample_rate,
-          audioUrl: featureResult.audio_url || "",
-          duration: featureResult.duration || 0,
+      // Process Input File (Your Audio)
+      if (inputFile) {
+        inputFeatureData = await fetchAndSetFeatures(
+          inputFile,
+          featureLabel,
+          inputAudioFeatures,
+          setInputAudioFeatures,
+          musaVoiceSessionId,
+          "input"
+        );
+      }
+
+      // 3. Handle Upload (only for the input file)
+      // Upload is only necessary if the input feature data was actually calculated/available,
+      // and we use the *newest* feature data (which is either the one we just calculated
+      // or the one already in state if we skipped calculation).
+      if (uploadsEnabled && inputFile && inputFeatureData) {
+        const featuresToUpload = {
+          ...inputAudioFeatures,
+          [featureLabel]: inputFeatureData,
         };
-
-        setAudioFeatures((prev) => ({
-          ...prev,
-          [btn.label]: featureData,
-        }));
-
-        // console.log(featureResult);
-
-        if (uploadsEnabled) {
-          // console.log("Uploading audio...");
-          const uploadResult = await uploadAudio(
-            uploadedFile,
-            audioUuid,
-            selectedInstrument,
-            { ...audioFeatures, [btn.label]: featureData }
-          );
-          // console.log(uploadResult);
-          setAudioUuid(uploadResult.id);
-        }
+        const uploadResult = await uploadAudio(
+          inputFile,
+          inputAudioUuid,
+          selectedInstrument,
+          featuresToUpload,
+          musaVoiceSessionId
+        );
+        // console.log(uploadResult);
+        setInputAudioUuid(uploadResult.id);
       }
     },
     active: selectedAnalysisFeature === btn.label,

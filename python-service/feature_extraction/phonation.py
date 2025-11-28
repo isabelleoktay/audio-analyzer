@@ -15,6 +15,8 @@ def extract_phonation(audio):
     audio_embeddings = audio_embeddings.numpy()  # Convert to numpy array
     logging.info("Retrieved audio embeddings.")
 
+    print(f"Audio embeddings shape: {audio_embeddings.shape}")
+
     if audio_embeddings is None or audio_embeddings.shape[0] == 0:
         raise ValueError("Failed to extract audio embeddings: Embeddings are empty or invalid.")
     

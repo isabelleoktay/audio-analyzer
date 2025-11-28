@@ -51,36 +51,41 @@ export const updateTooltip = (
   displayText,
   isSilence
 ) => {
-  // Show tooltip
   focus
     .style("display", null)
     .attr("transform", `translate(${xCoord},${yCoord})`);
 
-  // Set text content
-  focus.select(".labelGroup").select("text").text(displayText);
+  const labelGroup = focus.select(".labelGroup");
+  const rect = labelGroup.select("rect");
 
-  // Apply conditional styling
+  const bbox = labelGroup.node().getBBox();
+  const tooltipHeight = bbox.height + 10;
+
+  // Position above by default
+  let offsetY = -tooltipHeight;
+
+  const wouldOverflowTop = yCoord - tooltipHeight < 0;
+  if (wouldOverflowTop) {
+    offsetY = 15; // place below point
+    labelGroup.select("path").attr("d", "M -5,-10 L 0,-15 L 5,-10 Z");
+  } else {
+    labelGroup.select("path").attr("d", "M -5,10 L 0,15 L 5,10 Z");
+  }
+
+  // Apply Y offset
+  labelGroup.attr("transform", `translate(0, ${offsetY})`);
+
+  labelGroup.select("text").text(displayText);
   const { bgColor, textColor, opacity } = getTooltipColors(isSilence);
 
-  // Style the circle differently for silence
   focus
     .select("circle")
     .attr("fill", isSilence ? "#555555" : "#FF89BB")
     .attr("opacity", isSilence ? 0.8 : 1);
 
-  focus
-    .select(".labelGroup")
-    .select("rect")
-    .attr("fill", bgColor)
-    .attr("opacity", opacity);
-
-  focus
-    .select(".labelGroup")
-    .select("path")
-    .attr("fill", bgColor)
-    .attr("opacity", opacity);
-
-  focus.select(".labelGroup").select("text").attr("fill", textColor);
+  rect.attr("fill", bgColor).attr("opacity", opacity);
+  labelGroup.select("path").attr("fill", bgColor).attr("opacity", opacity);
+  labelGroup.select("text").attr("fill", textColor);
 };
 
 export const hideTooltip = (focus) => {

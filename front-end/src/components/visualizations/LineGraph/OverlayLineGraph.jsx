@@ -1,0 +1,419 @@
+import { useRef, useEffect, useMemo } from "react";
+import * as d3 from "d3";
+
+import {
+  processChartData,
+  createXScale,
+  createZoomedXScale,
+  createGradient,
+  getDefaultLineGradientStops,
+  createClipPath,
+} from "./utils";
+
+import {
+  createTooltip,
+  updateTooltip,
+  hideTooltip,
+  createResetButton,
+  createAxes,
+  createNoteStripes,
+  createFeatureBackground,
+  createHighlightedSections,
+  updateHighlightedSections,
+  createMainChart,
+  updateMainChart,
+  createSilenceIndicators,
+  updateSilenceIndicators,
+} from "./components";
+
+const OverlayLineGraph = ({
+  feature = "pitch",
+  primaryData = [],
+  primaryLineColor = "#FF89BB",
+  secondaryData = [],
+  secondaryLineColor = "#CCCCCC",
+  width = 800,
+  height = 400,
+  xLabel,
+  yLabel,
+  highlightedSections = [],
+  yMin,
+  yMax,
+  xLabels,
+  zoomDomain,
+  onZoomChange,
+  onSimilarityCalculated,
+}) => {
+  const ref = useRef();
+  const lastChangeRef = useRef(null);
+
+  const margin = useMemo(
+    () => ({ top: 20, right: 20, bottom: 20, left: 50 }),
+    []
+  );
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
+
+  // X scale (applies zoomDomain if provided)
+  const xScale = useMemo(() => {
+    const scale = createXScale(primaryData, xLabels, innerWidth);
+    if (zoomDomain) scale.domain(zoomDomain);
+    return scale;
+  }, [primaryData, xLabels, innerWidth, zoomDomain]);
+
+  useEffect(() => {
+    if (!primaryData || primaryData.length === 0) return;
+
+    const chartData = processChartData(
+      primaryData,
+      Array.isArray(secondaryData) ? secondaryData : [],
+      yMin,
+      yMax,
+      innerHeight
+    );
+
+    if (!chartData.isValid) {
+      console.warn("OverlayLineGraph: No valid data", chartData.error);
+      return;
+    }
+
+    const { filteredPrimaryData, filteredSecondaryData, yDomain, yScale } =
+      chartData;
+
+    if (filteredSecondaryData && filteredSecondaryData.length > 0) {
+      const similarityScore = getGraphSimilarity(
+        filteredPrimaryData,
+        filteredSecondaryData
+      );
+      // Send similarity to parent
+      if (typeof onSimilarityCalculated === "function") {
+        onSimilarityCalculated(similarityScore);
+      }
+    }
+    const svg = d3.select(ref.current);
+    svg.selectAll("*").remove();
+
+    const g = svg
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const defs = svg.append("defs");
+    createClipPath(defs, "chart-clip", innerWidth, innerHeight);
+
+    if (feature !== "rates" && feature !== "extents") {
+      createGradient(defs, "line-gradient", getDefaultLineGradientStops());
+    }
+
+    createGradient(
+      defs,
+      "secondary-line-gradient",
+      getDefaultLineGradientStops(secondaryLineColor)
+    );
+
+    let currentXScale = xScale;
+
+    const chartGroup = g.append("g").attr("clip-path", "url(#chart-clip)");
+
+    if (feature === "pitch") createNoteStripes(g, yScale, yDomain, innerWidth);
+    createFeatureBackground(g, defs, feature, yDomain, innerWidth, innerHeight);
+
+    // eslint-disable-next-line no-unused-vars
+    const { xAxisGroup, yAxisGroup } = createAxes(
+      g,
+      xScale,
+      yScale,
+      yDomain,
+      feature,
+      innerHeight,
+      yLabel
+    );
+
+    createHighlightedSections(
+      chartGroup,
+      highlightedSections,
+      xScale,
+      innerHeight,
+      feature
+    );
+
+    createMainChart(
+      chartGroup,
+      filteredPrimaryData,
+      primaryLineColor,
+      filteredSecondaryData,
+      secondaryLineColor,
+      xScale,
+      yScale,
+      yDomain
+    );
+
+    createSilenceIndicators(
+      chartGroup,
+      filteredPrimaryData,
+      xScale,
+      innerHeight
+    );
+
+    const focus = createTooltip(g);
+
+    const calculateZoomCoordinates = (scale) => {
+      const domain = scale.domain();
+      return {
+        startIndex: Math.max(0, Math.round(domain[0])),
+        endIndex: Math.min(primaryData.length - 1, Math.round(domain[1])),
+        startX: scale(domain[0]),
+        endX: scale(domain[1]),
+        zoomLevel: domain,
+        isZoomed: scale !== xScale,
+        visibleDataPercentage:
+          ((domain[1] - domain[0]) / (primaryData.length - 1)) * 100,
+      };
+    };
+
+    const notifyChange = (newXScale) => {
+      const zoomCoordinates = calculateZoomCoordinates(newXScale);
+      const changeData = { zoom: zoomCoordinates };
+      const changeString = JSON.stringify(changeData);
+
+      if (lastChangeRef.current !== changeString) {
+        lastChangeRef.current = changeString;
+        onZoomChange?.(changeData);
+      }
+    };
+
+    // Similarity calculation based on area implementation
+
+    function getGraphSimilarity(primary, secondary) {
+      const n = Math.min(primary.length, secondary.length);
+
+      let areaA = 0;
+      let areaB = 0;
+      let overlap = 0;
+
+      for (let i = 0; i < n - 1; i++) {
+        const yA1 = primary[i];
+        const yA2 = primary[i + 1];
+        const yB1 = secondary[i];
+        const yB2 = secondary[i + 1];
+
+        // area under each graph (dx = 1)
+        areaA += 0.5 * (yA1 + yA2);
+        areaB += 0.5 * (yB1 + yB2);
+
+        // overlap = area under min(yA, yB)
+        const o1 = Math.min(yA1, yB1);
+        const o2 = Math.min(yA2, yB2);
+        overlap += 0.5 * (o1 + o2);
+      }
+
+      const maxArea = Math.max(areaA, areaB);
+      if (maxArea === 0) return 0;
+
+      return (overlap / maxArea) * 100;
+    }
+
+    // Frechet distance implementation
+
+    // // Compute Euclidean distance between two sampled points
+    // function pointDistance(i, yA, j, yB) {
+    //   const dx = i - j;
+    //   const dy = yA - yB;
+    //   return Math.sqrt(dx * dx + dy * dy);
+    // }
+
+    // // Discrete Frechet distance for curves represented by arrays of y-values
+    // function discreteFrechet(primary, secondary) {
+    //   const n = primary.length;
+    //   const m = secondary.length;
+
+    //   // dp[i][j] = Frechet distance up to points i, j
+    //   const dp = Array.from({ length: n }, () => Array(m).fill(-1));
+
+    //   function compute(i, j) {
+    //     if (dp[i][j] > -1) return dp[i][j];
+
+    //     const d = pointDistance(i, primary[i], j, secondary[j]);
+
+    //     if (i === 0 && j === 0) {
+    //       dp[i][j] = d;
+    //     } else if (i === 0) {
+    //       dp[i][j] = Math.max(compute(0, j - 1), d);
+    //     } else if (j === 0) {
+    //       dp[i][j] = Math.max(compute(i - 1, 0), d);
+    //     } else {
+    //       dp[i][j] = Math.max(
+    //         Math.min(
+    //           compute(i - 1, j),
+    //           compute(i - 1, j - 1),
+    //           compute(i, j - 1)
+    //         ),
+    //         d
+    //       );
+    //     }
+
+    //     return dp[i][j];
+    //   }
+
+    //   return compute(n - 1, m - 1);
+    // }
+
+    // // Convert distance to similarity (0–1)
+    // function frechetSimilarity(primary, secondary) {
+    //   const dist = discreteFrechet(primary, secondary);
+
+    //   // Normalize similarity: lower distance → higher similarity
+    //   const maxYPrimary = Math.max(...primary);
+    //   const maxYSecondary = Math.max(...secondary);
+    //   const maxPossibleDist = Math.sqrt(
+    //     (primary.length - 1) ** 2 + Math.max(maxYPrimary, maxYSecondary) ** 2
+    //   );
+
+    //   // Similarity = 1 - (dist / maxPossibleDist)
+    //   return 1 - dist / maxPossibleDist;
+    // }
+
+    function redrawChart(newXScale, currentYScale) {
+      currentXScale = newXScale;
+
+      const [startIndex, endIndex] = newXScale
+        .domain()
+        .map((d) =>
+          Math.max(0, Math.min(filteredPrimaryData.length - 1, Math.round(d)))
+        );
+
+      const zoomedPrimaryData = filteredPrimaryData.slice(
+        startIndex,
+        endIndex + 1
+      );
+      const zoomedSecondaryData = filteredSecondaryData.length
+        ? filteredSecondaryData.slice(startIndex, endIndex + 1)
+        : [];
+
+      updateMainChart(
+        chartGroup,
+        zoomedPrimaryData,
+        zoomedSecondaryData,
+        newXScale,
+        currentYScale,
+        yDomain
+      );
+
+      xAxisGroup.call(d3.axisBottom(newXScale));
+
+      if (highlightedSections.length > 0) {
+        updateHighlightedSections(chartGroup, newXScale);
+      }
+
+      updateSilenceIndicators(
+        chartGroup,
+        filteredPrimaryData,
+        newXScale,
+        innerHeight
+      );
+      notifyChange(newXScale);
+    }
+
+    const brush = d3
+      .brushX()
+      .extent([
+        [0, 0],
+        [innerWidth, innerHeight],
+      ])
+      .on("end", function (event) {
+        if (!event.selection) return;
+
+        const [x0, x1] = event.selection;
+        const newXScale = createZoomedXScale(currentXScale, [x0, x1]);
+
+        d3.select(this).call(brush.clear);
+        redrawChart(newXScale, yScale);
+        currentXScale = newXScale;
+      });
+
+    const brushOverlay = chartGroup
+      .append("g")
+      .attr("class", "brush")
+      .call(brush);
+
+    brushOverlay
+      .selectAll(".overlay")
+      .style("cursor", "crosshair")
+      .style("pointer-events", "all");
+
+    brushOverlay
+      .selectAll(".selection")
+      .style("fill", "#90F1EF")
+      .style("fill-opacity", 0.2)
+      .style("stroke", "#90F1EF")
+      .style("stroke-width", 1);
+
+    brushOverlay
+      .on("mouseover", () => focus.style("display", null))
+      .on("mouseout", () => hideTooltip(focus))
+      .on("mousemove", function (event) {
+        const [mx, my] = d3.pointer(event);
+        const x0 = currentXScale.invert(mx);
+        const i = Math.round(x0);
+        const dVal = primaryData[i];
+        const filteredVal = filteredPrimaryData[i];
+
+        if (dVal !== undefined && i >= 0 && i < primaryData.length) {
+          const xCoord = currentXScale(i);
+          const isSilence = filteredVal === null;
+          const yCoord = isSilence ? innerHeight - 5 : yScale(filteredVal);
+          const threshold = isSilence ? 20 : 10;
+          const distance = Math.abs(my - (isSilence ? innerHeight : yCoord));
+
+          if (distance < threshold || (isSilence && my > innerHeight - 30)) {
+            const displayText = isSilence ? "Silence" : dVal.toFixed(2);
+            updateTooltip(
+              focus,
+              xCoord,
+              yCoord,
+              displayText,
+              isSilence,
+              innerHeight
+            );
+          } else hideTooltip(focus);
+        } else hideTooltip(focus);
+      });
+
+    const handleReset = () => {
+      // Reset the scale domain to the full range
+      const resetXScale = createXScale(primaryData, xLabels, innerWidth);
+      currentXScale = resetXScale;
+
+      // Redraw everything with the reset scale
+      redrawChart(resetXScale, yScale);
+
+      // Notify the parent that zoom is cleared
+      notifyChange(resetXScale);
+    };
+
+    createResetButton(g, innerWidth, handleReset);
+  }, [
+    primaryData,
+    secondaryData,
+    width,
+    height,
+    innerWidth,
+    innerHeight,
+    xScale,
+    margin,
+    highlightedSections,
+    xLabel,
+    yLabel,
+    yMin,
+    yMax,
+    xLabels,
+    feature,
+    primaryLineColor,
+    secondaryLineColor,
+    onZoomChange,
+    onSimilarityCalculated,
+  ]);
+
+  return <svg ref={ref} width={width} height={height} />;
+};
+
+export default OverlayLineGraph;

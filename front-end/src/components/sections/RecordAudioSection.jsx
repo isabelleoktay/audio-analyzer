@@ -8,7 +8,7 @@ const SCROLLING_WAVEFORM = true;
 const CONTINUOUS_WAVEFORM = false;
 
 const RecordAudioSection = ({
-  setUploadedFile,
+  setInputFile,
   setInRecordMode,
   audioBlob,
   setAudioBlob,
@@ -57,7 +57,7 @@ const RecordAudioSection = ({
   const handleResetRecording = () => {
     if (testingEnabled) {
       updateSubjectData();
-      if (setUploadedFile) setUploadedFile(null);
+      if (setInputFile) setInputFile(null);
     }
     setAudioBlob(null);
     setAudioURL(null);
@@ -84,7 +84,7 @@ const RecordAudioSection = ({
     } else {
       if (audioBlob) {
         const file = new File([audioBlob], audioName, { type: "audio/wav" });
-        setUploadedFile(file);
+        setInputFile(file);
       }
       setInRecordMode(false);
     }
@@ -132,7 +132,7 @@ const RecordAudioSection = ({
     return () => {
       waveSurfer.destroy();
     };
-  }, [setUploadedFile, setAudioBlob, setAudioURL, audioBlob]);
+  }, [setInputFile, setAudioBlob, setAudioURL, audioBlob]);
 
   return (
     <div className={`flex flex-col w-full ${className}`}>

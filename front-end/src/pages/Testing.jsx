@@ -4,7 +4,7 @@ import ConsentCard from "../components/testing/ConsentCard";
 import IntroductionSection from "../components/testing/IntroductionSection";
 import InstructionsSection from "../components/testing/InstructionsSection";
 import RecordAudioSection from "../components/sections/RecordAudioSection";
-import GraphWithWaveform from "../components/visualizations/GraphWithWaveform";
+import OverlayGraphWithWaveform from "../components/visualizations/OverlayGraphWithWaveform";
 import SecondaryButton from "../components/buttons/SecondaryButton";
 import TertiaryButton from "../components/buttons/TertiaryButton";
 import TestingCompleted from "../components/testing/TestingCompleted";
@@ -46,7 +46,7 @@ const Testing = ({ setUploadsEnabled }) => {
   const [currentTestFeatureIndex, setCurrentTestFeatureIndex] = useState(0);
 
   const [feedbackStage, setFeedbackStage] = useState("before");
-  const [audioFeatures, setAudioFeatures] = useState({});
+  const [inputAudioFeatures, setInputAudioFeatures] = useState({});
   const [isProceedButtonEnabled, setIsProceedButtonEnabled] = useState(false);
   const [progressBarIndex, setProgressBarIndex] = useState(0);
 
@@ -84,7 +84,7 @@ const Testing = ({ setUploadsEnabled }) => {
   const testingAudioUrl = getAudioUrl();
 
   const handleProcessFeature = async (file, feature) => {
-    setAudioFeatures({}); // Reset audio features before processing
+    setInputAudioFeatures({}); // Reset audio features before processing
     const featureResult = await processFeatures(file, feature);
     const featureData = {
       data: featureResult.data,
@@ -93,7 +93,7 @@ const Testing = ({ setUploadsEnabled }) => {
       duration: featureResult.duration || 0,
     };
 
-    setAudioFeatures(featureData);
+    setInputAudioFeatures(featureData);
   };
 
   const moveToNextStep = () => {
@@ -269,7 +269,7 @@ const Testing = ({ setUploadsEnabled }) => {
   );
 
   const handleAnalyzeNewRecording = () => {
-    setAudioFeatures({});
+    setInputAudioFeatures({});
     updateSubjectData();
     setAudioBlob(null);
     setAudioUrl(null);
@@ -291,7 +291,7 @@ const Testing = ({ setUploadsEnabled }) => {
       TEST_FEATURES[currentTestFeatureIndex]
     }-${0}.wav`;
     setCurrentAudioName(fileName);
-    setAudioFeatures({});
+    setInputAudioFeatures({});
   }, [
     subjectData.subjectId,
     currentTestFeatureIndex,
@@ -303,7 +303,7 @@ const Testing = ({ setUploadsEnabled }) => {
     setAudioBlob(null);
     setAudioUrl(null);
     setUploadedFile(null);
-    setAudioFeatures({});
+    setInputAudioFeatures({});
     setIsProceedButtonEnabled(false);
   };
 
@@ -389,8 +389,8 @@ const Testing = ({ setUploadsEnabled }) => {
   }, [setUploadsEnabled]);
 
   useEffect(() => {
-    console.log("Audio features updated:", audioFeatures);
-  }, [audioFeatures]);
+    console.log("Audio features updated:", inputAudioFeatures);
+  }, [inputAudioFeatures]);
 
   console.log(subjectData);
 
@@ -552,14 +552,14 @@ const Testing = ({ setUploadsEnabled }) => {
               </div>
               <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
                 <div className="w-full lg:min-w-[800px]">
-                  <GraphWithWaveform
-                    key={audioFeatures?.audioUrl}
-                    audioURL={audioFeatures?.audioUrl}
-                    featureData={audioFeatures?.data || []}
+                  <OverlayGraphWithWaveform
+                    key={inputAudioFeatures?.audioUrl}
+                    audioURL={inputAudioFeatures?.audioUrl}
+                    featureData={inputAudioFeatures?.data || []}
                     selectedAnalysisFeature={
                       TEST_FEATURES[currentTestFeatureIndex]
                     }
-                    audioDuration={audioFeatures?.duration}
+                    audioDuration={inputAudioFeatures?.duration}
                   />
                 </div>
               </div>

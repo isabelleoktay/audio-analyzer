@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const FileUploadCard = ({ onFileUpload, uploadedFile, testingEnabled }) => {
+const FileUploadCard = ({ onFileUpload, inputFile, testingEnabled }) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const handleDragOver = (e) => {
@@ -52,10 +52,10 @@ const FileUploadCard = ({ onFileUpload, uploadedFile, testingEnabled }) => {
         if (!testingEnabled) document.getElementById("fileInput").click();
       }}
     >
-      {uploadedFile ? (
+      {inputFile ? (
         <div>
           <p className="text-lightpink text-lg font-semibold">
-            {uploadedFile.name}
+            {inputFile.name}
           </p>
           {!testingEnabled && (
             <p className="text-sm text-lightgray cursor-pointer underline">

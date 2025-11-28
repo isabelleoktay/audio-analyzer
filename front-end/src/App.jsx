@@ -3,7 +3,15 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Layout from "./components/Layout.jsx";
 import NavBar from "./components/NavBar.jsx";
-import { Analyzer, Testing, HowToUse, NotFound, MusaVoice, FeedbackForm } from "./pages";
+import {
+  Analyzer,
+  Testing,
+  HowToUse,
+  NotFound,
+  MusaVoice,
+  //   MultiAudio,
+  FeedbackForm,
+} from "./pages";
 
 import { cleanupTempFiles } from "./utils/api.js";
 import { tokenManager } from "./utils/tokenManager.js";
@@ -20,27 +28,29 @@ const App = () => {
 
   const [selectedInstrument, setSelectedInstrument] = useState(null);
   const [selectedAnalysisFeature, setSelectedAnalysisFeature] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [inputFile, setInputFile] = useState(null);
+  const [referenceFile, setReferenceFile] = useState(null);
   const [inRecordMode, setInRecordMode] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioName, setAudioName] = useState("untitled.wav");
   const [audioURL, setAudioURL] = useState(null);
-  const [audioUuid, setAudioUuid] = useState(() => uuidv4());
-  const [audioFeatures, setAudioFeatures] = useState({});
+  const [inputAudioUuid, setInputAudioUuid] = useState(() => uuidv4());
+  const [inputAudioFeatures, setInputAudioFeatures] = useState({});
+  const [referenceAudioFeatures, setReferenceAudioFeatures] = useState({});
   const [uploadsEnabled, setUploadsEnabled] = useState(true);
 
   // Reset the application state to its initial values.
   const handleReset = () => {
     setSelectedInstrument(null);
-    setUploadedFile(null);
+    setInputFile(null);
     setInRecordMode(false);
     setAudioBlob(null);
     setAudioName("untitled.wav");
     setAudioURL(null);
     setSelectedAnalysisFeature(null);
-    setAudioFeatures({});
+    setInputAudioFeatures({});
     setTooltipMode("inactive");
-    setAudioUuid(() => uuidv4());
+    setInputAudioUuid(() => uuidv4());
     setUploadsEnabled(false);
   };
 
@@ -93,8 +103,10 @@ const App = () => {
                     <Analyzer
                       selectedInstrument={selectedInstrument}
                       setSelectedInstrument={setSelectedInstrument}
-                      uploadedFile={uploadedFile}
-                      setUploadedFile={setUploadedFile}
+                      inputFile={inputFile}
+                      setInputFile={setInputFile}
+                      referenceFile={referenceFile}
+                      setReferenceFile={setReferenceFile}
                       inRecordMode={inRecordMode}
                       setInRecordMode={setInRecordMode}
                       setAudioBlob={setAudioBlob}
@@ -105,12 +117,14 @@ const App = () => {
                       audioURL={audioURL}
                       selectedAnalysisFeature={selectedAnalysisFeature}
                       setSelectedAnalysisFeature={setSelectedAnalysisFeature}
-                      audioFeatures={audioFeatures}
-                      setAudioFeatures={setAudioFeatures}
+                      inputAudioFeatures={inputAudioFeatures}
+                      setInputAudioFeatures={setInputAudioFeatures}
+                      referenceAudioFeatures={referenceAudioFeatures}
+                      setReferenceAudioFeatures={setReferenceAudioFeatures}
                       handleReset={handleReset}
                       tooltipMode={tooltipMode}
-                      audioUuid={audioUuid}
-                      setAudioUuid={setAudioUuid}
+                      inputAudioUuid={inputAudioUuid}
+                      setInputAudioUuid={setInputAudioUuid}
                       uploadsEnabled={uploadsEnabled}
                       setUploadsEnabled={setUploadsEnabled}
                     />
@@ -121,8 +135,21 @@ const App = () => {
                   path="/testing"
                   element={<Testing setUploadsEnabled={setUploadsEnabled} />}
                 />
+                {/* <Route
+                  path="/multi-audio"
+                  element={<MultiAudio setUploadsEnabled={setUploadsEnabled} />}
+                /> */}
                 <Route path="/how-to-use" element={<HowToUse />} />
-                <Route path="/musa-voice" element={<MusaVoice />} />
+                <Route
+                  path="/musa-voice"
+                  element={
+                    <MusaVoice
+                      uploadsEnabled={uploadsEnabled}
+                      setUploadsEnabled={setUploadsEnabled}
+                      tooltipMode={tooltipMode}
+                    />
+                  }
+                />
                 <Route path="/musa-feedback" element={<FeedbackForm />} />
 
                 {/* Fallback route for undefined paths */}
