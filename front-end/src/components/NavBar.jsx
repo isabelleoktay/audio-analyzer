@@ -93,17 +93,17 @@ const NavBar = ({
                 active: isActive("/musa-voice"),
               },
               {
-                type: "center",
+                type: "right",
                 to: "/how-to-use",
                 label: "how to use",
                 active: isActive("/how-to-use"),
               },
-              {
-                type: "right",
-                to: "https://github.com/isabelleoktay/audio-analyzer/",
-                label: "github",
-                external: true,
-              },
+              //   {
+              //     type: "right",
+              //     to: "https://github.com/isabelleoktay/audio-analyzer/",
+              //     label: "github",
+              //     external: true,
+              //   },
             ]}
           />
         </div>

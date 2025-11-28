@@ -13,6 +13,16 @@ const uploadMusaVoiceSession = async (req, res) => {
   }
 
   try {
+    // Check if session already exists (to prevent duplicates)
+    const existingSession = await MusaVoiceSession.findOne({ sessionId });
+
+    if (existingSession) {
+      return res.status(409).json({
+        error: "Session with this ID already exists",
+        sessionId: sessionId,
+      });
+    }
+
     // Create a new MusaVoice session document
     const newSession = new MusaVoiceSession({
       sessionId,
@@ -40,45 +50,4 @@ const uploadMusaVoiceSession = async (req, res) => {
   }
 };
 
-const updateMusaVoiceSessionAudio = async (req, res) => {
-  const { sessionId, audioData } = req.body;
-
-  if (!sessionId || !audioData) {
-    return res.status(400).json({
-      error: "Missing required fields: sessionId or audioData",
-    });
-  }
-
-  try {
-    // Find the session by sessionId
-    const session = await MusaVoiceSession.findOne({ sessionId });
-
-    if (!session) {
-      return res.status(404).json({ error: "Session not found" });
-    }
-
-    // Attach or update audioData field (add this field to your schema if needed)
-    session.audioData = {
-      ...session.audioData,
-      ...audioData,
-    };
-
-    await session.save();
-
-    return res.status(200).json({
-      message: "Audio data updated for MusaVoice session",
-      session: {
-        id: session._id,
-        sessionId: session.sessionId,
-        audioData: session.audioData,
-      },
-    });
-  } catch (error) {
-    console.error("Error updating MusaVoice session audio data:", error);
-    res
-      .status(500)
-      .json({ error: "Error updating MusaVoice session audio data" });
-  }
-};
-
-export { uploadMusaVoiceSession, updateMusaVoiceSessionAudio };
+export { uploadMusaVoiceSession };

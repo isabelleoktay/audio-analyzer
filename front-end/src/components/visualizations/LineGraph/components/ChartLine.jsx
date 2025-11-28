@@ -27,8 +27,8 @@ export const createMainChart = (
         .append("path")
         .datum(filteredSecondaryData)
         .attr("class", "ref-area")
-        .attr("fill", "none")
-        .attr("opacity", 0.2)
+        .attr("fill", "url(#secondary-line-gradient)")
+        .attr("opacity", 0.9)
         .attr("d", area);
 
       secondaryDataLinePath = chartGroup
@@ -38,7 +38,6 @@ export const createMainChart = (
         .attr("fill", "none")
         .attr("stroke", secondaryLineColor)
         .attr("stroke-width", 2)
-        .attr("opacity", 0.7)
         .attr("d", line);
     } catch (err) {
       console.warn("Failed to draw secondary line:", err);
@@ -51,7 +50,7 @@ export const createMainChart = (
     .datum(filteredPrimaryData)
     .attr("class", "main-area")
     .attr("fill", "url(#line-gradient)")
-    .attr("opacity", 0.3)
+    .attr("opacity", 0.9)
     .attr("d", area);
 
   const linePath = chartGroup

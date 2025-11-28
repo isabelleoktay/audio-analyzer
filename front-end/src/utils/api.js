@@ -61,9 +61,17 @@ const startNewSession = async () => {
   }
 };
 
-const processFeatures = async (audioFile, feature) => {
+const processFeatures = async (
+  audioFile,
+  feature,
+  voiceType,
+  sessionId = null,
+  fileKey = "input"
+) => {
   const formData = new FormData();
   formData.append("audioFile", audioFile);
+  if (sessionId) formData.append("sessionId", sessionId);
+  if (fileKey) formData.append("fileKey", fileKey);
 
   try {
     if (feature === "dynamics") {
@@ -90,6 +98,33 @@ const processFeatures = async (audioFile, feature) => {
       const response = await pythonClient.post(
         "/python-service/process-tempo",
         formData
+      );
+      return response.data;
+    } else if (feature === "vocal tone") {
+      formData.append("voiceType", voiceType);
+
+      const response = await pythonClient.post(
+        "/python-service/process-vocal-tone",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } else if (feature === "pitch mod.") {
+      const voiceType = "alto"; // TO DO: needs to be handled properly - get from frontend selection
+      formData.append("voiceType", voiceType);
+
+      const response = await pythonClient.post(
+        "/python-service/process-pitch-mod",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
       return response.data;
     } else if (feature === "vibrato") {
@@ -186,7 +221,13 @@ const uploadTestSubject = async (subjectId, data) => {
  * @returns {Promise<Object>} The response data from the server.
  * @throws Will throw an error if the upload fails.
  */
-const uploadAudio = async (audioFile, id, instrument, features) => {
+const uploadAudio = async (
+  audioFile,
+  id,
+  instrument,
+  features,
+  musaVoiceSessionId = null
+) => {
   try {
     const originalName = audioFile.name;
     const modifiedFileName = `${id}_${originalName}`;
@@ -194,30 +235,54 @@ const uploadAudio = async (audioFile, id, instrument, features) => {
       type: audioFile.type,
     });
 
+    // Upload to Python service (always the same)
     const pythonResponse = await uploadAudioToPythonService(modifiedFile);
     const pythonFilePath = pythonResponse.path;
 
-    const formData = new FormData();
-    formData.append("audioPath", pythonFilePath);
-    formData.append("instrument", instrument);
+    // Prepare audioData for MusaVoice session update
+    const audioData = {
+      audioPath: pythonFilePath,
+      instrument,
+      features,
+      fileName: modifiedFileName,
+    };
 
-    if (id) {
-      formData.append("id", id);
-    }
-
-    formData.append("features", JSON.stringify(features));
-
-    const backendResponse = await apiClient.post(
-      "/api/upload-audio",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+    if (musaVoiceSessionId) {
+      console.log(
+        "Uploading to MusaVoice session:",
+        musaVoiceSessionId,
+        audioData
+      );
+      // If MusaVoice session, update the session with audio data
+      const backendResponse = await apiClient.post(
+        "/api/update-musa-voice-session-audio",
+        {
+          sessionId: musaVoiceSessionId,
+          audioData,
+        }
+      );
+      return backendResponse.data;
+    } else {
+      // Otherwise, use the generic upload-audio endpoint
+      const formData = new FormData();
+      formData.append("audioPath", pythonFilePath);
+      formData.append("instrument", instrument);
+      if (id) {
+        formData.append("id", id);
       }
-    );
+      formData.append("features", JSON.stringify(features));
 
-    return backendResponse.data;
+      const backendResponse = await apiClient.post(
+        "/api/upload-audio",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return backendResponse.data;
+    }
   } catch (error) {
     console.error("Error uploading audio:", error);
     throw error;

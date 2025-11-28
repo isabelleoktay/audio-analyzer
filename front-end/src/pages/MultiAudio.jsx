@@ -1,6 +1,6 @@
 import { useState } from "react";
 import UploadAudioCard from "../components/cards/UploadAudioCard";
-// import SurveyMultiSelect from "../components/survey/SurveyMultiSelect";
+import MultiSelectCard from "../components/cards/MultiSelectCard";
 import SecondaryButton from "../components/buttons/SecondaryButton";
 
 const VOICE_OPTIONS = [
@@ -22,7 +22,7 @@ const MultiAudio = () => {
   const [userAudioData, setUserAudioData] = useState(null);
 
   const handleAudioSourceChange = (source, type) => {
-    console.log(`${type} audio source changed to:`, source);
+    // console.log(`${type} audio source changed to:`, source);
     if (type === "reference") {
       setReferenceAudioSource(source);
     } else if (type === "user") {
@@ -96,12 +96,12 @@ const MultiAudio = () => {
         />
       </div>
 
-      {/* <SurveyMultiSelect
+      <MultiSelectCard
         question="select target technique"
         options={VOICE_OPTIONS}
         columns={3}
         allowOther={false}
-      /> */}
+      />
 
       <SecondaryButton
         className={`h-fit text-xl tracking-widest transition-all duration-200 ${

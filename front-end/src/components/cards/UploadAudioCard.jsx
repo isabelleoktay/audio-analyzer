@@ -42,7 +42,7 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
       });
     } else if (source === "record" && audioBlob) {
       onAudioDataChange?.({
-        source: "recording",
+        source: "record",
         file: null,
         blob: audioBlob,
         url: URL.createObjectURL(audioBlob),
@@ -66,7 +66,7 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
     );
 
     if (audioFiles.length > 0) {
-      console.log("Audio file(s) selected:", audioFiles);
+      //   console.log("Audio file(s) selected:", audioFiles);
       setSelectedFile(audioFiles[0]);
 
       // Only send data if upload is the selected source
@@ -144,7 +144,7 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
     // Only clear data if record is the selected source
     if (selectedAudioSource === "record") {
       onAudioDataChange?.({
-        source: "recording",
+        source: "record",
         file: null,
         blob: null,
         url: null,
@@ -227,7 +227,7 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         // Only send data if record is the selected source
         if (selectedAudioSource === "record") {
           onAudioDataChange?.({
-            source: "recording",
+            source: "record",
             file: null,
             blob: blob,
             url: url,

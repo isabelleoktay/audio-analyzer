@@ -3,6 +3,7 @@ import OverlayLineGraph from "./LineGraph/OverlayLineGraph";
 import WaveformPlayer from "./WaveformPlayer";
 import LoadingSpinner from "../LoadingSpinner";
 import Tooltip from "../text/Tooltip";
+import ToggleButton from "../buttons/ToggleButton";
 
 const width = 800;
 const graphHeight = 400;
@@ -16,10 +17,17 @@ const OverlayGraphWithWaveform = ({
   inputAudioDuration,
   referenceAudioDuration,
   tooltipMode,
+  selectedModel,
+  setSelectedModel,
+  similarityScore,
+  setSimilarityScore,
 }) => {
   const [selectedDataIndex, setSelectedDataIndex] = useState(0);
   const [chartState, setChartState] = useState(null);
   const emptyHighlightedSections = useMemo(() => [], []);
+
+  console.log("input audio url:", inputAudioURL);
+  console.log("reference audio url:", referenceAudioURL);
 
   const handleZoomChange = useCallback((changeData) => {
     setChartState(changeData);
@@ -81,12 +89,12 @@ const OverlayGraphWithWaveform = ({
               <li className="font-bold text-darkgray">reference audio</li>
             </ul>
             <WaveformPlayer
-              feature={inputFeature.label}
+              feature={referenceFeature.label}
               key={referenceAudioURL}
               audioUrl={referenceAudioURL}
               highlightedSections={
-                inputFeature.highlighted?.audio?.length > 0
-                  ? inputFeature.highlighted.audio
+                referenceFeature.highlighted?.audio?.length > 0
+                  ? referenceFeature.highlighted.audio
                   : []
               }
               waveColor="#E0E0E0"
@@ -96,7 +104,7 @@ const OverlayGraphWithWaveform = ({
                   ? referenceFrameToTime(
                       chartState.zoom.startIndex,
                       referenceAudioDuration,
-                      inputFeature.data.length
+                      referenceFeature.data.length
                     )
                   : 0
               }
@@ -105,7 +113,7 @@ const OverlayGraphWithWaveform = ({
                   ? referenceFrameToTime(
                       chartState.zoom.endIndex,
                       referenceAudioDuration,
-                      inputFeature.data.length
+                      referenceFeature.data.length
                     )
                   : referenceAudioDuration || undefined
               }
@@ -251,6 +259,10 @@ const OverlayGraphWithWaveform = ({
                       }
                       onZoomChange={handleZoomChange}
                       style={{ position: "absolute", zIndex: 1 }}
+                      similarityScore={similarityScore}
+                      onSimilarityCalculated={(score) =>
+                        setSimilarityScore(score)
+                      }
                     />
                   )}
                 </div>
@@ -295,6 +307,23 @@ const OverlayGraphWithWaveform = ({
                 />
               </div>
             </div>
+            {["vocal tone", "pitch mod."].includes(
+              selectedAnalysisFeature?.toLowerCase()
+            ) && (
+              <div className="flex justify-end w-full">
+                <ToggleButton
+                  question="Select Model:"
+                  options={["CLAP", "Whisper"]}
+                  allowOther={false}
+                  background_color="bg-white/10"
+                  onChange={(selected) => setSelectedModel(selected)}
+                  isMultiSelect={false}
+                  showToggle={false}
+                  miniVersion={true}
+                  selected={selectedModel}
+                />
+              </div>
+            )}
           </>
         )
       )}
