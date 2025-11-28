@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import SurveySection from "../components/survey/SurveySection.jsx";
-import { uploadMusaVoiceSessionData } from "../utils/api.js";
+import { uploadMusaVoiceSessionData, cleanupTempFiles } from "../utils/api.js";
 import musaVoiceSurveyConfig from "../data/musaVoiceSurveyConfig.js";
 import MusaUploadAudioSection from "../components/sections/MusaAudioUploadSection.jsx";
 import { AnalysisButtons, SecondaryButton } from "../components/buttons";
@@ -93,7 +93,8 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
     }
   };
 
-  const handleAnalyzeNewRecording = (file) => {
+  const handleAnalyzeNewRecording = () => {
+    cleanupTempFiles(true);
     setSelectedAnalysisFeature(null);
     setShowUploadAudio(true);
     setAnalyzeAudio(false);
@@ -160,6 +161,7 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
             referenceAudioSource,
           }) => {
             // Your logic to proceed to analysis
+            cleanupTempFiles(true);
             setShowUploadAudio(false);
             setAnalyzeAudio(true);
             setUserAudioData(userAudioData);
@@ -250,9 +252,7 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
 
                   {/* Right: buttons aligned to bottom */}
                   <div className="flex flex-col items-end ml-auto mt-auto gap-2">
-                    <SecondaryButton
-                      onClick={() => handleAnalyzeNewRecording()}
-                    >
+                    <SecondaryButton onClick={handleAnalyzeNewRecording}>
                       analyze new audio
                     </SecondaryButton>
                     {/* <SecondaryButton

@@ -26,9 +26,6 @@ const OverlayGraphWithWaveform = ({
   const [chartState, setChartState] = useState(null);
   const emptyHighlightedSections = useMemo(() => [], []);
 
-  console.log("input audio url:", inputAudioURL);
-  console.log("reference audio url:", referenceAudioURL);
-
   const handleZoomChange = useCallback((changeData) => {
     setChartState(changeData);
   }, []);
@@ -64,9 +61,68 @@ const OverlayGraphWithWaveform = ({
     return Math.max(0, minPositiveValue - 10);
   };
 
+  // --- added: combine input + reference values for global min/max calculation ---
+  const combinedValuesForIndex = (index) => {
+    const inputVals = inputFeatureData?.[index]?.data || [];
+    const refVals = referenceFeatureData?.[index]?.data || [];
+    return [...inputVals, ...refVals].filter(
+      (v) => typeof v === "number" && !isNaN(v)
+    );
+  };
+
+  const computeYBounds = (index) => {
+    const label = inputFeatureData?.[index]?.label;
+    const combined = combinedValuesForIndex(index);
+    const hasValues = combined.length > 0;
+    const globalMin = hasValues ? Math.min(...combined) : 0;
+    const globalMax = hasValues ? Math.max(...combined) : 1;
+
+    // yMin
+    let yMin;
+    if (label === "pitch") {
+      yMin = calculatePitchYMin(combined.length ? combined : [0]);
+    } else if (label === "tempo") {
+      yMin = Math.max(0, globalMin - 50);
+    } else if (
+      selectedAnalysisFeature === "phonation" ||
+      selectedAnalysisFeature === "vocal tone" ||
+      selectedAnalysisFeature === "pitch mod."
+    ) {
+      yMin = 0;
+    } else {
+      yMin = globalMin;
+    }
+
+    // yMax
+    let yMax;
+    if (label === "tempo" || label === "pitch") {
+      yMax = globalMax + 50;
+    } else if (
+      selectedAnalysisFeature === "phonation" ||
+      selectedAnalysisFeature === "vocal tone" ||
+      selectedAnalysisFeature === "pitch mod."
+    ) {
+      yMax = 1;
+    } else {
+      yMax = globalMax;
+    }
+
+    return { yMin, yMax };
+  };
+
+  // Use computed bounds for the currently selected index
+  const { yMin, yMax } = computeYBounds(selectedDataIndex);
+
   // Active feature data
-  const inputFeature = inputFeatureData?.[selectedDataIndex] || null;
-  const referenceFeature = referenceFeatureData?.[selectedDataIndex] || null;
+
+  const inputFeature =
+    inputFeatureData === "invalid"
+      ? null
+      : inputFeatureData?.[selectedDataIndex];
+  const referenceFeature =
+    referenceFeatureData === "invalid"
+      ? null
+      : referenceFeatureData?.[selectedDataIndex];
 
   const hasInputFeatureData =
     inputFeature &&
@@ -82,48 +138,54 @@ const OverlayGraphWithWaveform = ({
   return (
     <div className="flex flex-col items-center justify-center w-full">
       {/* Reference Waveform player above */}
-      <>
-        {referenceAudioURL && (
-          <div>
-            <ul className="text-sm pb-2 pt-2">
-              <li className="font-bold text-darkgray">reference audio</li>
-            </ul>
-            <WaveformPlayer
-              feature={referenceFeature.label}
-              key={referenceAudioURL}
-              audioUrl={referenceAudioURL}
-              highlightedSections={
-                referenceFeature.highlighted?.audio?.length > 0
-                  ? referenceFeature.highlighted.audio
-                  : []
-              }
-              waveColor="#E0E0E0"
-              progressColor="#A0A0A0"
-              startTime={
-                chartState?.zoom?.isZoomed && referenceAudioDuration
-                  ? referenceFrameToTime(
-                      chartState.zoom.startIndex,
-                      referenceAudioDuration,
-                      referenceFeature.data.length
-                    )
-                  : 0
-              }
-              endTime={
-                chartState?.zoom?.isZoomed && referenceAudioDuration
-                  ? referenceFrameToTime(
-                      chartState.zoom.endIndex,
-                      referenceAudioDuration,
-                      referenceFeature.data.length
-                    )
-                  : referenceAudioDuration || undefined
-              }
-              audioDuration={referenceAudioDuration}
-              playIconColorClass="text-darkgray"
-              showTimeline={false}
-            />
-          </div>
-        )}
-      </>
+      {hasInputFeatureData && (
+        <>
+          {referenceFeature !== "invalid" ? (
+            <div>
+              <ul className="text-sm pb-2 pt-2">
+                <li className="font-bold text-darkgray">reference audio</li>
+              </ul>
+              <WaveformPlayer
+                feature={referenceFeature?.label}
+                key={referenceAudioURL}
+                audioUrl={referenceAudioURL}
+                //   highlightedSections={
+                //     referenceFeature.highlighted?.audio?.length > 0
+                //       ? referenceFeature.highlighted.audio
+                //       : []
+                //   }
+                waveColor="#E0E0E0"
+                progressColor="#A0A0A0"
+                startTime={
+                  chartState?.zoom?.isZoomed && referenceAudioDuration
+                    ? referenceFrameToTime(
+                        chartState.zoom.startIndex,
+                        referenceAudioDuration,
+                        referenceFeature.data.length
+                      )
+                    : 0
+                }
+                endTime={
+                  chartState?.zoom?.isZoomed && referenceAudioDuration
+                    ? referenceFrameToTime(
+                        chartState.zoom.endIndex,
+                        referenceAudioDuration,
+                        referenceFeature.data.length
+                      )
+                    : referenceAudioDuration || undefined
+                }
+                audioDuration={referenceAudioDuration}
+                playIconColorClass="text-darkgray"
+                showTimeline={false}
+              />
+            </div>
+          ) : (
+            <div className="text-lightpink text-xl font-semibold">
+              Not able to compute feature for provided reference file.
+            </div>
+          )}
+        </>
+      )}
 
       {!selectedAnalysisFeature ? (
         <div>Select an analysis feature above to start analyzing audio.</div>
@@ -131,7 +193,7 @@ const OverlayGraphWithWaveform = ({
         <LoadingSpinner />
       ) : inputFeatureData === "invalid" ? (
         <div className="text-lightpink text-xl font-semibold">
-          Not enough data to compute
+          Not able to compute feature for provided input file.
         </div>
       ) : (
         inputFeature && (
@@ -204,51 +266,17 @@ const OverlayGraphWithWaveform = ({
                           ? "probability"
                           : selectedAnalysisFeature
                       }
-                      highlightedSections={
-                        inputFeatureData[selectedDataIndex]?.highlighted
-                          ?.data &&
-                        inputFeatureData[selectedDataIndex]?.highlighted.data
-                          .length > 0
-                          ? inputFeatureData[selectedDataIndex]?.highlighted
-                              ?.data
-                          : emptyHighlightedSections
-                      }
-                      yMin={
-                        inputFeatureData[selectedDataIndex]?.label === "pitch"
-                          ? calculatePitchYMin(
-                              inputFeatureData[selectedDataIndex].data
-                            )
-                          : inputFeatureData[selectedDataIndex]?.label ===
-                            "tempo"
-                          ? Math.max(
-                              0,
-                              Math.min(
-                                ...inputFeatureData[selectedDataIndex].data
-                              ) - 50
-                            )
-                          : selectedAnalysisFeature === "phonation" ||
-                            selectedAnalysisFeature === "vocal tone" ||
-                            selectedAnalysisFeature === "pitch mod."
-                          ? 0
-                          : Math.min(
-                              ...inputFeatureData[selectedDataIndex].data
-                            )
-                      }
-                      yMax={
-                        inputFeatureData[selectedDataIndex]?.label ===
-                          "tempo" ||
-                        inputFeatureData[selectedDataIndex]?.label === "pitch"
-                          ? Math.max(
-                              ...inputFeatureData[selectedDataIndex].data
-                            ) + 50
-                          : selectedAnalysisFeature === "phonation" ||
-                            selectedAnalysisFeature === "vocal tone" ||
-                            selectedAnalysisFeature === "pitch mod."
-                          ? 1
-                          : Math.max(
-                              ...inputFeatureData[selectedDataIndex].data
-                            )
-                      }
+                      //   highlightedSections={
+                      //     inputFeatureData[selectedDataIndex]?.highlighted
+                      //       ?.data &&
+                      //     inputFeatureData[selectedDataIndex]?.highlighted.data
+                      //       .length > 0
+                      //       ? inputFeatureData[selectedDataIndex]?.highlighted
+                      //           ?.data
+                      //       : emptyHighlightedSections
+                      //   }
+                      yMin={yMin}
+                      yMax={yMax}
                       zoomDomain={
                         chartState?.zoom
                           ? [
@@ -277,11 +305,11 @@ const OverlayGraphWithWaveform = ({
                   feature={inputFeature.label}
                   key={inputAudioURL}
                   audioUrl={inputAudioURL}
-                  highlightedSections={
-                    inputFeature.highlighted?.audio?.length > 0
-                      ? inputFeature.highlighted.audio
-                      : []
-                  }
+                  // highlightedSections={
+                  //   inputFeature.highlighted?.audio?.length > 0
+                  //     ? inputFeature.highlighted.audio
+                  //     : []
+                  // }
                   waveColor="#E0E0E0"
                   progressColor="#FF89BB"
                   startTime={

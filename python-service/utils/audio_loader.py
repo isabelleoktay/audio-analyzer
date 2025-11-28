@@ -271,6 +271,23 @@ def get_audio_url(audio, hash, sr=44100):
 
     return f"{protocol}://{request.host}{request.script_root}/python-service/audio/{filename}"
 
+def universal_trim(audio, sr, top_db=20):
+    """
+    Downsample to a fixed rate for consistent silence detection
+    """
+    trim_sr = 16000
+    audio_ds = librosa.resample(audio, orig_sr=sr, target_sr=trim_sr)
+
+    # Trim at the fixed rate
+    trimmed_ds, idx = librosa.effects.trim(audio_ds, top_db=top_db)
+
+    # Map index back to original sample rate
+    start = int(idx[0] * (sr / trim_sr))
+    end   = int(idx[1] * (sr / trim_sr))
+
+    # Trim original audio with mapped indices
+    return audio[start:end], (start, end)
+
 def load_and_process_audio(file_bytes, sample_rate=44100, return_path=True):
     """
     Simple function to load audio from file bytes and return processed audio data.
@@ -279,7 +296,7 @@ def load_and_process_audio(file_bytes, sample_rate=44100, return_path=True):
     try:
         file_stream = convert_to_wav_if_needed(file_bytes, return_path=return_path)
         audio, sr = load_audio(file_stream, sample_rate=sample_rate)
-        audio, _ = librosa.effects.trim(audio, top_db=20)
+        audio, _ = universal_trim(audio, sr, top_db=20)
         
         file_hash = get_file_hash(file_bytes)
         audio_url = get_audio_url(audio, file_hash, sr=sr)

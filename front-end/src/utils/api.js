@@ -329,10 +329,10 @@ const uploadMusaVoiceSessionData = async (musaVoiceSessionData) => {
   }
 };
 
-const cleanupTempFiles = async () => {
+const cleanupTempFiles = async (clearCache = false) => {
   try {
     const response = await pythonClient.post(
-      "/python-service/audio/cleanup-temp-files"
+      `/python-service/audio/cleanup-temp-files?clear_cache=${clearCache}`
     );
     console.log("Cleanup response:", response.data);
   } catch (error) {

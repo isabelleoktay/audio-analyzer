@@ -42,7 +42,7 @@ def process_tempo(audio_bytes, session_id=None, file_key="input"):
     Uses session_id and file_key to scope cache to a specific file within a session.
     """
     # clear cache only for the specific session/file
-    clear_cache_if_new_file(audio_bytes, session_id=session_id, file_key=file_key)
+    clear_cache_if_new_file(audio_bytes)
 
     audio, sr, audio_url, __, error = load_and_process_audio(audio_bytes, sample_rate=44100)
     if error:

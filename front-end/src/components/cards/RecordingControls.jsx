@@ -52,7 +52,7 @@ const RecordingControls = ({
             type="text"
             value={recordingName}
             onChange={(e) => onRecordingNameChange(e.target.value)}
-            className="pl-2 py-1 h-full text-base pr-10 text-sm rounded-3xl bg-lightgray/25 focus:border-none focus:outline-none"
+            className="pl-2 py-1 h-full text-lightpink text-base pr-10 text-sm rounded-3xl bg-lightgray/25 focus:border-none focus:outline-none"
             placeholder="untitled"
           />
           {!recordingName.toLowerCase().endsWith(".wav") && (

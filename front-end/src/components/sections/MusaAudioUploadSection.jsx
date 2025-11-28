@@ -96,13 +96,6 @@ const MusaUploadAudioSection = ({ onProceed }) => {
             description="the system will analyse how closely your input audio matches the vocal techniques in the uploaded/recorded reference audio."
           />
           <UploadAudioCard
-            label="input audio"
-            onAudioSourceChange={(source) =>
-              handleAudioSourceChange(source, "user")
-            }
-            onAudioDataChange={(data) => handleAudioDataChange(data, "user")}
-          />
-          <UploadAudioCard
             label="reference audio"
             onAudioSourceChange={(source) =>
               handleAudioSourceChange(source, "reference")
@@ -110,6 +103,13 @@ const MusaUploadAudioSection = ({ onProceed }) => {
             onAudioDataChange={(data) =>
               handleAudioDataChange(data, "reference")
             }
+          />
+          <UploadAudioCard
+            label="input audio"
+            onAudioSourceChange={(source) =>
+              handleAudioSourceChange(source, "user")
+            }
+            onAudioDataChange={(data) => handleAudioDataChange(data, "user")}
           />
         </div>
         <div className="self-stretch w-px bg-darkgray/70"></div>
