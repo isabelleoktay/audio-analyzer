@@ -20,7 +20,7 @@ import SelectedVocalTechniquesCard from "../components/cards/SelectedVocalTechni
  */
 
 const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
-  const [showIntro, setShowIntro] = useState(true);
+//   const [showIntro, setShowIntro] = useState(true);
   const [showSurvey, setShowSurvey] = useState(true);
   const [showUploadAudio, setShowUploadAudio] = useState(false);
   const [analyzeAudio, setAnalyzeAudio] = useState(false);
@@ -42,11 +42,11 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
   const [sessionId, setSessionId] = useState(null);
   const [userToken, setUserToken] = useState(null);
 
-  useEffect(() => {
-    // Hide intro and show survey after 2 seconds
-    const timer = setTimeout(() => setShowIntro(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+//   useEffect(() => {
+//     // Hide intro and show survey after 2 seconds
+//     const timer = setTimeout(() => setShowIntro(false), 1500);
+//     return () => clearTimeout(timer);
+//   }, []);
 
   useEffect(() => {
     // disable enabling uploads from main application
