@@ -102,9 +102,9 @@ def get_cached_or_calculated_pitch(audio_bytes, sample_rate=16000, method="crepe
     x_axis = [round(float(t), 2) for t in times]
 
     monitor.stop()
-    stats = monitor.summary(feature_type="tempo")
-    print(f"Tempo inference metrics: {stats}")
-    file_logger.info(f"Tempo inference metrics: {stats}")
+    stats = monitor.summary(feature_type="pitch")
+    print(f"Pitch inference metrics: {stats}")
+    file_logger.info(f"Pitch inference metrics: {stats}")
 
     # Store in session+file cache if user is authenticated
     # user_cache is the full user cache dict (contains sessions -> files -> file_cache)
