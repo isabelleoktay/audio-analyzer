@@ -135,55 +135,60 @@ const OverlayGraphWithWaveform = ({
     referenceFeature.data.length > 0
   );
 
+  const hasReferenceFile = Boolean(referenceAudioURL);
+
   return (
     <div className="flex flex-col items-center justify-center w-full">
       {/* Reference Waveform player above */}
       {hasInputFeatureData && (
         <>
-          {referenceFeature !== "invalid" ? (
-            <div>
-              <ul className="text-sm pb-2 pt-2">
-                <li className="font-bold text-darkgray">reference audio</li>
-              </ul>
-              <WaveformPlayer
-                feature={referenceFeature?.label}
-                key={referenceAudioURL}
-                audioUrl={referenceAudioURL}
-                //   highlightedSections={
-                //     referenceFeature.highlighted?.audio?.length > 0
-                //       ? referenceFeature.highlighted.audio
-                //       : []
-                //   }
-                waveColor="#E0E0E0"
-                progressColor="#A0A0A0"
-                startTime={
-                  chartState?.zoom?.isZoomed && referenceAudioDuration
-                    ? referenceFrameToTime(
-                        chartState.zoom.startIndex,
-                        referenceAudioDuration,
-                        referenceFeature.data.length
-                      )
-                    : 0
-                }
-                endTime={
-                  chartState?.zoom?.isZoomed && referenceAudioDuration
-                    ? referenceFrameToTime(
-                        chartState.zoom.endIndex,
-                        referenceAudioDuration,
-                        referenceFeature.data.length
-                      )
-                    : referenceAudioDuration || undefined
-                }
-                audioDuration={referenceAudioDuration}
-                playIconColorClass="text-darkgray"
-                showTimeline={false}
-              />
-            </div>
-          ) : (
-            <div className="text-lightpink text-xl font-semibold">
-              Not able to compute feature for provided reference file.
-            </div>
-          )}
+          {hasReferenceFile ? (
+            referenceFeature ? (
+              <div>
+                <ul className="text-sm pb-2 pt-2">
+                  <li className="font-bold text-darkgray">reference audio</li>
+                </ul>
+                <WaveformPlayer
+                  feature={referenceFeature?.label}
+                  key={referenceAudioURL}
+                  audioUrl={referenceAudioURL}
+                  //   highlightedSections={
+                  //     referenceFeature.highlighted?.audio?.length > 0
+                  //       ? referenceFeature.highlighted.audio
+                  //       : []
+                  //   }
+                  waveColor="#E0E0E0"
+                  progressColor="#A0A0A0"
+                  startTime={
+                    chartState?.zoom?.isZoomed && referenceAudioDuration
+                      ? referenceFrameToTime(
+                          chartState.zoom.startIndex,
+                          referenceAudioDuration,
+                          referenceFeature.data.length
+                        )
+                      : 0
+                  }
+                  endTime={
+                    chartState?.zoom?.isZoomed && referenceAudioDuration
+                      ? referenceFrameToTime(
+                          chartState.zoom.endIndex,
+                          referenceAudioDuration,
+                          referenceFeature.data.length
+                        )
+                      : referenceAudioDuration || undefined
+                  }
+                  audioDuration={referenceAudioDuration}
+                  playIconColorClass="text-darkgray"
+                  showTimeline={false}
+                />
+              </div>
+            ) : (
+              <div className="text-lightpink text-xl font-semibold">
+                Not able to compute feature for provided reference file.
+              </div>
+            )
+          ) : null}
+          {/* No reference file → render nothing */}
         </>
       )}
 
