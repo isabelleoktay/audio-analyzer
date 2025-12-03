@@ -8,7 +8,6 @@ import numpy as np
 import torch.nn.functional as F
 import soundfile as sf
 from msclap import CLAP
-from sklearn.preprocessing import LabelEncoder
 from config import VTC_FRAME_DURATION_SEC, VTC_OVERLAP
 
 logging.basicConfig(level=logging.INFO)
@@ -37,26 +36,43 @@ class ClapClassifier(torch.nn.Module):
         return self.classifier(x)
 
 
-def get_clap_embeddings_windowed(audio_array, sample_rate, clap_model_version, window_len_secs, overlap, device="cpu"):
-    audio_array = audio_array.mean(axis=0) if audio_array.ndim == 2 else audio_array
+def get_clap_embeddings_windowed(audio_array, sample_rate, clap_model_version,
+                                 window_len_secs, overlap, device="cpu"):
+
+    # Reduce memory: ensure mono + float32
+    if audio_array.ndim == 2:
+        audio_array = audio_array.mean(axis=0)
+    audio_array = audio_array.astype(np.float32)
+
     window_size = int(window_len_secs * sample_rate)
-    hop_size = int(window_size * (1 - overlap))
+    hop_size = max(1, int(window_size * (1 - overlap)))
     starts = np.arange(0, len(audio_array) - window_size + 1, hop_size)
 
+    # Load once (this saved you from the earlier crash)
     clap_model = get_clap_model(device, version=clap_model_version)
-    tmpfile = tempfile.NamedTemporaryFile(suffix=".wav", delete=True)
-    tmp_path = tmpfile.name
 
-    for start in starts:
-        segment = audio_array[start:start + window_size]
-        sf.write(tmp_path, segment, samplerate=sample_rate)
-        emb = clap_model.get_audio_embeddings([tmp_path], resample=False)
-        if hasattr(emb, "detach"):
-            emb = emb.detach().cpu().numpy()[0]
-        yield emb.astype(np.float32), start / sample_rate  # yield one embedding at a time
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as tmpfile:
+        tmp_path = tmpfile.name
 
-    tmpfile.close()
+        for start in starts:
+            segment = audio_array[start:start + window_size]
 
+            # Write to the still-open file descriptor
+            sf.write(tmpfile, segment, samplerate=sample_rate, format="WAV")
+            tmpfile.flush()
+            tmpfile.seek(0)
+
+            # CLAP reads the file *by name* even when delete=True
+            emb = clap_model.get_audio_embeddings([tmp_path], resample=False)
+
+            if hasattr(emb, "detach"):
+                emb = emb.detach().cpu().numpy()[0]
+
+            # Reset file to empty for next segment
+            tmpfile.seek(0)
+            tmpfile.truncate(0)
+
+            yield emb.astype(np.float32), start / sample_rate
 
 def clap_extract_features_and_predict(
     audio_path: str,
