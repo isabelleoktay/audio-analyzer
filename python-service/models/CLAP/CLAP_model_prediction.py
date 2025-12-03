@@ -1,16 +1,25 @@
 import os
 import torch
-import numpy as np
-import torch.nn.functional as F
-import librosa
 import logging
 import tempfile
+import torchaudio
+import numpy as np
+import torch.nn.functional as F
 import soundfile as sf
 from msclap import CLAP
 from sklearn.preprocessing import LabelEncoder
 from config import VTC_FRAME_DURATION_SEC, VTC_OVERLAP
 
 logging.basicConfig(level=logging.INFO)
+
+
+GLOBAL_CLAP = None
+
+def get_clap_model(device, version="2023"):
+    global GLOBAL_CLAP
+    if GLOBAL_CLAP is None:
+        GLOBAL_CLAP = CLAP(version=version, use_cuda=(device=="cuda"))
+    return GLOBAL_CLAP
 
 
 class ClapClassifier(torch.nn.Module):
@@ -27,69 +36,25 @@ class ClapClassifier(torch.nn.Module):
         return self.classifier(x)
 
 
-def get_clap_embeddings_from_audio_array(
-    audio_array,
-    sample_rate=16000,
-    clap_model_version="2023",
-    window_len_secs=VTC_FRAME_DURATION_SEC,
-    overlap=VTC_OVERLAP,
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-):
-    """
-    Extract CLAP embeddings from an in-memory audio array
-    by saving temporary segment WAVs (consistent with training).
-    """
-
-    # Ensure mono
-    if audio_array.ndim == 2:
-        audio_array = np.mean(audio_array, axis=0)
-
-    # Slice into overlapping segments
+def get_clap_embeddings_windowed(audio_array, sample_rate, clap_model_version, window_len_secs, overlap, device="cpu"):
+    audio_array = audio_array.mean(axis=0) if audio_array.ndim == 2 else audio_array
     window_size = int(window_len_secs * sample_rate)
     hop_size = int(window_size * (1 - overlap))
     starts = np.arange(0, len(audio_array) - window_size + 1, hop_size)
 
-    # Load the CLAP model (e.g., from LAION-CLAP or your local version)
-    try:
-        clap_model = CLAP(version=clap_model_version, use_cuda=(device == "cuda"))
-    except Exception as e:
-        raise RuntimeError("Error loading CLAP model. Ensure LAION-CLAP is installed and configured.") from e
+    clap_model = get_clap_model(device, version=clap_model_version)
+    tmpfile = tempfile.NamedTemporaryFile(suffix=".wav", delete=True)
+    tmp_path = tmpfile.name
 
+    for start in starts:
+        segment = audio_array[start:start + window_size]
+        sf.write(tmp_path, segment, samplerate=sample_rate)
+        emb = clap_model.get_audio_embeddings([tmp_path], resample=False)
+        if hasattr(emb, "detach"):
+            emb = emb.detach().cpu().numpy()[0]
+        yield emb.astype(np.float32), start / sample_rate  # yield one embedding at a time
 
-    embeddings, times = [], []
-
-    # Temporary directory for segment files
-    tmp_dir = tempfile.mkdtemp(prefix="clap_segments_")
-
-    try:
-        for i, start in enumerate(starts):
-            seg = audio_array[start:start + window_size]
-            # Save temporary segment as WAV
-            tmp_path = os.path.join(tmp_dir, f"segment_{i}.wav")
-            sf.write(tmp_path, seg, samplerate=sample_rate)
-            # Get embedding exactly like training
-            emb = clap_model.get_audio_embeddings([tmp_path])
-            # Convert to numpy
-            if hasattr(emb, "detach"):
-                emb = emb.detach().cpu().numpy()
-            if emb.ndim > 1:
-                emb = emb[0]
-            embeddings.append(emb)
-            times.append(start / sample_rate)
-            # Clean up temporary file
-            os.remove(tmp_path)
-
-    finally:
-        # Cleanup temporary directory
-        try:
-            os.rmdir(tmp_dir)
-        except OSError:
-            pass
-
-    embeddings = np.stack(embeddings)
-    times = np.array(times)
-
-    return embeddings, times
+    tmpfile.close()
 
 
 def clap_extract_features_and_predict(
@@ -100,13 +65,8 @@ def clap_extract_features_and_predict(
     window_len_secs: float = VTC_FRAME_DURATION_SEC,
     overlap: float = VTC_OVERLAP,
     clap_model_version="2023",
-    device: str = "cuda" if torch.cuda.is_available() else "cpu",
+    device: str = "cpu",
 ):
-    """
-    Extracts CLAP embeddings from a single audio file and passes them through
-    a trained CLAP classifier loaded from a .pth checkpoint.
-    """
-
     logging.info("Extracting CLAP features and predicting...")
 
     # Load label encoder
@@ -114,51 +74,39 @@ def clap_extract_features_and_predict(
         "./models/CLAP/",
         f"{classify}_{str(window_len_secs).replace('.', '_')}_label_encoder_gendered.npy",
     )
-
     if not os.path.exists(label_encoder_path):
         raise FileNotFoundError(f"Label encoder not found: {label_encoder_path}")
-
-    logging.info("Loading label encoder from file %s", label_encoder_path)
-    
     class_names = np.load(label_encoder_path, allow_pickle=True)
     num_classes = len(class_names)
-    le = LabelEncoder()
-    le.fit(class_names)  
 
-    # Segment the audio
-    audio, _ = librosa.load(audio_path, sr=sample_rate)
+    # Load audio
+    audio, orig_sr = torchaudio.load(audio_path)
+    if orig_sr != sample_rate:
+        audio = torchaudio.functional.resample(audio, orig_sr, sample_rate)
+    audio = audio[0].numpy().astype(np.float32)
 
-    # Load classifier and weights
+    # Load classifier weights
     if not os.path.exists(best_model_weights_path):
         raise FileNotFoundError(f"Classifier weights not found: {best_model_weights_path}")
-    
-    # Get embeddings for file
-    embeddings, times = get_clap_embeddings_from_audio_array(
-        audio_array=audio,
-        sample_rate=sample_rate,
-        clap_model_version=clap_model_version,
-        window_len_secs=window_len_secs,
-        overlap=overlap,
-    )
 
-    # Probe first segment to get embedding dimension
-    first_emb = embeddings[0]
+    # Probe first window to get embedding dimension
+    first_emb, _ = next(get_clap_embeddings_windowed(audio, sample_rate, clap_model_version, window_len_secs, overlap, device))
     embedding_dim = first_emb.shape[-1]
 
+    # Initialize classifier
     classifier = ClapClassifier(embedding_dim, num_classes).to(device)
     classifier.load_state_dict(torch.load(best_model_weights_path, map_location=device))
     classifier.eval()
 
-    # Extract embeddings and classify each segment
-    all_probs, window_times = [], []
+    all_probs = []
+    all_times = []
 
     with torch.no_grad():
-      for i, emb in enumerate(embeddings):
-          emb_tensor = torch.tensor(emb, dtype=torch.float32).unsqueeze(0).to(device)
-          logits = classifier(emb_tensor)
-          probs = F.softmax(logits, dim=-1)
-          all_probs.append(probs.cpu().numpy()[0])
-          window_times.append(times[i])   
+        for emb, t in get_clap_embeddings_windowed(audio, sample_rate, clap_model_version, window_len_secs, overlap, device):
+            emb_tensor = torch.tensor(emb, dtype=torch.float32).unsqueeze(0).to(device)
+            logits = classifier(emb_tensor)
+            probs = F.softmax(logits, dim=-1).cpu().numpy()[0]
+            all_probs.append(probs)
+            all_times.append(t)
 
-    probs_array = np.stack(all_probs)
-    return class_names, probs_array, np.array(window_times)
+    return class_names, np.stack(all_probs), np.array(all_times)
