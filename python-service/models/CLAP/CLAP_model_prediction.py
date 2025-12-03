@@ -39,7 +39,6 @@ class ClapClassifier(torch.nn.Module):
 def get_clap_embeddings_windowed(audio_array, sample_rate, clap_model_version,
                                  window_len_secs, overlap, device="cpu"):
 
-    # Reduce memory: ensure mono + float32
     if audio_array.ndim == 2:
         audio_array = audio_array.mean(axis=0)
     audio_array = audio_array.astype(np.float32)
@@ -48,31 +47,31 @@ def get_clap_embeddings_windowed(audio_array, sample_rate, clap_model_version,
     hop_size = max(1, int(window_size * (1 - overlap)))
     starts = np.arange(0, len(audio_array) - window_size + 1, hop_size)
 
-    # Load once (this saved you from the earlier crash)
     clap_model = get_clap_model(device, version=clap_model_version)
 
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as tmpfile:
-        tmp_path = tmpfile.name
+    # Use a single temp file for this audio
+    tmpfile = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+    tmp_path = tmpfile.name
+    tmpfile.close()  # Close so sf.write can access it
 
+    try:
         for start in starts:
             segment = audio_array[start:start + window_size]
 
-            # Write to the still-open file descriptor
-            sf.write(tmpfile, segment, samplerate=sample_rate, format="WAV")
-            tmpfile.flush()
-            tmpfile.seek(0)
-
-            # CLAP reads the file *by name* even when delete=True
+            # Overwrite the same temp file
+            sf.write(tmp_path, segment, samplerate=sample_rate, format="WAV")
             emb = clap_model.get_audio_embeddings([tmp_path], resample=False)
 
             if hasattr(emb, "detach"):
                 emb = emb.detach().cpu().numpy()[0]
 
-            # Reset file to empty for next segment
-            tmpfile.seek(0)
-            tmpfile.truncate(0)
-
             yield emb.astype(np.float32), start / sample_rate
+
+    finally:
+        try:
+            os.remove(tmp_path)
+        except Exception:
+            pass
 
 def clap_extract_features_and_predict(
     audio_path: str,
