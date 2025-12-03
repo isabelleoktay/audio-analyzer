@@ -1,3 +1,4 @@
+import gc
 import os
 import torch
 import logging
@@ -108,5 +109,15 @@ def clap_extract_features_and_predict(
             probs = F.softmax(logits, dim=-1).cpu().numpy()[0]
             all_probs.append(probs)
             all_times.append(t)
+
+    global GLOBAL_CLAP
+    del classifier
+    if GLOBAL_CLAP is not None:
+        del GLOBAL_CLAP
+        GLOBAL_CLAP = None
+
+    gc.collect()
+    if device.startswith("cuda"):
+        torch.cuda.empty_cache()
 
     return class_names, np.stack(all_probs), np.array(all_times)
