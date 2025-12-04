@@ -2,7 +2,7 @@ from utils.audio_loader import clear_cache_if_new_file
 from feature_extraction.dynamics import get_cached_or_calculated_dynamics
 from utils.resource_monitoring import ResourceMonitor, get_resource_logger
 
-def process_dynamics(audio_bytes, session_id=None, file_key="input"):
+def process_dynamics(audio_bytes, session_id=None, file_key="input", ignore_cache=False):
     """
     Process dynamics for the provided audio bytes.
 
@@ -24,6 +24,7 @@ def process_dynamics(audio_bytes, session_id=None, file_key="input"):
         return_path=True,
         session_id=session_id,
         file_key=file_key,
+        ignore_cache=ignore_cache,
     )
 
     audio_duration = len(audio) / sr

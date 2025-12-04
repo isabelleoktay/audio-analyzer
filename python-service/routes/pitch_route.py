@@ -47,7 +47,8 @@ def handle_pitch():
         sample_rate=16000,
         method="crepe",
         session_id=session_id,
-        file_key=file_key
+        file_key=file_key,
+        ignore_cache=True,
     )
     result = convert_to_builtin_types(result)
     if error:
