@@ -17,6 +17,21 @@ def extract_vocal_tone(audio_path, gender):
     else:
         raise ValueError(f"Gender {gender} not recognised.")
     
+    # get CLAP predictions 
+    clap_monitor = ResourceMonitor(interval=0.1)
+    clap_monitor.start()
+
+    clap_class_names, clap_probs_array, __ = clap_extract_features_and_predict(
+        audio_path,
+        best_model_weights_path=best_clap_model_weights_path,
+        classify = "timbre",
+    )
+
+    clap_monitor.stop()
+    clap_stats = clap_monitor.summary(feature_type="clap_vocal_tone")
+    print(f"CLAP vocal tone inference metrics: {clap_stats}")
+    file_logger.info(f"CLAP vocal tone inference metrics: {clap_stats}")
+
     # Get Whisper predictions 
     whisper_monitor = ResourceMonitor(interval=0.1)
     whisper_monitor.start()
@@ -32,21 +47,6 @@ def extract_vocal_tone(audio_path, gender):
     whisper_stats = whisper_monitor.summary(feature_type="whisper_vocal_tone")
     print(f"Whisper vocal tone inference metrics: {whisper_stats}")
     file_logger.info(f"Whisper vocal tone inference metrics: {whisper_stats}")
-
-    # get CLAP predictions 
-    clap_monitor = ResourceMonitor(interval=0.1)
-    clap_monitor.start()
-
-    clap_class_names, clap_probs_array, __ = clap_extract_features_and_predict(
-        audio_path,
-        best_model_weights_path=best_clap_model_weights_path,
-        classify = "timbre",
-    )
-
-    clap_monitor.stop()
-    clap_stats = clap_monitor.summary(feature_type="clap_vocal_tone")
-    print(f"CLAP vocal tone inference metrics: {clap_stats}")
-    file_logger.info(f"CLAP vocal tone inference metrics: {clap_stats}")
 
     # return both 
     return whisper_class_names, whisper_probs_array, clap_class_names, clap_probs_array
