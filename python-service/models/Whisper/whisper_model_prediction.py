@@ -11,9 +11,6 @@ from config import VTC_FRAME_DURATION_SEC, VTC_OVERLAP
 
 logging.basicConfig(level=logging.INFO)
 
-GLOBAL_WHISPER_MODEL = None
-GLOBAL_WHISPER_EXTRACTOR = None
-GLOBAL_NUM_CLASSES = None  # Track the number of classes currently loaded
 
 class WhisperClassifier(nn.Module):
     """
@@ -32,23 +29,6 @@ class WhisperClassifier(nn.Module):
         logits = self.classifier(pooled)
         return logits
 
-def get_whisper_model_and_extractor(base_model_name, num_classes, device="cpu"):
-    """
-    Get a global Whisper model and feature extractor.
-    Resets the model if num_classes changes.
-    """
-    global GLOBAL_WHISPER_MODEL, GLOBAL_WHISPER_EXTRACTOR, GLOBAL_NUM_CLASSES
-
-    if GLOBAL_WHISPER_MODEL is None or GLOBAL_NUM_CLASSES != num_classes:
-        logging.info(f"Initializing Whisper model for {num_classes} classes.")
-        GLOBAL_WHISPER_MODEL = WhisperClassifier(base_model_name, num_classes).to(device)
-        GLOBAL_WHISPER_MODEL.eval()
-        GLOBAL_NUM_CLASSES = num_classes
-
-    if GLOBAL_WHISPER_EXTRACTOR is None:
-        GLOBAL_WHISPER_EXTRACTOR = WhisperFeatureExtractor.from_pretrained(base_model_name)
-
-    return GLOBAL_WHISPER_MODEL, GLOBAL_WHISPER_EXTRACTOR
 
 def whisper_extract_features_and_predict(
     audio_path: str,
@@ -72,10 +52,9 @@ def whisper_extract_features_and_predict(
     num_classes = len(label_encoder.classes_)
     class_names = label_encoder.classes_
 
-    # Load model & feature extractor (reset if num_classes changed)
-    model, feature_extractor = get_whisper_model_and_extractor(
-        whisper_base_model_name, num_classes, device
-    )
+    # Load model and feature extractor
+    model = WhisperClassifier(whisper_base_model_name, num_classes).to(device)
+    feature_extractor = WhisperFeatureExtractor.from_pretrained(whisper_base_model_name)
 
     # Load classifier weights
     if not os.path.exists(best_model_weights_path):
@@ -98,8 +77,8 @@ def whisper_extract_features_and_predict(
     all_probs = []
     all_times = []
 
-    # Process windows
-    with torch.no_grad():
+    # Inference with memory optimizations
+    with torch.no_grad(), torch.inference_mode():
         for start in starts:
             segment = audio[start:start + window_size]
             inputs = feature_extractor(segment, sampling_rate=sample_rate, return_tensors="pt")
@@ -109,15 +88,8 @@ def whisper_extract_features_and_predict(
             all_probs.append(probs)
             all_times.append(start / sample_rate)
 
-    global GLOBAL_WHISPER_MODEL, GLOBAL_WHISPER_EXTRACTOR, GLOBAL_NUM_CLASSES
-    del model, feature_extractor
-    GLOBAL_WHISPER_MODEL = None
-    GLOBAL_WHISPER_EXTRACTOR = None
-    GLOBAL_NUM_CLASSES = None
-
+    # Clean up to free RAM
+    del model, feature_extractor, inputs, input_features, logits
     gc.collect()
-    if device.startswith("cuda"):
-        torch.cuda.empty_cache()
 
     return class_names, np.stack(all_probs), np.array(all_times)
-
