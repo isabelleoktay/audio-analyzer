@@ -14,6 +14,8 @@ import librosa
 from config import *
 import numpy as np
 
+from utils.resource_monitoring import ResourceMonitor, get_resource_logger
+
 def get_cached_or_calculated_dynamics(
     audio_bytes,
     sample_rate=44100,
@@ -29,6 +31,9 @@ def get_cached_or_calculated_dynamics(
     If ignore_cache is True, skip reading/writing cache and always compute from scratch.
     """
     # allow caller or frontend to pass sessionId/fileKey via form data
+
+    file_logger = get_resource_logger()
+    
     if session_id is None:
         session_id = request.form.get("sessionId")
     if not file_key:
@@ -94,6 +99,10 @@ def get_cached_or_calculated_dynamics(
 
     # Not cached or ignoring cache — load and compute
     print(f"Loading audio for dynamics at {sample_rate}Hz (session={session_id} file_key={file_key} ignore_cache={ignore_cache})")
+
+    monitor = ResourceMonitor(interval=0.1)
+    monitor.start()
+
     audio, sr, audio_url, __, error = load_and_process_audio(
         audio_bytes, sample_rate=sample_rate, return_path=return_path
     )
@@ -122,6 +131,11 @@ def get_cached_or_calculated_dynamics(
 
     # Smooth RMS values
     smoothed_rms = smooth_data(rms[0], filter_type="mean", window_percentage=0.1)
+
+    monitor.stop()
+    stats = monitor.summary(feature_type="dynamics")
+    print(f"Dynamics inference metrics: {stats}")
+    file_logger.info(f"Dynamics inference metrics: {stats}")
 
     # Store in session+file cache if user is authenticated and not ignoring cache
     if (not ignore_cache) and user_id and audio_cache is not None:

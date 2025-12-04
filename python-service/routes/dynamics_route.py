@@ -14,6 +14,8 @@ def handle_dynamics():
     session_id = request.form.get("sessionId")
     file_key = request.form.get("fileKey", "input")
 
+    print("changed file")
+
     result, error = process_dynamics(audio_file.read(), session_id=session_id, file_key=file_key, ignore_cache=True)
     result = convert_to_builtin_types(result)
     if error:
