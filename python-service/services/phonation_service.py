@@ -2,9 +2,9 @@ from utils.audio_loader import load_and_process_audio, clear_cache_if_new_file
 from feature_extraction.phonation import extract_phonation
 from utils.resource_monitoring import ResourceMonitor, get_resource_logger
 
-file_logger = get_resource_logger()
-
 def process_phonation(audio_bytes):
+    file_logger = get_resource_logger()
+    
     clear_cache_if_new_file(audio_bytes)
 
     # 1) Load & trim audio + get URL

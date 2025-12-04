@@ -6,14 +6,14 @@ from utils.data_utils import round_array_to_nearest
 from config import *
 from utils.resource_monitoring import ResourceMonitor, get_resource_logger
 
-file_logger = get_resource_logger()
-
 
 def process_tempo(audio_bytes, session_id=None, file_key="input"):
     """
     Process tempo for the provided audio bytes.
     Uses session_id and file_key to scope cache to a specific file within a session.
     """
+    file_logger = get_resource_logger()
+    
     # clear cache only for the specific session/file
     clear_cache_if_new_file(audio_bytes)
 
