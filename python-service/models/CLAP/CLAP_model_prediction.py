@@ -13,15 +13,6 @@ from config import VTC_FRAME_DURATION_SEC, VTC_OVERLAP
 logging.basicConfig(level=logging.INFO)
 
 
-GLOBAL_CLAP = None
-
-def get_clap_model(device, version="2023"):
-    global GLOBAL_CLAP
-    if GLOBAL_CLAP is None:
-        GLOBAL_CLAP = CLAP(version=version, use_cuda=(device=="cuda"))
-    return GLOBAL_CLAP
-
-
 class ClapClassifier(torch.nn.Module):
     def __init__(self, input_dim, num_classes, hidden_dim=512, dropout=0.3):
         super().__init__()
@@ -34,6 +25,11 @@ class ClapClassifier(torch.nn.Module):
 
     def forward(self, x):
         return self.classifier(x)
+
+
+def get_clap_model(device, version="2023"):
+    """Create a new CLAP instance each time."""
+    return CLAP(version=version, use_cuda=(device=="cuda"))
 
 
 def get_clap_embeddings_windowed(audio_array, sample_rate, clap_model_version,
@@ -49,7 +45,6 @@ def get_clap_embeddings_windowed(audio_array, sample_rate, clap_model_version,
 
     clap_model = get_clap_model(device, version=clap_model_version)
 
-    # Use a single temp file for this audio
     tmpfile = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
     tmp_path = tmpfile.name
     tmpfile.close()  # Close so sf.write can access it
@@ -72,6 +67,8 @@ def get_clap_embeddings_windowed(audio_array, sample_rate, clap_model_version,
             os.remove(tmp_path)
         except Exception:
             pass
+        del clap_model
+        gc.collect()
 
 def clap_extract_features_and_predict(
     audio_path: str,
@@ -117,7 +114,8 @@ def clap_extract_features_and_predict(
     all_probs = []
     all_times = []
 
-    with torch.no_grad():
+    # Use no_grad + inference_mode for memory efficiency
+    with torch.no_grad(), torch.inference_mode():
         for emb, t in get_clap_embeddings_windowed(audio, sample_rate, clap_model_version, window_len_secs, overlap, device):
             emb_tensor = torch.tensor(emb, dtype=torch.float32).unsqueeze(0).to(device)
             logits = classifier(emb_tensor)
@@ -125,14 +123,8 @@ def clap_extract_features_and_predict(
             all_probs.append(probs)
             all_times.append(t)
 
-    global GLOBAL_CLAP
-    del classifier
-    if GLOBAL_CLAP is not None:
-        del GLOBAL_CLAP
-        GLOBAL_CLAP = None
-
+    # Clean up
+    del classifier, emb_tensor, logits
     gc.collect()
-    if device.startswith("cuda"):
-        torch.cuda.empty_cache()
 
     return class_names, np.stack(all_probs), np.array(all_times)
