@@ -2,8 +2,6 @@ from utils.audio_loader import clear_cache_if_new_file
 from feature_extraction.dynamics import get_cached_or_calculated_dynamics
 from utils.resource_monitoring import ResourceMonitor, get_resource_logger
 
-file_logger = get_resource_logger()
-
 def process_dynamics(audio_bytes, session_id=None, file_key="input"):
     """
     Process dynamics for the provided audio bytes.
@@ -11,6 +9,9 @@ def process_dynamics(audio_bytes, session_id=None, file_key="input"):
     session_id and file_key are optional and will be passed to cache helpers so
     the correct per-session / per-file cache is used.
     """
+
+    file_logger = get_resource_logger()
+    
     # ensure we only clear the cache for the specific session/file (not global)
     clear_cache_if_new_file(audio_bytes, session_id=session_id, file_key=file_key)
 

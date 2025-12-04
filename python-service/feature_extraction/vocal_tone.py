@@ -4,9 +4,9 @@ from models.CLAP.CLAP_model_prediction import clap_extract_features_and_predict
 from config import CLAP_MALE_TIMBRE_MODEL_PATH, CLAP_FEMALE_TIMBRE_MODEL_PATH, WHISPER_MALE_TIMBRE_MODEL_PATH, WHISPER_FEMALE_TIMBRE_MODEL_PATH
 from utils.resource_monitoring import ResourceMonitor, get_resource_logger
 
-file_logger = get_resource_logger()
-
 def extract_vocal_tone(audio_path, gender):
+
+    file_logger = get_resource_logger()
 
     if gender == "male":
         best_whisper_model_weights_path = WHISPER_MALE_TIMBRE_MODEL_PATH

@@ -20,11 +20,11 @@ from feature_extraction.pitch_utils import (
 )
 from utils.resource_monitoring import ResourceMonitor, get_resource_logger
 
-file_logger = get_resource_logger()
-
 
 def get_cached_or_calculated_pitch(audio_bytes, sample_rate=16000, method="crepe", session_id=None, file_key="input"):
     
+    file_logger = get_resource_logger()
+
     monitor = ResourceMonitor(interval=0.1)
     monitor.start()
     
