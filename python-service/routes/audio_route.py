@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, send_from_directory, abort, request, jsonify
 import os
-from utils.audio_loader import convert_to_wav_if_needed, get_user_id_from_token, get_jwt_manager
+from utils.audio_loader import convert_to_wav_if_needed, get_user_id_from_token, get_jwt_manager, get_user_cache
 
 audio_blueprint = Blueprint('audio', __name__, url_prefix='/python-service/audio')
 
@@ -41,6 +41,8 @@ def cleanup_temp_files():
             if user_id:
                 jwt_manager = get_jwt_manager()
                 jwt_manager.update_user_cache(user_id, {})  # wipe everything
+                new_cache = jwt_manager.get_user_cache(user_id)
+                print(f"Cleared cache for user {user_id}: {new_cache}")
             else:
                 return jsonify({"error": "Could not clear cache: no valid user token"}), 400
 
