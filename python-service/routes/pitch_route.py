@@ -23,7 +23,7 @@ def handle_pitch():
         method="crepe",
         session_id=session_id,
         file_key=file_key,
-        ignore_cache=True,
+        ignore_cache=False,
     )
     result = convert_to_builtin_types(result)
     if error:

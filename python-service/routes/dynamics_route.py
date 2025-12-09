@@ -16,7 +16,7 @@ def handle_dynamics():
 
     print("changed file")
 
-    result, error = process_dynamics(audio_file.read(), session_id=session_id, file_key=file_key, ignore_cache=True)
+    result, error = process_dynamics(audio_file.read(), session_id=session_id, file_key=file_key, ignore_cache=False)
     result = convert_to_builtin_types(result)
     if error:
         return jsonify({'error': error}), 400
