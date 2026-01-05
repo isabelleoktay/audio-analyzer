@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Layout from "./components/Layout.jsx";
-import NavBar from "./components/NavBar.jsx";
 import {
   Analyzer,
   Testing,
@@ -12,6 +11,11 @@ import {
   //   MultiAudio,
   FeedbackForm,
 } from "./pages";
+import {
+  MusaVoiceTesting,
+  EntryQuestions,
+  Instructions,
+} from "./pages/testing_pages";
 
 import { cleanupTempFiles } from "./utils/api.js";
 import { tokenManager } from "./utils/tokenManager.js";
@@ -86,15 +90,13 @@ const App = () => {
       <div className="relative z-10">
         <div className="flex flex-col min-h-screen">
           <Router>
-            <Layout>
-              {/* Navigation bar with reset functionality and tooltip controls */}
-              <NavBar
-                handleReset={handleReset}
-                uploadsEnabled={uploadsEnabled}
-                setUploadsEnabled={setUploadsEnabled}
-                setTooltipMode={setTooltipMode}
-                tooltipMode={tooltipMode}
-              />
+            <Layout
+              handleReset={handleReset}
+              uploadsEnabled={uploadsEnabled}
+              setUploadsEnabled={setUploadsEnabled}
+              setTooltipMode={setTooltipMode}
+              tooltipMode={tooltipMode}
+            >
               <Routes>
                 {/* Main Analyzer page for audio analysis */}
                 <Route
@@ -134,6 +136,19 @@ const App = () => {
                 <Route
                   path="/testing"
                   element={<Testing setUploadsEnabled={setUploadsEnabled} />}
+                />
+                {/* MusaVoice Testing Pages */}
+                <Route
+                  path="/musavoice-testing"
+                  element={<MusaVoiceTesting />}
+                />
+                <Route
+                  path="/musavoice-testing-entryquestions"
+                  element={<EntryQuestions />}
+                />
+                <Route
+                  path="/musavoice-testing-instructions"
+                  element={<Instructions />}
                 />
                 {/* <Route
                   path="/multi-audio"
