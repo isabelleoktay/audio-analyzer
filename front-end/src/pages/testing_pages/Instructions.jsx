@@ -2,15 +2,16 @@ import SurveySingleSelect from "../../components/survey/SurveySingleSelect.jsx";
 import SecondaryButton from "../../components/buttons/SecondaryButton";
 import { musaVoiceTestInstructionsConfig } from "../../data/musaVoiceTestInstructionsConfig.js";
 
-const Instructions = ({ selectedTask = "Pitch Modulation Control" }) => {
+const Instructions = ({ currentTask = "Pitch Modulation Control", config = musaVoiceTestInstructionsConfig }) => {
   const startTestingProcedure = () => {
     // logic to start the testing procedure
+    window.location.href = "/musavoice-testing-record-task";
   };
 
-  const currentTaskConfig = musaVoiceTestInstructionsConfig?.find(
-    (task) => task.task === selectedTask
+  const currentTaskConfig = config?.find(
+    (task) => task.task === currentTask
   ) ??
-    musaVoiceTestInstructionsConfig?.[0] ?? {
+    config?.[0] ?? {
       task: "",
       textBlock: "",
       question: "",
@@ -45,7 +46,7 @@ const Instructions = ({ selectedTask = "Pitch Modulation Control" }) => {
       </div>
       <div className="pt-10">
         <SecondaryButton onClick={() => startTestingProcedure()}>
-          I understand what to do. Continue.
+          i understand what to do. continue.
         </SecondaryButton>
       </div>
     </div>

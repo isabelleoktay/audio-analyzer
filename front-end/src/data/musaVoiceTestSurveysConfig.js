@@ -92,5 +92,117 @@ export const EntryQuestionsConfig = [
   },
 ];
 
-export const SectionExitConfig = [];
-export const FinalExitConfig = [];
+export const SectionExitConfig = [
+  {
+    task: "Pitch Modulation Control",
+    questions: [
+      {
+        type: "statementRating",
+        question:
+          "How well do you think you controlled your pitch modulation (vibrato VS straight tone)?",
+        statements: [""],
+        scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+      },
+      {
+        type: "statementRating",
+        question:
+          "Was the feedback tool helpful for you to achieve the pitch modulations you desired in the performance?",
+        statements: [""],
+        scaleLabels: ["Not helpful at all", "", "", "", "", "Very helpful"],
+      },
+    ],
+  },
+  {
+    task: "Vocal Tone Control",
+    questions: [
+      {
+        type: "statementRating",
+        question:
+          "How well do you think you controlled your vocal tone (belt VS breathy tone)?",
+        statements: [""],
+        scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+      },
+      {
+        type: "statementRating",
+        question:
+          "Was the feedback tool helpful for you to achieve the vocal tone you desired in the performance?",
+        statements: [""],
+        scaleLabels: ["Not helpful at all", "", "", "", "", "Very helpful"],
+      },
+    ],
+  },
+];
+
+export const FinalExitConfig = [
+  {
+    section: "Usefulness",
+    infoText:
+      "Thank you for participating! Please answer the following questions to help us better understand the usefulness of the MuSA vocal technique feedback tool.",
+    generalQuestions: [
+      {
+        type: "textAnswer",
+        question:
+          "How was your experience with the tool? Did you learn something about your voice?",
+      },
+      {
+        type: "statementRating",
+        question: "To what extent do you agree with the following statements?",
+        statements: [
+          "I learned new things about my voice when exploring this tool.",
+          "The visual feedback helped me identify where I was/was not achieving desired effects.",
+          "I would use a tool like this in my practice.",
+          "I understood what each classifier label meant.",
+        ],
+        scaleLabels: ["Strongly disagree", "", "", "", "", "Strongly agree"],
+      },
+      {
+        type: "textAnswer",
+        question:
+          "Where there any classifications that did not make sense? If so, which ones and why?",
+      },
+      {
+        type: "textAnswer",
+        question:
+          "Which classifications did you trust the most/least? What impacted this?",
+      },
+    ],
+    specificQuestions: [
+      {
+        type: "multiscale",
+        question:
+          "Rate how useful it was to get feedback on each of the vocal techniques:",
+        options: ["Vibrato", "Straight tone", "Belting", "Breathiness"],
+        scaleLabels: ["Not useful", "", "", "", "", "Very useful"],
+      },
+    ],
+  },
+  {
+    section: "Usability",
+    infoText:
+      "Almost done! Please answer the following questions to help us better understand the usability of the MuSA vocal technique feedback tool.",
+    generalQuestions: [
+      {
+        type: "statementRating",
+        question: "To what extent do you agree with the following statements?",
+        statements: [
+          "I think I would like to use this system frequently.",
+          "I found the system unnecessarily complex.",
+          "I thought the system was easy to use.",
+          "I think I would need the support of a technical person to be able to use this system.",
+          "I found the various functions in this system were well integrated.",
+          "I thought there was too much inconsistency in this system.",
+          "I would imagine that most people would learn to use this system very quickly.",
+          "I found the system very tiring to use.",
+          "I felt very confident using the system.",
+          "I needed to learn a lot of things before I could get going with this system.",
+        ],
+        scaleLabels: ["Strongly disagree", "", "", "", "", "Strongly agree"],
+      },
+      {
+        type: "textAnswer",
+        question:
+          "What further developments/features would you like this tool to have?",
+      },
+    ],
+  },
+];
