@@ -1,15 +1,12 @@
-import { useState } from "react";
 import { EntryQuestionsConfig } from "../../data/musaVoiceTestSurveysConfig.js";
 import SurveySection from "../../components/survey/SurveySection.jsx";
 
-const EntryQuestions = () => {
-  const [answers, setAnswers] = useState({});
-
-  const handleSubmitSurvey = async (answers) => {
-    console.log("Survey answers:", answers);
-    setAnswers(answers);
-    // Add logic to send entry survey answers to backend and store them
-    window.location.href = "/musavoice-testing-instructions";
+const EntryQuestions = ({ onNext }) => {
+  const handleSubmitSurvey = async (submittedAnswers) => {
+    console.log("Survey answers:", submittedAnswers);
+    onNext({
+      entrySurveyAnswers: submittedAnswers,
+    });
   };
 
   return (

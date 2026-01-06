@@ -11,19 +11,11 @@ import {
   //   MultiAudio,
   FeedbackForm,
 } from "./pages";
-import {
-  MusaVoiceTesting,
-  EntryQuestions,
-  Instructions,
-  RecordTask,
-  Practice,
-  SectionExitSurvey,
-  FinalExitSurvey,
-  ThankYou,
-} from "./pages/testing_pages";
 
 import { cleanupTempFiles } from "./utils/api.js";
 import { tokenManager } from "./utils/tokenManager.js";
+import { musaVoiceSurveyFlow } from "./config/musaVoiceSurveyFlow.js";
+import SurveyRunner from "./components/survey/SurveyRunner.jsx";
 
 /**
  * The main application component for the Audio Analyzer frontend.
@@ -161,35 +153,7 @@ const App = () => {
                 {/* MusaVoice Testing Pages */}
                 <Route
                   path="/musavoice-testing"
-                  element={<MusaVoiceTesting />}
-                />
-                <Route
-                  path="/musavoice-testing-entryquestions"
-                  element={<EntryQuestions />}
-                />
-                <Route
-                  path="/musavoice-testing-instructions"
-                  element={<Instructions />}
-                />
-                <Route
-                  path="/musavoice-testing-record-task"
-                  element={<RecordTask />}
-                />
-                <Route
-                  path="/musavoice-testing-practice"
-                  element={<Practice />}
-                />
-                <Route
-                  path="/musavoice-testing-section-end"
-                  element={<SectionExitSurvey />}
-                />
-                <Route
-                  path="/musavoice-testing-final-survey"
-                  element={<FinalExitSurvey />}
-                />
-                <Route
-                  path="/musavoice-testing-thank-you"
-                  element={<ThankYou />}
+                  element={<SurveyRunner flow={musaVoiceSurveyFlow} />}
                 />
                 {/* Fallback route for undefined paths */}
                 <Route path="*" element={<NotFound />} />

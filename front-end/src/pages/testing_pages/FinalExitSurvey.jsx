@@ -2,10 +2,13 @@ import { useState, useMemo } from "react";
 import { FinalExitConfig } from "../../data/musaVoiceTestSurveysConfig";
 import SurveySection from "../../components/survey/SurveySection.jsx";
 
-const FinalExitSurvey = ({ selectedTask = "Both", config=FinalExitConfig }) => {
-  // current section index (0 = Usefulness, 1 = Usability)
+const FinalExitSurvey = ({ onNext, surveyData, config = FinalExitConfig }) => {
+  const selectedTask = surveyData?.selectedTestFlow ?? "Both";
+
+  // current section index (0 = Usefulness, 1 = Usability, etc.)
   const [sectionIndex, setSectionIndex] = useState(0);
-  // saved answers per section so we can go back/forth
+
+  // saved answers per section
   const [savedAnswersBySection, setSavedAnswersBySection] = useState({});
 
   const selectedSectionConfig = config[sectionIndex];
@@ -25,7 +28,7 @@ const FinalExitSurvey = ({ selectedTask = "Both", config=FinalExitConfig }) => {
     return options; // default: show all
   };
 
-  // compose the config to pass to SurveySection (general + filtered specific if present)
+  // compose the config to pass to SurveySection
   const composedConfig = useMemo(() => {
     const general = selectedSectionConfig?.generalQuestions || [];
     const specific = selectedSectionConfig?.specificQuestions || [];
@@ -38,42 +41,42 @@ const FinalExitSurvey = ({ selectedTask = "Both", config=FinalExitConfig }) => {
     return [...general, ...processedSpecific];
   }, [selectedSectionConfig, selectedTask]);
 
-  const handleSubmitSectionExitSurvey = (answers) => {
-    // save this section's answers
+  const handleSubmitSection = (answers) => {
+    // save current section answers
     setSavedAnswersBySection((prev) => ({ ...prev, [sectionIndex]: answers }));
 
     // if more sections left, move to next
-    if (sectionIndex < FinalExitConfig.length - 1) {
+    if (sectionIndex < config.length - 1) {
       setSectionIndex((i) => i + 1);
       return;
     }
 
-    // final submit: merge all section answers and finish
+    // final submit: merge all section answers
     const finalAnswers = { ...savedAnswersBySection, [sectionIndex]: answers };
     console.log("Final exit survey answers:", finalAnswers);
-    // TODO: POST to backend if needed
-    window.location.href = "/musavoice-testing-thank-you";
+    onNext({
+      finalExitAnswers: finalAnswers,
+    });
   };
 
   const handleBack = (answers) => {
-    // save current answers then go back
     setSavedAnswersBySection((prev) => ({ ...prev, [sectionIndex]: answers }));
     setSectionIndex((i) => Math.max(0, i - 1));
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray">
+    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray w-full max-w-5xl px-4">
       <h1 className="text-xl text-lightpink font-bold mb-5 pt-10 text-justify">
         {selectedSectionConfig?.section}
       </h1>
-      <div className="md:w-5/6 ">
+
+      <div className="md:w-full">
         <p className="pb-5 text-justify">{selectedSectionConfig?.infoText}</p>
+
         <SurveySection
           config={composedConfig}
-          onSubmit={handleSubmitSectionExitSurvey}
-          buttonText={
-            sectionIndex < FinalExitConfig.length - 1 ? "Next" : "Submit"
-          }
+          onSubmit={handleSubmitSection}
+          buttonText={sectionIndex < config.length - 1 ? "Next" : "Submit"}
           backButtonClick={sectionIndex > 0 ? handleBack : undefined}
           savedAnswers={savedAnswersBySection[sectionIndex] || {}}
         />
