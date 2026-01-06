@@ -14,8 +14,8 @@ import {
 
 import { cleanupTempFiles } from "./utils/api.js";
 import { tokenManager } from "./utils/tokenManager.js";
-import { musaVoiceSurveyFlow } from "./config/musaVoiceSurveyFlow.js";
-import SurveyRunner from "./components/survey/SurveyRunner.jsx";
+import { musaVoiceUserTestFlow } from "./config/musaVoiceUserTestFlow.js";
+import TestRunner from "./pages/TestRunner.jsx";
 
 /**
  * The main application component for the Audio Analyzer frontend.
@@ -153,7 +153,7 @@ const App = () => {
                 {/* MusaVoice Testing Pages */}
                 <Route
                   path="/musavoice-testing"
-                  element={<SurveyRunner flow={musaVoiceSurveyFlow} />}
+                  element={<TestRunner flow={musaVoiceUserTestFlow} />}
                 />
                 {/* Fallback route for undefined paths */}
                 <Route path="*" element={<NotFound />} />

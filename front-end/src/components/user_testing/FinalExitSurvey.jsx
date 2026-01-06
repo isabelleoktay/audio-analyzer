@@ -1,8 +1,7 @@
 import { useState, useMemo } from "react";
-import { FinalExitConfig } from "../../data/musaVoiceTestSurveysConfig";
-import SurveySection from "../../components/survey/SurveySection.jsx";
+import SurveySection from "../survey/SurveySection.jsx";
 
-const FinalExitSurvey = ({ onNext, surveyData, config = FinalExitConfig }) => {
+const FinalExitSurvey = ({ onNext, surveyData, config }) => {
   const selectedTask = surveyData?.selectedTestFlow ?? "Both";
 
   // current section index (0 = Usefulness, 1 = Usability, etc.)
@@ -48,6 +47,7 @@ const FinalExitSurvey = ({ onNext, surveyData, config = FinalExitConfig }) => {
     // if more sections left, move to next
     if (sectionIndex < config.length - 1) {
       setSectionIndex((i) => i + 1);
+      window.scrollTo(0, 0);
       return;
     }
 
@@ -62,6 +62,7 @@ const FinalExitSurvey = ({ onNext, surveyData, config = FinalExitConfig }) => {
   const handleBack = (answers) => {
     setSavedAnswersBySection((prev) => ({ ...prev, [sectionIndex]: answers }));
     setSectionIndex((i) => Math.max(0, i - 1));
+    window.scrollTo(0, 0);
   };
 
   return (

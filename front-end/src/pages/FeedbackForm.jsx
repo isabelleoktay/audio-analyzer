@@ -6,7 +6,7 @@ import {
   feedbackForm1Config,
   feedbackForm2Config,
   feedbackForm3Config,
-} from "../data/feedbackFormConfig.js";
+} from "../config/feedbackFormConfig.js";
 
 const FeedbackForm = () => {
   const [step, setStep] = useState(0);

@@ -1,13 +1,8 @@
-import SurveySingleSelect from "../../components/survey/SurveySingleSelect.jsx";
-import SecondaryButton from "../../components/buttons/SecondaryButton";
-import { musaVoiceTestInstructionsConfig } from "../../data/musaVoiceTestInstructionsConfig.js";
+import SurveySingleSelect from "../survey/SurveySingleSelect.jsx";
+import SecondaryButton from "../buttons/SecondaryButton.jsx";
 import { useState } from "react";
 
-const Instructions = ({
-  onNext,
-  surveyData,
-  config = musaVoiceTestInstructionsConfig,
-}) => {
+const Instructions = ({ onNext, surveyData, config }) => {
   const [confidence, setConfidence] = useState(null);
 
   const currentTask =
@@ -24,6 +19,7 @@ const Instructions = ({
     onNext({
       instructionConfidence: confidence,
     });
+    window.scrollTo(0, 0);
   };
 
   return (

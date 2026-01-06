@@ -1,16 +1,12 @@
 import { useState } from "react";
-import SurveySection from "../../components/survey/SurveySection.jsx";
-import { SectionExitConfig } from "../../data/musaVoiceTestSurveysConfig";
+import SurveySection from "../survey/SurveySection.jsx";
 
 const SectionExitSurvey = ({
   onNext,
-  surveyData,
-  config = SectionExitConfig,
+  currentTask = "Pitch Modulation Control",
+  config,
 }) => {
   const [answers, setAnswers] = useState({});
-
-  const currentTask =
-    surveyData?.selectedTestFlow ?? "Pitch Modulation Control";
 
   const currentTaskConfig = config?.find(
     (task) => task.task === currentTask
@@ -33,6 +29,7 @@ const SectionExitSurvey = ({
     onNext({
       sectionExitAnswers: submittedAnswers,
     });
+    window.scrollTo(0, 0);
   };
 
   return (

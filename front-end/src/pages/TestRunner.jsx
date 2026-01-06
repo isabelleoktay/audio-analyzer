@@ -1,22 +1,30 @@
 import { useState } from "react";
-import { ThankYou } from "../../pages/testing_pages";
-import ProgressBar from "../testing/ProgressBar";
+import { ThankYou } from "../components/user_testing";
+import ProgressBar from "../components/testing/ProgressBar";
 
-function SurveyRunner({ flow }) {
+function TestRunner({ flow }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
-  const Step = flow[stepIndex].component;
+  const [surveyData, setSurveyData] = useState({});
 
-  const next = () => {
+  const Step = flow[stepIndex].component;
+  const stepConfig = flow[stepIndex].config;
+
+  const handleNext = (payload = {}) => {
+    // merge payload into surveyData and go to next step (or finish)
+    setSurveyData((prev) => ({ ...prev, ...payload }));
+
     if (stepIndex < flow.length - 1) {
       setStepIndex((i) => i + 1);
     } else {
-      // Survey is complete
       setIsFinished(true);
     }
   };
 
-  const prev = () => setStepIndex((i) => Math.max(i - 0, 0));
+  const handlePrev = (payload = {}) => {
+    setSurveyData((prev) => ({ ...prev, ...payload }));
+    setStepIndex((i) => Math.max(0, i - 1));
+  };
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-darkblue">
@@ -34,10 +42,12 @@ function SurveyRunner({ flow }) {
           <ThankYou />
         ) : (
           <Step
-            onNext={next}
-            onPrev={prev}
+            onNext={handleNext}
+            onPrev={handlePrev}
             stepIndex={stepIndex}
             totalSteps={flow.length}
+            config={stepConfig}
+            surveyData={surveyData}
           />
         )}
       </div>
@@ -45,4 +55,4 @@ function SurveyRunner({ flow }) {
   );
 }
 
-export default SurveyRunner;
+export default TestRunner;

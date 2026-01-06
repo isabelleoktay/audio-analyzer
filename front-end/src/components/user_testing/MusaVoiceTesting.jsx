@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { musaVoiceTestConsentConfig } from "../../data/musaVoiceTestConsentConfig";
-import ConsentCardNew from "../../components/testing/ConsentCardNew";
+import ConsentCardNew from "../testing/ConsentCardNew";
 
-const MusaVoiceTesting = ({ onNext }) => {
+const MusaVoiceTesting = ({ onNext, config }) => {
   const [showTaskSelection, setShowTaskSelection] = useState(false);
 
   const handleClick = (clickTrue) => {
@@ -25,24 +24,19 @@ const MusaVoiceTesting = ({ onNext }) => {
       onNext({
         selectedTestFlow: flow,
       });
+      window.scrollTo(0, 0);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-darkblue">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-darkblue scroll-top">
       {showTaskSelection ? (
         <div className="flex flex-col items-center justify-center min-h-screen bg-darkblue">
-          <ConsentCardNew
-            handleClick={handleClick}
-            config={musaVoiceTestConsentConfig[1]}
-          />
+          <ConsentCardNew handleClick={handleClick} config={config[1]} />
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center min-h-screen bg-darkblue">
-          <ConsentCardNew
-            handleClick={handleClick}
-            config={musaVoiceTestConsentConfig[0]}
-          />
+          <ConsentCardNew handleClick={handleClick} config={config[0]} />
         </div>
       )}
       ;

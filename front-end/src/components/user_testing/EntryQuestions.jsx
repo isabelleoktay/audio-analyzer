@@ -1,20 +1,17 @@
-import { EntryQuestionsConfig } from "../../data/musaVoiceTestSurveysConfig.js";
-import SurveySection from "../../components/survey/SurveySection.jsx";
+import SurveySection from "../survey/SurveySection.jsx";
 
-const EntryQuestions = ({ onNext }) => {
+const EntryQuestions = ({ onNext, config }) => {
   const handleSubmitSurvey = async (submittedAnswers) => {
     console.log("Survey answers:", submittedAnswers);
     onNext({
       entrySurveyAnswers: submittedAnswers,
     });
+    window.scrollTo(0, 0);
   };
 
   return (
     <div className="w-full max-w-4xl p-8 rounded-xl pt-20">
-      <SurveySection
-        config={EntryQuestionsConfig}
-        onSubmit={handleSubmitSurvey}
-      />
+      <SurveySection config={config} onSubmit={handleSubmitSurvey} />
     </div>
   );
 };
