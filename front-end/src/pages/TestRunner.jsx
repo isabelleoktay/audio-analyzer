@@ -1,20 +1,28 @@
 import { useState } from "react";
 import { ThankYou } from "../components/user_testing";
 import ProgressBar from "../components/testing/ProgressBar";
+import { buildFlowForSelection } from "../config/musaVoiceUserTestFlow.js";
 
 function TestRunner({ flow }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [surveyData, setSurveyData] = useState({});
+  const [currentFlow, setCurrentFlow] = useState(flow);
 
-  const Step = flow[stepIndex].component;
-  const stepConfig = flow[stepIndex].config;
+  const Step = currentFlow[stepIndex].component;
+  const stepConfig = currentFlow[stepIndex].config;
+  const configIndex = currentFlow[stepIndex].configIndex;
 
   const handleNext = (payload = {}) => {
-    // merge payload into surveyData and go to next step (or finish)
+    // If payload contains selectedTestFlow, build the appropriate flow
+    if (payload.selectedTestFlow) {
+      const newFlow = buildFlowForSelection(payload.selectedTestFlow);
+      setCurrentFlow(newFlow);
+    }
+
     setSurveyData((prev) => ({ ...prev, ...payload }));
 
-    if (stepIndex < flow.length - 1) {
+    if (stepIndex < currentFlow.length - 1) {
       setStepIndex((i) => i + 1);
     } else {
       setIsFinished(true);
@@ -28,15 +36,13 @@ function TestRunner({ flow }) {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-darkblue">
-      {/* Progress bar container */}
       <div className="fixed w-full">
         <ProgressBar
-          currentStep={isFinished ? flow.length : stepIndex} // stepIndex + 1 so it ends at full
-          totalSteps={flow.length}
+          currentStep={isFinished ? currentFlow.length : stepIndex}
+          totalSteps={currentFlow.length}
         />
       </div>
 
-      {/* Step content container */}
       <div className="w-full max-w-5xl px-4 flex justify-center">
         {isFinished ? (
           <ThankYou />
@@ -45,8 +51,9 @@ function TestRunner({ flow }) {
             onNext={handleNext}
             onPrev={handlePrev}
             stepIndex={stepIndex}
-            totalSteps={flow.length}
+            totalSteps={currentFlow.length}
             config={stepConfig}
+            configIndex={configIndex}
             surveyData={surveyData}
           />
         )}

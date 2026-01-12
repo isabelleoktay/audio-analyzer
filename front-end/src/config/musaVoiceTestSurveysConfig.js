@@ -95,6 +95,7 @@ export const EntryQuestionsConfig = [
 export const SectionExitConfig = [
   {
     task: "Pitch Modulation Control",
+    usesTool: false,
     questions: [
       {
         type: "statementRating",
@@ -106,7 +107,27 @@ export const SectionExitConfig = [
       {
         type: "statementRating",
         question:
-          "Was the feedback tool helpful for you to achieve the pitch modulations you desired in the performance?",
+          "How helpful was the practice round (without the feedback tool) for you to achieve the pitch modulations you desired in the performance?",
+        statements: [""],
+        scaleLabels: ["Not helpful at all", "", "", "", "", "Very helpful"],
+      },
+    ],
+  },
+  {
+    task: "Pitch Modulation Control",
+    usesTool: true,
+    questions: [
+      {
+        type: "statementRating",
+        question:
+          "How well do you think you controlled your pitch modulation (vibrato VS straight tone)?",
+        statements: [""],
+        scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+      },
+      {
+        type: "statementRating",
+        question:
+          "How helpful was the practice round (with the feedback tool) for you to achieve the pitch modulations you desired in the performance?",
         statements: [""],
         scaleLabels: ["Not helpful at all", "", "", "", "", "Very helpful"],
       },
@@ -114,6 +135,7 @@ export const SectionExitConfig = [
   },
   {
     task: "Vocal Tone Control",
+    usesTool: false,
     questions: [
       {
         type: "statementRating",
@@ -125,7 +147,27 @@ export const SectionExitConfig = [
       {
         type: "statementRating",
         question:
-          "Was the feedback tool helpful for you to achieve the vocal tone you desired in the performance?",
+          "How helpful was the practice round (without the feedback tool) for you to achieve the vocal tone you desired in the performance?",
+        statements: [""],
+        scaleLabels: ["Not helpful at all", "", "", "", "", "Very helpful"],
+      },
+    ],
+  },
+  {
+    task: "Vocal Tone Control",
+    usesTool: true,
+    questions: [
+      {
+        type: "statementRating",
+        question:
+          "How well do you think you controlled your vocal tone (belt VS breathy tone)?",
+        statements: [""],
+        scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+      },
+      {
+        type: "statementRating",
+        question:
+          "How helpful was the practice round (with the feedback tool) for you to achieve the vocal tone you desired in the performance?",
         statements: [""],
         scaleLabels: ["Not helpful at all", "", "", "", "", "Very helpful"],
       },

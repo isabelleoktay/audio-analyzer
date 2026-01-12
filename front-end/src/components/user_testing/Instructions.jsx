@@ -2,18 +2,19 @@ import SurveySingleSelect from "../survey/SurveySingleSelect.jsx";
 import SecondaryButton from "../buttons/SecondaryButton.jsx";
 import { useState } from "react";
 
-const Instructions = ({ onNext, surveyData, config }) => {
+const Instructions = ({ onNext, surveyData, config, configIndex }) => {
   const [confidence, setConfidence] = useState(null);
 
-  const currentTask =
-    surveyData?.selectedTestFlow ?? "Pitch Modulation Control";
-
-  const currentTaskConfig = config?.find((task) => task.task === currentTask) ??
-    config?.[0] ?? {
-      task: "",
-      textBlock: "",
-      question: "",
-    };
+  // Use configIndex if provided, otherwise fall back to looking up by selectedTestFlow
+  const currentTaskConfig =
+    configIndex !== undefined
+      ? config?.[configIndex]
+      : config?.find((task) => task.task === surveyData?.selectedTestFlow) ??
+        config?.[0] ?? {
+          task: "",
+          textBlock: "",
+          question: "",
+        };
 
   const startTestingProcedure = () => {
     onNext({
@@ -23,7 +24,7 @@ const Instructions = ({ onNext, surveyData, config }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray">
+    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray w-full">
       <h1 className="text-5xl text-electricblue font-bold mb-8 text-center">
         {currentTaskConfig.task}
       </h1>

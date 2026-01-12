@@ -21,6 +21,8 @@ const MusaVoiceTesting = ({ onNext, config }) => {
         flow = testFlows[Math.floor(Math.random() * testFlows.length)];
       }
 
+      console.log("Selected test flow:", flow);
+
       onNext({
         selectedTestFlow: flow,
       });
