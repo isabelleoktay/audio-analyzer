@@ -1,10 +1,5 @@
 export const feedbackForm1Config = [
   {
-    type: "scale",
-    question: "Please describe your musical experience level",
-    options: ["Beginner", "Intermediate", "Advanced", "Professional"],
-  },
-  {
     type: "singleselect",
     question: "Please describe your musical experience level",
     options: ["Beginner", "Intermediate", "Advanced", "Professional"],
