@@ -39,7 +39,14 @@ const SectionExitSurvey = ({
   ) ?? { task: "", questions: [] };
 
   const handleSubmitSectionExitSurvey = async (submittedAnswers) => {
-    console.log("Exit survey answers:", submittedAnswers);
+    console.log(
+      "handleSubmitSectionExitSurvey called with subjectId:",
+      surveyData.subjectId,
+      "submittedAnswers:",
+      submittedAnswers,
+      "sectionId:",
+      sectionId
+    );
 
     try {
       await uploadUserStudySectionEndSurvey(
@@ -48,15 +55,13 @@ const SectionExitSurvey = ({
         submittedAnswers
       );
       console.log("Section exit survey uploaded successfully");
+      onNext({
+        sectionEndSurveyAnswers: submittedAnswers,
+      });
+      window.scrollTo(0, 0);
     } catch (error) {
       console.error("Error uploading section exit survey:", error);
-      // Perhaps still proceed or handle error
     }
-
-    onNext({
-      sectionEndSurveyAnswers: submittedAnswers,
-    });
-    window.scrollTo(0, 0);
   };
 
   return (

@@ -399,8 +399,9 @@ const uploadUserStudySectionEndSurvey = async (
   sectionId,
   sectionEndSurveyAnswers
 ) => {
+  console.log("BOOM", subjectId, sectionId, sectionEndSurveyAnswers);
   try {
-    const response = await apiClient.post(`/api/save-section-end-survey`, {
+    const response = await apiClient.post("/api/save-section-end-survey", {
       subjectId,
       sectionId,
       answers: sectionEndSurveyAnswers,

@@ -153,16 +153,15 @@ const upsertSection = async (req, res) => {
 
 // Update only the section end survey answers for a given sectionId
 const saveSectionEndSurvey = async (req, res) => {
-  const { subjectId, sectionId } = req.params;
-  const answers = req.body;
+  const { subjectId, sectionId, answers } = req.body;
 
-  if (!subjectId || !sectionId || !answers)
-    return res
-      .status(400)
-      .json({ ok: false, error: "Missing path params or body" });
+  if (!subjectId || !sectionId || !answers) {
+    return res.status(400).json({ ok: false, error: "Missing body params" });
+  }
 
   try {
-    const doc = await MusaUserTest.findOneAndUpdate(
+    // Try updating existing section
+    let doc = await MusaUserTest.findOneAndUpdate(
       { subjectId, "sections.sectionId": sectionId },
       {
         $set: {
@@ -173,10 +172,27 @@ const saveSectionEndSurvey = async (req, res) => {
       { new: true }
     );
 
-    if (!doc)
-      return res
-        .status(404)
-        .json({ ok: false, error: "Section or subject not found" });
+    // If section doesn't exist, push a new one
+    if (!doc) {
+      doc = await MusaUserTest.findOneAndUpdate(
+        { subjectId },
+        {
+          $push: {
+            sections: {
+              sectionId,
+              sectionEndSurveyAnswers: answers,
+              endedAt: new Date(),
+            },
+          },
+        },
+        { new: true }
+      );
+    }
+
+    if (!doc) {
+      return res.status(404).json({ ok: false, error: "Subject not found" });
+    }
+
     return res.status(200).json({ ok: true, doc });
   } catch (err) {
     console.error(err);
