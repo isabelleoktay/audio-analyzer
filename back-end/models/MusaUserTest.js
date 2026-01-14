@@ -115,7 +115,7 @@ musaUserTestSchema.statics.updateExitSurveyAnswers = function (
   if (opts.markCompleted) setObj.completed = true;
   return this.findOneAndUpdate(
     { subjectId },
-    { $set: setObj },
+    { $set: { exitSurveyAnswers: answers } },
     { new: true, upsert: true }
   );
 };

@@ -91,12 +91,6 @@ const uploadMusaUserStudy = async (req, res) => {
 const saveEntrySurvey = async (req, res) => {
   // console.log("saveEntrySurvey req.body:", req.body);
   const { subjectId, entrySurveyAnswers } = req.body;
-  // console.log(
-  //   "subjectId:",
-  //   subjectId,
-  //   "entrySurveyAnswers:",
-  //   !!entrySurveyAnswers
-  // );
 
   if (!subjectId || !entrySurveyAnswers)
     return res
@@ -204,19 +198,22 @@ const saveSectionEndSurvey = async (req, res) => {
 
 // Save exit survey and optionally mark completed
 const saveExitSurvey = async (req, res) => {
-  const { subjectId } = req.params;
-  const answers = req.body;
+  const { subjectId, exitSurveyAnswers } = req.body;
   const { markCompleted } = req.query;
 
-  if (!subjectId || !answers)
+  if (!subjectId || !exitSurveyAnswers)
     return res
       .status(400)
       .json({ ok: false, error: "Missing subjectId or answers" });
 
   try {
-    const doc = await MusaUserTest.updateExitSurveyAnswers(subjectId, answers, {
-      markCompleted: markCompleted === "true",
-    });
+    const doc = await MusaUserTest.updateExitSurveyAnswers(
+      subjectId,
+      exitSurveyAnswers,
+      {
+        markCompleted: markCompleted === "true",
+      }
+    );
     return res.status(200).json({ ok: true, doc });
   } catch (err) {
     console.error(err);

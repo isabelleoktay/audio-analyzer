@@ -380,6 +380,10 @@ const uploadUserStudyEntrySurvey = async (subjectId, entrySurveyAnswers) => {
 
 const uploadUserStudyExitSurvey = async (subjectId, exitSurveyAnswers) => {
   try {
+    console.log("uploadUserStudyExitSurvey:", {
+      subjectId,
+      exitSurveyAnswers,
+    });
     const response = await apiClient.post("/api/save-exit-survey", {
       subjectId,
       exitSurveyAnswers,
@@ -399,7 +403,6 @@ const uploadUserStudySectionEndSurvey = async (
   sectionId,
   sectionEndSurveyAnswers
 ) => {
-  console.log("BOOM", subjectId, sectionId, sectionEndSurveyAnswers);
   try {
     const response = await apiClient.post("/api/save-section-end-survey", {
       subjectId,

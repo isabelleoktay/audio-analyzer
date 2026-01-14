@@ -7,10 +7,6 @@ const EntryQuestions = ({ surveyData, config, onNext }) => {
   const [sectionIndex, setSectionIndex] = useState(0);
 
   const handleSubmit = (newAnswers) => {
-    // console.log(
-    //   `Entry Survey answers for section ${sectionIndex + 1}:`,
-    //   newAnswers
-    // );
     setAnswers((prev) => ({ ...prev, [sectionIndex]: newAnswers }));
     handleSubmitEntrySurvey({ ...answers, [sectionIndex]: newAnswers });
 
@@ -18,12 +14,6 @@ const EntryQuestions = ({ surveyData, config, onNext }) => {
   };
 
   const handleSubmitEntrySurvey = async (allAnswers) => {
-    // console.log(
-    //   "handleSubmitEntrySurvey called with subjectId:",
-    //   surveyData.subjectId,
-    //   "allAnswers:",
-    //   allAnswers
-    // );
     try {
       const response = await uploadUserStudyEntrySurvey(
         surveyData.subjectId,

@@ -39,22 +39,13 @@ const SectionExitSurvey = ({
   ) ?? { task: "", questions: [] };
 
   const handleSubmitSectionExitSurvey = async (submittedAnswers) => {
-    console.log(
-      "handleSubmitSectionExitSurvey called with subjectId:",
-      surveyData.subjectId,
-      "submittedAnswers:",
-      submittedAnswers,
-      "sectionId:",
-      sectionId
-    );
-
     try {
       await uploadUserStudySectionEndSurvey(
         surveyData.subjectId,
         sectionId,
         submittedAnswers
       );
-      console.log("Section exit survey uploaded successfully");
+      // console.log("Section exit survey uploaded successfully");
       onNext({
         sectionEndSurveyAnswers: submittedAnswers,
       });
