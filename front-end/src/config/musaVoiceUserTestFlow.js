@@ -34,13 +34,16 @@ const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
 // Build the two condition blocks (control vs tool) in randomized order
 const buildConditionBlocks = (taskIndex) => {
+  const taskName =
+    musaVoiceTestInstructionsConfig[taskIndex]?.task || `Task${taskIndex}`;
+  const taskSlug = taskName.replace(/\s+/g, "-").toLowerCase(); // Slugify for ID
   const conditions = [
     { condition: "control", usesTool: false, label: "Control (no tool)" },
     { condition: "tool", usesTool: true, label: "With Tool" },
   ];
 
   return shuffle(conditions).flatMap((cond) => {
-    const suffix = `${taskIndex}-${cond.condition}`;
+    const suffix = `${taskSlug}-${cond.condition}`;
     return [
       {
         id: `record-initial-${suffix}`,

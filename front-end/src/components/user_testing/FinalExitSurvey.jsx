@@ -1,15 +1,13 @@
 import { useState, useMemo } from "react";
 import SurveySection from "../survey/SurveySection.jsx";
+import { uploadUserStudyExitSurvey } from "../../utils/api.js";
 
-const FinalExitSurvey = ({ onNext, surveyData, config }) => {
+const FinalExitSurvey = ({ surveyData, config }) => {
   const selectedTask = surveyData?.selectedTestFlow ?? "Both";
-
   // current section index (0 = Usefulness, 1 = Usability, etc.)
   const [sectionIndex, setSectionIndex] = useState(0);
-
   // saved answers per section
-  const [savedAnswersBySection, setSavedAnswersBySection] = useState({});
-
+  const [answers, setAnswers] = useState({});
   const selectedSectionConfig = config[sectionIndex];
 
   // identify the vocal techniques specific question safely
@@ -40,28 +38,44 @@ const FinalExitSurvey = ({ onNext, surveyData, config }) => {
     return [...general, ...processedSpecific];
   }, [selectedSectionConfig, selectedTask]);
 
-  const handleSubmitSection = (answers) => {
-    // save current section answers
-    setSavedAnswersBySection((prev) => ({ ...prev, [sectionIndex]: answers }));
+  const handleNext = (newAnswers) => {
+    console.log(
+      `Exit Survey answers for section ${sectionIndex + 1}:`,
+      newAnswers
+    );
+    setAnswers((prev) => ({ ...prev, [sectionIndex]: newAnswers }));
 
-    // if more sections left, move to next
-    if (sectionIndex < config.length - 1) {
-      setSectionIndex((i) => i + 1);
-      window.scrollTo(0, 0);
-      return;
+    // If this was the last section, go home
+    if (sectionIndex >= config.length - 1) {
+      handleSubmitExitSurvey({ ...answers, [sectionIndex]: newAnswers });
     }
 
-    // final submit: merge all section answers
-    const finalAnswers = { ...savedAnswersBySection, [sectionIndex]: answers };
-    console.log("Final exit survey answers:", finalAnswers);
-    onNext({
-      finalExitAnswers: finalAnswers,
-    });
+    // Otherwise, move to the next section
+    setSectionIndex((prev) => prev + 1);
+    window.scrollTo(0, 0);
   };
 
-  const handleBack = (answers) => {
-    setSavedAnswersBySection((prev) => ({ ...prev, [sectionIndex]: answers }));
-    setSectionIndex((i) => Math.max(0, i - 1));
+  const handleSubmitExitSurvey = async (allAnswers) => {
+    try {
+      const response = await uploadUserStudyExitSurvey(
+        surveyData.subjectId,
+        allAnswers
+      );
+      console.log("Exit survey uploaded successfully:", response);
+    } catch (error) {
+      console.error("Error uploading exit survey:", error);
+    }
+  };
+
+  const handleBack = (currentAnswers) => {
+    // Save the current section's answers
+    setAnswers((prev) => ({
+      ...prev,
+      [sectionIndex]: currentAnswers,
+    }));
+
+    // Go back one section
+    setSectionIndex((prev) => Math.max(prev - 1, 0));
     window.scrollTo(0, 0);
   };
 
@@ -76,10 +90,10 @@ const FinalExitSurvey = ({ onNext, surveyData, config }) => {
 
         <SurveySection
           config={composedConfig}
-          onSubmit={handleSubmitSection}
+          onSubmit={handleNext}
           buttonText={sectionIndex < config.length - 1 ? "Next" : "Submit"}
           backButtonClick={sectionIndex > 0 ? handleBack : undefined}
-          savedAnswers={savedAnswersBySection[sectionIndex] || {}}
+          savedAnswers={answers[sectionIndex] || {}}
         />
       </div>
     </div>

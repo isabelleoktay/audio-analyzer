@@ -1,15 +1,15 @@
 import { useState } from "react";
 import SurveySection from "../survey/SurveySection.jsx";
 import { musaVoiceTestInstructionsConfig } from "../../config/musaVoiceTestInstructionsConfig.js";
+import { uploadUserStudySectionEndSurvey } from "../../utils/api.js";
 
 const SectionExitSurvey = ({
   onNext,
   config,
   configIndex,
   surveyData = {},
+  sectionId,
 }) => {
-  const [answers, setAnswers] = useState({});
-
   // Derive task name from configIndex, otherwise from last practice task index, otherwise from selectedTestFlow
   const taskNameFromIndex =
     configIndex !== undefined
@@ -40,17 +40,28 @@ const SectionExitSurvey = ({
 
   const handleSubmitSectionExitSurvey = async (submittedAnswers) => {
     console.log("Exit survey answers:", submittedAnswers);
-    setAnswers(submittedAnswers);
+
+    try {
+      await uploadUserStudySectionEndSurvey(
+        surveyData.subjectId,
+        sectionId,
+        submittedAnswers
+      );
+      console.log("Section exit survey uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading section exit survey:", error);
+      // Perhaps still proceed or handle error
+    }
 
     onNext({
-      sectionExitAnswers: submittedAnswers,
+      sectionEndSurveyAnswers: submittedAnswers,
     });
     window.scrollTo(0, 0);
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-lightgray w-full max-w-5xl px-4">
-      <h1 className="text-5xl text-electricblue font-bold mb-8 text-center">
+      <h1 className="text-5xl text-electricblue font-bold mt-10 mb-8 text-center">
         {currentTaskConfig.task}
       </h1>
 
