@@ -27,10 +27,14 @@ const SecondaryButton = ({
       onClick={onClick}
       className={`
         bg-radial ${fromColor} ${toColor}
-        hover:${hoverFrom} hover:${hoverTo}
+        ${
+          !disabled
+            ? `hover:${hoverFrom} hover:${hoverTo}`
+            : "grayscale opacity-40 cursor-not-allowed"
+        }
         text-blueblack font-semibold text-sm rounded-full
         px-4 py-2 transition-all duration-200
-        ${isActive ? "" : "opacity-60 cursor-not-allowed"}
+        ${isActive || disabled ? "" : "opacity-60"}
         ${className}
       `}
     >

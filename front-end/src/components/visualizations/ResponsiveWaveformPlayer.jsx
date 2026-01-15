@@ -10,20 +10,24 @@ const ResponsiveWaveformPlayer = ({
   highlightedSections,
   waveColor = "#FFD6E8",
   progressColor = "#FF89BB",
+  showTimeline = true,
+  playButtonColor = "text-darkpink",
 }) => {
   const containerRef = useRef();
   const timelineRef = useRef();
   const regionsPlugin = useMemo(() => RegionsPlugin.create(), []);
   const timelinePlugin = useMemo(
     () =>
-      TimelinePlugin.create({
-        container: timelineRef.current, // Attach the timeline to this container
-      }),
-    []
+      showTimeline
+        ? TimelinePlugin.create({
+            container: timelineRef.current,
+          })
+        : null,
+    [showTimeline]
   );
   const plugins = useMemo(
-    () => [regionsPlugin, timelinePlugin],
-    [regionsPlugin, timelinePlugin]
+    () => (showTimeline ? [regionsPlugin, timelinePlugin] : [regionsPlugin]),
+    [regionsPlugin, timelinePlugin, showTimeline]
   );
 
   const { wavesurfer, isReady, isPlaying } = useWavesurfer({
@@ -58,7 +62,7 @@ const ResponsiveWaveformPlayer = ({
 
       regionsPlugin.on("region-clicked", (region, e) => {
         region.setOptions({ color: "rgba(255, 203, 107, 0.5)" });
-        e.stopPropagation(); // prevent triggering a click on the waveform
+        e.stopPropagation();
         region.play(true);
       });
 
@@ -76,7 +80,6 @@ const ResponsiveWaveformPlayer = ({
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Prevent default space bar scrolling
       if (e.code === "Space" || e.key === " ") {
         e.preventDefault();
         handlePlayPause();
@@ -92,7 +95,7 @@ const ResponsiveWaveformPlayer = ({
         <IconButton
           icon={isPlaying ? FaPause : FaPlay}
           onClick={handlePlayPause}
-          colorClass="text-darkpink"
+          colorClass={playButtonColor}
           bgClass="bg-transparent"
           sizeClass="w-10 h-10"
           ariaLabel="play audio"
@@ -100,6 +103,7 @@ const ResponsiveWaveformPlayer = ({
       </div>
       <div className="flex-grow flex flex-col">
         <div ref={containerRef} className="w-full" />
+        {showTimeline && <div ref={timelineRef} className="w-full mt-2" />}
       </div>
     </div>
   );

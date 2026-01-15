@@ -10,6 +10,7 @@ import {
 
 import { musaVoiceTestConsentConfig } from "./musaVoiceTestConsentConfig.js";
 import { musaVoiceTestInstructionsConfig } from "./musaVoiceTestInstructionsConfig.js";
+import { musaVoiceTestRecordConfig } from "./musaVoiceTestRecordConfig.js";
 import {
   EntryQuestionsConfig,
   SectionExitConfig,
@@ -45,10 +46,12 @@ const buildConditionBlocks = (taskIndex) => {
       {
         id: `record-initial-${suffix}`,
         component: RecordTask,
-        config: {
+        config: musaVoiceTestRecordConfig,
+        configIndex: taskIndex,
+        metadata: {
           phase: "pre-practice",
           condition: cond.condition,
-          usesTool: false, // recording itself is without tool; tool is relevant to practice
+          usesTool: false,
           taskIndex,
           label: cond.label,
         },
@@ -66,10 +69,12 @@ const buildConditionBlocks = (taskIndex) => {
       {
         id: `record-final-${suffix}`,
         component: RecordTask,
-        config: {
+        config: musaVoiceTestRecordConfig,
+        configIndex: taskIndex,
+        metadata: {
           phase: "post-practice",
           condition: cond.condition,
-          usesTool: false, // recording step; keep consistent
+          usesTool: false,
           taskIndex,
           label: cond.label,
         },
