@@ -1,18 +1,15 @@
 import { useState, useMemo } from "react";
 import SurveySection from "../survey/SurveySection.jsx";
+import { uploadUserStudyExitSurvey } from "../../utils/api.js";
 
-const FinalExitSurvey = ({ onNext, surveyData, config }) => {
+const FinalExitSurvey = ({ surveyData, config, onNext }) => {
   const selectedTask = surveyData?.selectedTestFlow ?? "Both";
 
-  // current section index (0 = Usefulness, 1 = Usability, etc.)
   const [sectionIndex, setSectionIndex] = useState(0);
-
-  // saved answers per section
-  const [savedAnswersBySection, setSavedAnswersBySection] = useState({});
+  const [answers, setAnswers] = useState({});
 
   const selectedSectionConfig = config[sectionIndex];
 
-  // identify the vocal techniques specific question safely
   const isVocalTechniquesQuestion = (q) =>
     q?.options &&
     q.options.includes("Vibrato") &&
@@ -23,65 +20,73 @@ const FinalExitSurvey = ({ onNext, surveyData, config }) => {
     if (t.includes("pitch") || t.includes("modulation"))
       return options.slice(0, 2);
     if (t.includes("vocal") || t.includes("tone")) return options.slice(-2);
-    if (t.includes("both")) return options;
-    return options; // default: show all
+    return options;
   };
 
-  // compose the config to pass to SurveySection
   const composedConfig = useMemo(() => {
     const general = selectedSectionConfig?.generalQuestions || [];
     const specific = selectedSectionConfig?.specificQuestions || [];
-    const processedSpecific = specific.map((q) => {
-      if (isVocalTechniquesQuestion(q)) {
-        return { ...q, options: filterOptionsForTask(q.options) };
-      }
-      return q;
-    });
-    return [...general, ...processedSpecific];
+
+    return [
+      ...general,
+      ...specific.map((q) =>
+        isVocalTechniquesQuestion(q)
+          ? { ...q, options: filterOptionsForTask(q.options) }
+          : q
+      ),
+    ];
   }, [selectedSectionConfig, selectedTask]);
 
-  const handleSubmitSection = (answers) => {
-    // save current section answers
-    setSavedAnswersBySection((prev) => ({ ...prev, [sectionIndex]: answers }));
+  const handleNext = (sectionAnswers) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [sectionIndex]: sectionAnswers,
+    }));
 
-    // if more sections left, move to next
-    if (sectionIndex < config.length - 1) {
-      setSectionIndex((i) => i + 1);
-      window.scrollTo(0, 0);
-      return;
-    }
-
-    // final submit: merge all section answers
-    const finalAnswers = { ...savedAnswersBySection, [sectionIndex]: answers };
-    console.log("Final exit survey answers:", finalAnswers);
-    onNext({
-      finalExitAnswers: finalAnswers,
-    });
-  };
-
-  const handleBack = (answers) => {
-    setSavedAnswersBySection((prev) => ({ ...prev, [sectionIndex]: answers }));
-    setSectionIndex((i) => Math.max(0, i - 1));
+    setSectionIndex((i) => i + 1);
     window.scrollTo(0, 0);
   };
 
+  const handleBack = (sectionAnswers) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [sectionIndex]: sectionAnswers,
+    }));
+
+    setSectionIndex((i) => Math.max(i - 1, 0));
+    window.scrollTo(0, 0);
+  };
+
+  const handleFinalSubmit = async (finalSectionAnswers) => {
+    const finalAnswers = {
+      ...answers,
+      [sectionIndex]: finalSectionAnswers,
+    };
+
+    try {
+      await uploadUserStudyExitSurvey(surveyData.subjectId, finalAnswers);
+      onNext?.();
+    } catch (err) {
+      console.error("Error uploading exit survey:", err);
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray w-full max-w-5xl px-4">
-      <h1 className="text-xl text-lightpink font-bold mb-5 pt-10 text-justify">
+    <div className="flex flex-col items-center justify-center min-h-screen w-full max-w-5xl px-4">
+      <h1 className="text-xl font-bold mb-5">
         {selectedSectionConfig?.section}
       </h1>
 
-      <div className="md:w-full">
-        <p className="pb-5 text-justify">{selectedSectionConfig?.infoText}</p>
-
-        <SurveySection
-          config={composedConfig}
-          onSubmit={handleSubmitSection}
-          buttonText={sectionIndex < config.length - 1 ? "Next" : "Submit"}
-          backButtonClick={sectionIndex > 0 ? handleBack : undefined}
-          savedAnswers={savedAnswersBySection[sectionIndex] || {}}
-        />
-      </div>
+      <SurveySection
+        key={sectionIndex}
+        config={composedConfig}
+        savedAnswers={answers[sectionIndex] || {}}
+        onSubmit={
+          sectionIndex === config.length - 1 ? handleFinalSubmit : handleNext
+        }
+        backButtonClick={sectionIndex > 0 ? handleBack : undefined}
+        buttonText={sectionIndex === config.length - 1 ? "Submit" : "Next"}
+      />
     </div>
   );
 };

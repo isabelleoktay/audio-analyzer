@@ -24,8 +24,8 @@ const Instructions = ({ onNext, surveyData, config, configIndex }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray w-full">
-      <h1 className="text-5xl text-electricblue font-bold mb-8 text-center">
+    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray">
+      <h1 className="text-5xl text-electricblue font-bold mt-10 mb-8 text-center">
         {currentTaskConfig.task}
       </h1>
 
