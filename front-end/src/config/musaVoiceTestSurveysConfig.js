@@ -92,7 +92,62 @@ export const EntryQuestionsConfig = [
   },
 ];
 
-export const SectionExitConfig = [
+export const SurveyBeforePracticeConfig = [
+  {
+    task: "Pitch Modulation Control",
+    usesTool: false,
+    questions: [
+      {
+        type: "statementRating",
+        question:
+          "How well do you think you controlled your pitch modulation (vibrato VS straight tone)?",
+        statements: [""],
+        scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+      },
+    ],
+  },
+  {
+    task: "Pitch Modulation Control",
+    usesTool: true,
+    questions: [
+      {
+        type: "statementRating",
+        question:
+          "How well do you think you controlled your pitch modulation (vibrato VS straight tone)?",
+        statements: [""],
+        scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+      },
+    ],
+  },
+  {
+    task: "Vocal Tone Control",
+    usesTool: false,
+    questions: [
+      {
+        type: "statementRating",
+        question:
+          "How well do you think you controlled your vocal tone (belt VS breathy tone)?",
+        statements: [""],
+        scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+      },
+    ],
+  },
+  {
+    task: "Vocal Tone Control",
+    usesTool: true,
+    questions: [
+      {
+        type: "statementRating",
+        question:
+          "How well do you think you controlled your vocal tone (belt VS breathy tone)?",
+        statements: [""],
+        scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+      },
+    ],
+  },
+];
+
+export const SurveyAfterPracticeConfig = [
   {
     task: "Pitch Modulation Control",
     usesTool: false,

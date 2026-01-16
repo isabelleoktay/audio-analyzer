@@ -59,10 +59,10 @@ const uploadMusaUserStudy = async (req, res) => {
     // handle sections upsert individually (if sections array provided)
     if (Array.isArray(sections) && sections.length) {
       for (const section of sections) {
-        if (!section.sectionId) continue; // skip invalid
+        if (!section.sectionKey) continue; // skip invalid
 
         const updated = await MusaUserTest.findOneAndUpdate(
-          { subjectId, "sections.sectionId": section.sectionId },
+          { subjectId, "sections.sectionKey": section.sectionKey },
           { $set: { "sections.$": section } },
           { new: true }
         );
@@ -111,19 +111,19 @@ const saveEntrySurvey = async (req, res) => {
   }
 };
 
-// Upsert a single section (by sectionId) for a subject
+// Upsert a single section (by sectionKey) for a subject
 const upsertSection = async (req, res) => {
   const { subjectId } = req.params;
   const section = req.body;
 
-  if (!subjectId || !section || !section.sectionId)
+  if (!subjectId || !section || !section.sectionKey)
     return res
       .status(400)
-      .json({ ok: false, error: "Missing subjectId or section.sectionId" });
+      .json({ ok: false, error: "Missing subjectId or section.sectionKey" });
 
   try {
     let doc = await MusaUserTest.findOneAndUpdate(
-      { subjectId, "sections.sectionId": section.sectionId },
+      { subjectId, "sections.sectionKey": section.sectionKey },
       { $set: { "sections.$": section } },
       { new: true }
     );
@@ -145,21 +145,21 @@ const upsertSection = async (req, res) => {
   }
 };
 
-// Update only the section end survey answers for a given sectionId
-const saveSectionEndSurvey = async (req, res) => {
-  const { subjectId, sectionId, answers } = req.body;
+// Update only the section end survey answers for a given sectionKey
+const saveSurveyAfterPractice = async (req, res) => {
+  const { subjectId, sectionKey, answers } = req.body;
 
-  if (!subjectId || !sectionId || !answers) {
+  if (!subjectId || !sectionKey || !answers) {
     return res.status(400).json({ ok: false, error: "Missing body params" });
   }
 
   try {
     // Try updating existing section
     let doc = await MusaUserTest.findOneAndUpdate(
-      { subjectId, "sections.sectionId": sectionId },
+      { subjectId, "sections.sectionKey": sectionKey },
       {
         $set: {
-          "sections.$.sectionEndSurveyAnswers": answers,
+          "sections.$.surveyAfterPracticeAnswers": answers,
           "sections.$.endedAt": new Date(),
         },
       },
@@ -173,8 +173,8 @@ const saveSectionEndSurvey = async (req, res) => {
         {
           $push: {
             sections: {
-              sectionId,
-              sectionEndSurveyAnswers: answers,
+              sectionKey,
+              surveyAfterPracticeAnswers: answers,
               endedAt: new Date(),
             },
           },
@@ -193,6 +193,55 @@ const saveSectionEndSurvey = async (req, res) => {
     return res
       .status(500)
       .json({ ok: false, error: "Failed to save section end survey" });
+  }
+};
+
+// Update only the section start survey answers for a given sectionKey
+const saveSurveyBeforePractice = async (req, res) => {
+  const { subjectId, sectionKey, answers } = req.body;
+
+  if (!subjectId || !sectionKey || !answers) {
+    return res.status(400).json({ ok: false, error: "Missing body params" });
+  }
+
+  try {
+    // Try updating existing section
+    let doc = await MusaUserTest.findOneAndUpdate(
+      { subjectId, "sections.sectionKey": sectionKey },
+      {
+        $set: {
+          "sections.$.surveyBeforePracticeAnswers": answers,
+        },
+      },
+      { new: true }
+    );
+
+    // If section doesn't exist, push a new one
+    if (!doc) {
+      doc = await MusaUserTest.findOneAndUpdate(
+        { subjectId },
+        {
+          $push: {
+            sections: {
+              sectionKey,
+              surveyBeforePracticeAnswers: answers,
+            },
+          },
+        },
+        { new: true }
+      );
+    }
+
+    if (!doc) {
+      return res.status(404).json({ ok: false, error: "Subject not found" });
+    }
+
+    return res.status(200).json({ ok: true, doc });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ ok: false, error: "Failed to save survey before practice" });
   }
 };
 
@@ -243,7 +292,8 @@ export {
   uploadMusaUserStudy,
   saveEntrySurvey,
   upsertSection,
-  saveSectionEndSurvey,
+  saveSurveyBeforePractice,
+  saveSurveyAfterPractice,
   saveExitSurvey,
   //   getStudyBySubject,
 };

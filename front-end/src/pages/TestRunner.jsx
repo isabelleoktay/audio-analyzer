@@ -57,7 +57,8 @@ function TestRunner({ flow }) {
             config={stepConfig}
             configIndex={configIndex}
             surveyData={surveyData}
-            sectionId={currentFlow[stepIndex].id}
+            id={currentFlow[stepIndex].id}
+            sectionKey={currentFlow[stepIndex].sectionKey}
           />
         )}
       </div>

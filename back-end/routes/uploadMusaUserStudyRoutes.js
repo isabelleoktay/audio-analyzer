@@ -3,8 +3,9 @@ import {
   uploadMusaUserStudy,
   saveEntrySurvey,
   upsertSection,
-  saveSectionEndSurvey,
+  saveSurveyAfterPractice,
   saveExitSurvey,
+  saveSurveyBeforePractice,
   //   getStudyBySubject,
 } from "../controllers/uploadMusaUserStudyController.js";
 
@@ -14,8 +15,11 @@ musaUserStudyRouter.route("/upload-musa-user-study").post(uploadMusaUserStudy);
 musaUserStudyRouter.route("/save-entry-survey").post(saveEntrySurvey);
 musaUserStudyRouter.route("/upsert-section").post(upsertSection);
 musaUserStudyRouter
-  .route("/save-section-end-survey")
-  .post(saveSectionEndSurvey);
+  .route("/save-survey-before-practice")
+  .post(saveSurveyBeforePractice);
+musaUserStudyRouter
+  .route("/save-survey-after-practice")
+  .post(saveSurveyAfterPractice);
 musaUserStudyRouter.route("/save-exit-survey").post(saveExitSurvey);
 // musaUserStudyRouter.route("/get-study").get(getStudyBySubject);
 
