@@ -155,20 +155,28 @@ const upsertSection = async (req, res) => {
  *  - addEndedAt: boolean (whether to also update endedAt timestamp)
  */
 const saveSectionField = async (req, res) => {
-  const { subjectId, sectionKey, field, data, addStartedAt, addEndedAt = false } = req.body;
+  const {
+    subjectId,
+    sectionKey,
+    field,
+    data,
+    addStartedAt,
+    addEndedAt = false,
+  } = req.body;
 
   if (!subjectId || !sectionKey || !field || data === undefined) {
-    return res
-      .status(400)
-      .json({ ok: false, error: "Missing body params (subjectId, sectionKey, field, data)" });
+    return res.status(400).json({
+      ok: false,
+      error: "Missing body params (subjectId, sectionKey, field, data)",
+    });
   }
 
   try {
     // Build the $set object dynamically
     const setObj = { [`sections.$.${field}`]: data };
-    
+
     if (addStartedAt) {
-      setObj["sections.$.addStartedAt"] = new Date();
+      setObj["sections.$.startedAt"] = new Date();
     }
 
     if (addEndedAt) {
@@ -186,6 +194,7 @@ const saveSectionField = async (req, res) => {
     if (!doc) {
       const newSection = { sectionKey, [field]: data };
       if (addEndedAt) newSection.endedAt = new Date();
+      if (addStartedAt) newSection.startedAt = new Date();
 
       doc = await MusaUserTest.findOneAndUpdate(
         { subjectId },
@@ -201,10 +210,11 @@ const saveSectionField = async (req, res) => {
     return res.status(200).json({ ok: true, doc });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ ok: false, error: "Failed to save section field" });
+    return res
+      .status(500)
+      .json({ ok: false, error: "Failed to save section field" });
   }
 };
-
 
 // Save exit survey and optionally mark completed
 const saveExitSurvey = async (req, res) => {

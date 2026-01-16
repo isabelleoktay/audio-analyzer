@@ -30,7 +30,6 @@ const Instructions = ({
         sectionKey: sectionKey,
         field: "instructionConfidence",
         data: confidence,
-        addStartedAt: true,
       });
 
       // console.log("survey before practice answers uploaded successfully");
