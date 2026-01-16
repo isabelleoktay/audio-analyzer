@@ -14,7 +14,13 @@ import {
 const SCROLLING_WAVEFORM = true;
 const CONTINUOUS_WAVEFORM = false;
 
-const AudioRecorder = ({ maxAttempts = 3, onAttemptsChange }) => {
+const AudioRecorder = ({
+  maxAttempts,
+  onAttemptsChange,
+  analyzeMode = false,
+  onAnalyze,
+  showAttempts = true,
+}) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedAudio, setRecordedAudio] = useState(null);
   const [attemptCount, setAttemptCount] = useState(0);
@@ -107,6 +113,7 @@ const AudioRecorder = ({ maxAttempts = 3, onAttemptsChange }) => {
     setRecordedAudio(null);
     waveSurferRef.current.empty();
     setIsPlaying(false);
+    if (onAttemptsChange) onAttemptsChange(0);
   };
 
   const handleSelectAttempt = (index) => {
@@ -120,8 +127,9 @@ const AudioRecorder = ({ maxAttempts = 3, onAttemptsChange }) => {
     });
   };
 
-  const attemptsRemaining = maxAttempts - attemptCount;
-  const canRecord = attemptCount < maxAttempts;
+  const isInfinite = maxAttempts === undefined || maxAttempts === null;
+  const attemptsRemaining = isInfinite ? null : maxAttempts - attemptCount;
+  const canRecord = isInfinite || attemptCount < maxAttempts;
 
   return (
     <div className="flex flex-col space-y-4">
@@ -171,13 +179,7 @@ const AudioRecorder = ({ maxAttempts = 3, onAttemptsChange }) => {
         {/* Bottom Row: Try Again Button, Attempt Selection, and Attempts Bubble */}
         <div className="flex justify-between items-center">
           {/* Try Again Button on the Left */}
-          <div
-            className={
-              recordedAudio && canRecord && attemptsRemaining > 0
-                ? ""
-                : "invisible"
-            }
-          >
+          <div className={recordedAudio && canRecord ? "" : "invisible"}>
             <IconButton
               icon={FaRedo}
               onClick={handleRetry}
@@ -191,7 +193,7 @@ const AudioRecorder = ({ maxAttempts = 3, onAttemptsChange }) => {
 
           <div className="flex flex-row gap-2">
             {/* Attempt Selection Buttons */}
-            {recordings.length > 0 && (
+            {showAttempts && recordings.length > 0 && (
               <div className="flex space-x-1">
                 {recordings.map((_, index) => (
                   <button
@@ -211,10 +213,22 @@ const AudioRecorder = ({ maxAttempts = 3, onAttemptsChange }) => {
             )}
 
             {/* Attempts Remaining Bubble on the Right */}
-            <div className="bg-warmyellow/50 text-lightgray px-3 py-1 rounded-full text-xs font-semibold">
-              {attemptsRemaining}{" "}
-              {attemptsRemaining === 1 ? "attempt" : "attempts"} left
-            </div>
+            {!isInfinite && (
+              <div className="bg-warmyellow/50 text-lightgray px-3 py-1 rounded-full text-xs font-semibold">
+                {attemptsRemaining}{" "}
+                {attemptsRemaining === 1 ? "attempt" : "attempts"} left
+              </div>
+            )}
+
+            {/* Analyze Button */}
+            {analyzeMode && recordedAudio && (
+              <button
+                onClick={() => onAnalyze && onAnalyze(recordedAudio)}
+                className="bg-electricblue/80 hover:bg-electricblue text-blueblack px-3 py-1 rounded-full text-xs font-bold transition-colors shadow-sm"
+              >
+                Analyze
+              </button>
+            )}
           </div>
         </div>
       </div>

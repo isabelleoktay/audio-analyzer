@@ -77,6 +77,7 @@ const RecordTask = ({
               Your Recording:
             </p>
             <AudioRecorder
+              maxAttempts={3}
               onAttemptsChange={(count) => setHasRecordings(count > 0)}
             />
           </div>

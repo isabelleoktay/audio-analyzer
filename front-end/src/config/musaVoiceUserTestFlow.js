@@ -11,6 +11,8 @@ import {
 import { musaVoiceTestConsentConfig } from "./musaVoiceTestConsentConfig.js";
 import { musaVoiceTestInstructionsConfig } from "./musaVoiceTestInstructionsConfig.js";
 import { musaVoiceTestRecordConfig } from "./musaVoiceTestRecordConfig.js";
+import { musaVoiceTestPracticeConfig } from "./musaVoiceTestPracticeConfig.js";
+
 import {
   EntryQuestionsConfig,
   SectionExitConfig,
@@ -59,7 +61,9 @@ const buildConditionBlocks = (taskIndex) => {
       {
         id: `practice-${suffix}`,
         component: Practice,
-        config: {
+        config: musaVoiceTestPracticeConfig,
+        configIndex: taskIndex,
+        metadata: {
           condition: cond.condition,
           usesTool: cond.usesTool,
           taskIndex,
