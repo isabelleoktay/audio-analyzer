@@ -14,6 +14,7 @@ function TestRunner({ flow }) {
   const Step = currentFlow[stepIndex].component;
   const stepConfig = currentFlow[stepIndex].config;
   const configIndex = currentFlow[stepIndex].configIndex;
+  const metadata = currentFlow[stepIndex].metadata;
 
   const handleNext = (payload = {}) => {
     // If payload contains selectedTestFlow, build the appropriate flow
@@ -56,6 +57,7 @@ function TestRunner({ flow }) {
             totalSteps={currentFlow.length}
             config={stepConfig}
             configIndex={configIndex}
+            metadata={metadata}
             surveyData={surveyData}
             id={currentFlow[stepIndex].id}
             sectionKey={currentFlow[stepIndex].sectionKey}
