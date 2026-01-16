@@ -6,7 +6,9 @@ import { buildFlowForSelection } from "../config/musaVoiceUserTestFlow.js";
 function TestRunner({ flow }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
-  const [surveyData, setSurveyData] = useState({});
+  const [surveyData, setSurveyData] = useState({
+    subjectId: `subject_${Date.now()}`,
+  });
   const [currentFlow, setCurrentFlow] = useState(flow);
 
   const Step = currentFlow[stepIndex].component;
@@ -57,6 +59,8 @@ function TestRunner({ flow }) {
             configIndex={configIndex}
             metadata={metadata}
             surveyData={surveyData}
+            id={currentFlow[stepIndex].id}
+            sectionKey={currentFlow[stepIndex].sectionKey}
           />
         )}
       </div>

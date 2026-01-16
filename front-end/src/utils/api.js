@@ -340,6 +340,101 @@ const cleanupTempFiles = async (clearCache = false) => {
   }
 };
 
+const uploadAllMusaUserStudyData = async (
+  subjectId,
+  testName,
+  entrySurveyAnswers,
+  sections,
+  exitSurveyAnswers
+) => {
+  try {
+    const response = await apiClient.post("/api/upload-musa-user-study", {
+      subjectId,
+      testName,
+      entrySurveyAnswers,
+      sections,
+      exitSurveyAnswers,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading Musa User Study:", error);
+    throw error;
+  }
+};
+
+const uploadUserStudyEntrySurvey = async (subjectId, entrySurveyAnswers) => {
+  try {
+    const response = await apiClient.post("/api/save-entry-survey", {
+      subjectId,
+      entrySurveyAnswers,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error uploading Musa User Study entry survey answers:",
+      error
+    );
+    throw error;
+  }
+};
+
+const uploadUserStudyExitSurvey = async (subjectId, exitSurveyAnswers) => {
+  try {
+    console.log("uploadUserStudyExitSurvey:", {
+      subjectId,
+      exitSurveyAnswers,
+    });
+    const response = await apiClient.post("/api/save-exit-survey", {
+      subjectId,
+      exitSurveyAnswers,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error uploading Musa User Study exit survey answers:",
+      error
+    );
+    throw error;
+  }
+};
+
+const uploadUserStudySectionField = async ({
+  subjectId,
+  sectionKey,
+  field,
+  data,
+  addStartedAt = false,
+  addEndedAt = false,
+}) => {
+  try {
+    const response = await apiClient.post("/api/save-section-field", {
+      subjectId,
+      sectionKey,
+      field,
+      data,
+      addStartedAt,
+      addEndedAt,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading section field: ", field, error);
+    throw error;
+  }
+};
+
+const upsertUserStudySection = async (subjectId, section) => {
+  try {
+    const response = await apiClient.post("/api/upsert-section", {
+      subjectId,
+      section,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error upserting section of Musa User Study:", error);
+    throw error;
+  }
+};
+
 export {
   uploadAudio,
   processFeatures,
@@ -349,4 +444,9 @@ export {
   startNewSession,
   uploadFeedback,
   uploadMusaVoiceSessionData,
+  uploadAllMusaUserStudyData,
+  uploadUserStudyEntrySurvey,
+  uploadUserStudyExitSurvey,
+  uploadUserStudySectionField,
+  upsertUserStudySection,
 };

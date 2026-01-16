@@ -4,5 +4,5 @@ export { default as Instructions } from "./Instructions.jsx";
 export { default as MusaVoiceTesting } from "./MusaVoiceTesting.jsx";
 export { default as Practice } from "./Practice.jsx";
 export { default as RecordTask } from "./RecordTask.jsx";
-export { default as SectionExitSurvey } from "./SectionExitSurvey.jsx";
+export { default as SectionSurvey } from "./SectionSurvey.jsx";
 export { default as ThankYou } from "./ThankYou.jsx";

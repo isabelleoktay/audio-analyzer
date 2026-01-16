@@ -1,8 +1,15 @@
 import SurveySingleSelect from "../survey/SurveySingleSelect.jsx";
 import SecondaryButton from "../buttons/SecondaryButton.jsx";
 import { useState } from "react";
+import { uploadUserStudySectionField } from "../../utils/api.js";
 
-const Instructions = ({ onNext, surveyData, config, configIndex }) => {
+const Instructions = ({
+  onNext,
+  surveyData,
+  config,
+  configIndex,
+  sectionKey,
+}) => {
   const [confidence, setConfidence] = useState(null);
 
   // Use configIndex if provided, otherwise fall back to looking up by selectedTestFlow
@@ -16,16 +23,28 @@ const Instructions = ({ onNext, surveyData, config, configIndex }) => {
           question: "",
         };
 
-  const startTestingProcedure = () => {
-    onNext({
-      instructionConfidence: confidence,
-    });
-    window.scrollTo(0, 0);
+  const handleSubmit = async (confidence) => {
+    try {
+      await uploadUserStudySectionField({
+        subjectId: surveyData.subjectId,
+        sectionKey: sectionKey,
+        field: "instructionConfidence",
+        data: confidence,
+      });
+
+      // console.log("survey before practice answers uploaded successfully");
+      onNext({
+        instructionConfidence: confidence,
+      });
+      window.scrollTo(0, 0);
+    } catch (error) {
+      console.error("Error uploading survey before practice answers:", error);
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray w-full">
-      <h1 className="text-5xl text-electricblue font-bold mb-8 text-center">
+    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray">
+      <h1 className="text-5xl text-electricblue font-bold mt-10 mb-8 text-center">
         {currentTaskConfig.task}
       </h1>
 
@@ -54,7 +73,10 @@ const Instructions = ({ onNext, surveyData, config, configIndex }) => {
       </div>
 
       <div className="pt-10">
-        <SecondaryButton onClick={startTestingProcedure} disabled={!confidence}>
+        <SecondaryButton
+          onClick={() => handleSubmit(confidence)}
+          disabled={!confidence}
+        >
           i understand what to do. continue.
         </SecondaryButton>
       </div>
