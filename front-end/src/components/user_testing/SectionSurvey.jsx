@@ -4,10 +4,7 @@ import {
   SurveyAfterPracticeConfig,
 } from "../../config/musaVoiceTestSurveysConfig.js";
 import { musaVoiceTestInstructionsConfig } from "../../config/musaVoiceTestInstructionsConfig.js";
-import {
-  uploadUserStudySurveyAfterPractice,
-  uploadUserStudySurveyBeforePractice,
-} from "../../utils/api.js";
+import { uploadUserStudySectionField } from "../../utils/api.js";
 
 const SectionSurvey = ({
   onNext,
@@ -49,11 +46,13 @@ const SectionSurvey = ({
 
   const handleSubmitSurveyBeforePractice = async (submittedAnswers) => {
     try {
-      await uploadUserStudySurveyBeforePractice(
-        surveyData.subjectId,
-        sectionKey,
-        submittedAnswers
-      );
+      await uploadUserStudySectionField({
+        subjectId: surveyData.subjectId,
+        sectionKey: sectionKey,
+        field: "surveyBeforePracticeAnswers",
+        data: submittedAnswers,
+        addStartedAt: true,
+      });
       // console.log("survey before practice answers uploaded successfully");
       onNext({
         surveyBeforePracticeAnswers: submittedAnswers,
@@ -66,11 +65,13 @@ const SectionSurvey = ({
 
   const handleSubmitSurveyAfterPractice = async (submittedAnswers) => {
     try {
-      await uploadUserStudySurveyAfterPractice(
-        surveyData.subjectId,
-        sectionKey,
-        submittedAnswers
-      );
+      await uploadUserStudySectionField({
+        subjectId: surveyData.subjectId,
+        sectionKey: sectionKey,
+        field: "surveyAfterPracticeAnswers",
+        data: submittedAnswers,
+        addEndedAt: true,
+      });
       // console.log("survey after practice answers uploaded successfully");
       onNext({
         surveyAfterPracticeAnswers: submittedAnswers,

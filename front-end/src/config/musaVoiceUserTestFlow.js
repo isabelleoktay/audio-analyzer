@@ -104,6 +104,9 @@ const buildConditionBlocks = (taskIndex) => {
 const taskFlow = (taskIndex) => [
   {
     id: `instructions-${taskIndex}`,
+    sectionKey: `instructions-${musaVoiceTestInstructionsConfig[taskIndex]?.task
+      .replace(/\s+/g, "-")
+      .toLowerCase()}`,
     component: Instructions,
     config: musaVoiceTestInstructionsConfig,
     configIndex: taskIndex,

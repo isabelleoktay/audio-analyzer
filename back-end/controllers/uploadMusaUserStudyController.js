@@ -145,40 +145,51 @@ const upsertSection = async (req, res) => {
   }
 };
 
-// Update only the section end survey answers for a given sectionKey
-const saveSurveyAfterPractice = async (req, res) => {
-  const { subjectId, sectionKey, answers } = req.body;
+/**
+ * Generic function to save/update a section field
+ * @param {Object} req.body
+ *  - subjectId: string
+ *  - sectionKey: string
+ *  - field: string (name of the field to set, e.g., "surveyBeforePracticeAnswers")
+ *  - data: any (value to set)
+ *  - addEndedAt: boolean (whether to also update endedAt timestamp)
+ */
+const saveSectionField = async (req, res) => {
+  const { subjectId, sectionKey, field, data, addStartedAt, addEndedAt = false } = req.body;
 
-  if (!subjectId || !sectionKey || !answers) {
-    return res.status(400).json({ ok: false, error: "Missing body params" });
+  if (!subjectId || !sectionKey || !field || data === undefined) {
+    return res
+      .status(400)
+      .json({ ok: false, error: "Missing body params (subjectId, sectionKey, field, data)" });
   }
 
   try {
+    // Build the $set object dynamically
+    const setObj = { [`sections.$.${field}`]: data };
+    
+    if (addStartedAt) {
+      setObj["sections.$.addStartedAt"] = new Date();
+    }
+
+    if (addEndedAt) {
+      setObj["sections.$.endedAt"] = new Date();
+    }
+
     // Try updating existing section
     let doc = await MusaUserTest.findOneAndUpdate(
       { subjectId, "sections.sectionKey": sectionKey },
-      {
-        $set: {
-          "sections.$.surveyAfterPracticeAnswers": answers,
-          "sections.$.endedAt": new Date(),
-        },
-      },
+      { $set: setObj },
       { new: true }
     );
 
     // If section doesn't exist, push a new one
     if (!doc) {
+      const newSection = { sectionKey, [field]: data };
+      if (addEndedAt) newSection.endedAt = new Date();
+
       doc = await MusaUserTest.findOneAndUpdate(
         { subjectId },
-        {
-          $push: {
-            sections: {
-              sectionKey,
-              surveyAfterPracticeAnswers: answers,
-              endedAt: new Date(),
-            },
-          },
-        },
+        { $push: { sections: newSection } },
         { new: true }
       );
     }
@@ -190,60 +201,10 @@ const saveSurveyAfterPractice = async (req, res) => {
     return res.status(200).json({ ok: true, doc });
   } catch (err) {
     console.error(err);
-    return res
-      .status(500)
-      .json({ ok: false, error: "Failed to save section end survey" });
+    return res.status(500).json({ ok: false, error: "Failed to save section field" });
   }
 };
 
-// Update only the section start survey answers for a given sectionKey
-const saveSurveyBeforePractice = async (req, res) => {
-  const { subjectId, sectionKey, answers } = req.body;
-
-  if (!subjectId || !sectionKey || !answers) {
-    return res.status(400).json({ ok: false, error: "Missing body params" });
-  }
-
-  try {
-    // Try updating existing section
-    let doc = await MusaUserTest.findOneAndUpdate(
-      { subjectId, "sections.sectionKey": sectionKey },
-      {
-        $set: {
-          "sections.$.surveyBeforePracticeAnswers": answers,
-        },
-      },
-      { new: true }
-    );
-
-    // If section doesn't exist, push a new one
-    if (!doc) {
-      doc = await MusaUserTest.findOneAndUpdate(
-        { subjectId },
-        {
-          $push: {
-            sections: {
-              sectionKey,
-              surveyBeforePracticeAnswers: answers,
-            },
-          },
-        },
-        { new: true }
-      );
-    }
-
-    if (!doc) {
-      return res.status(404).json({ ok: false, error: "Subject not found" });
-    }
-
-    return res.status(200).json({ ok: true, doc });
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .json({ ok: false, error: "Failed to save survey before practice" });
-  }
-};
 
 // Save exit survey and optionally mark completed
 const saveExitSurvey = async (req, res) => {
@@ -292,8 +253,7 @@ export {
   uploadMusaUserStudy,
   saveEntrySurvey,
   upsertSection,
-  saveSurveyBeforePractice,
-  saveSurveyAfterPractice,
+  saveSectionField,
   saveExitSurvey,
   //   getStudyBySubject,
 };
