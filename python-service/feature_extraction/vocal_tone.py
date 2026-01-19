@@ -1,10 +1,11 @@
+import numpy as np
 import torch
 from models.Whisper.whisper_model_prediction import whisper_extract_features_and_predict
 from models.CLAP.CLAP_model_prediction import clap_extract_features_and_predict
 from config import CLAP_MALE_TIMBRE_MODEL_PATH, CLAP_FEMALE_TIMBRE_MODEL_PATH, WHISPER_MALE_TIMBRE_MODEL_PATH, WHISPER_FEMALE_TIMBRE_MODEL_PATH
 from utils.resource_monitoring import ResourceMonitor, get_resource_logger
 
-def extract_vocal_tone(audio_path, gender):
+def extract_vocal_tone(audio_path, gender, use_clap=True, use_whisper=True, monitor_resources=True):
 
     file_logger = get_resource_logger()
 
@@ -17,36 +18,48 @@ def extract_vocal_tone(audio_path, gender):
     else:
         raise ValueError(f"Gender {gender} not recognised.")
     
-    # get CLAP predictions 
-    clap_monitor = ResourceMonitor(interval=0.1)
-    clap_monitor.start()
+    if use_clap:
+        # get CLAP predictions 
+        if monitor_resources:
+            clap_monitor = ResourceMonitor(interval=0.1)
+            clap_monitor.start()
 
-    clap_class_names, clap_probs_array, __ = clap_extract_features_and_predict(
-        audio_path,
-        best_model_weights_path=best_clap_model_weights_path,
-        classify = "timbre",
-    )
+        clap_class_names, clap_probs_array, __ = clap_extract_features_and_predict(
+            audio_path,
+            best_model_weights_path=best_clap_model_weights_path,
+            classify = "timbre",
+        )
 
-    clap_monitor.stop()
-    clap_stats = clap_monitor.summary(feature_type="clap_vocal_tone")
-    print(f"CLAP vocal tone inference metrics: {clap_stats}")
-    file_logger.info(f"CLAP vocal tone inference metrics: {clap_stats}")
+        if monitor_resources:
+            clap_monitor.stop()
+            clap_stats = clap_monitor.summary(feature_type="clap_vocal_tone")
+            print(f"CLAP vocal tone inference metrics: {clap_stats}")
+            file_logger.info(f"CLAP vocal tone inference metrics: {clap_stats}")
+    else:
+        clap_class_names = []
+        clap_probs_array = np.zeros((0,0))
 
-    # Get Whisper predictions 
-    whisper_monitor = ResourceMonitor(interval=0.1)
-    whisper_monitor.start()
+    if use_whisper:
+        # Get Whisper predictions 
+        if monitor_resources:
+            whisper_monitor = ResourceMonitor(interval=0.1)
+            whisper_monitor.start()
 
-    whisper_class_names, whisper_probs_array, __ = whisper_extract_features_and_predict(
-        audio_path,
-        best_model_weights_path=best_whisper_model_weights_path,
-        classify = "timbre",
-        gender = gender,
-    )
+        whisper_class_names, whisper_probs_array, __ = whisper_extract_features_and_predict(
+            audio_path,
+            best_model_weights_path=best_whisper_model_weights_path,
+            classify = "timbre",
+            gender = gender,
+        )
 
-    whisper_monitor.stop()
-    whisper_stats = whisper_monitor.summary(feature_type="whisper_vocal_tone")
-    print(f"Whisper vocal tone inference metrics: {whisper_stats}")
-    file_logger.info(f"Whisper vocal tone inference metrics: {whisper_stats}")
+        if monitor_resources:
+            whisper_monitor.stop()
+            whisper_stats = whisper_monitor.summary(feature_type="whisper_vocal_tone")
+            print(f"Whisper vocal tone inference metrics: {whisper_stats}")
+            file_logger.info(f"Whisper vocal tone inference metrics: {whisper_stats}")
+    else:
+        whisper_class_names = []
+        whisper_probs_array = np.zeros((0,0))
 
     # return both 
     return whisper_class_names, whisper_probs_array, clap_class_names, clap_probs_array

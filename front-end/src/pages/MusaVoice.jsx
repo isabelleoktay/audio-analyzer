@@ -116,7 +116,7 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
   };
 
   const featureHasModels = ["vocal tone", "pitch mod."].includes(
-    selectedAnalysisFeature
+    selectedAnalysisFeature,
   );
 
   // showIntro ? (
@@ -209,19 +209,11 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
                       referenceAudioFeatures[selectedAnalysisFeature]?.audioUrl
                     }
                     inputFeatureData={
-                      (featureHasModels
-                        ? inputAudioFeatures[selectedAnalysisFeature]?.data?.[
-                            selectedModel
-                          ]
-                        : inputAudioFeatures[selectedAnalysisFeature]?.data) ||
-                      []
+                      inputAudioFeatures[selectedAnalysisFeature]?.data || []
                     }
                     referenceFeatureData={
-                      (featureHasModels
-                        ? referenceAudioFeatures[selectedAnalysisFeature]
-                            ?.data?.[selectedModel]
-                        : referenceAudioFeatures[selectedAnalysisFeature]
-                            ?.data) || []
+                      referenceAudioFeatures[selectedAnalysisFeature]?.data ||
+                      []
                     }
                     selectedAnalysisFeature={selectedAnalysisFeature}
                     selectedVoiceType={selectedVoiceType}

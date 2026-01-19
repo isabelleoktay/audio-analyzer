@@ -75,8 +75,33 @@ const Analyzer = ({
   const [selectedModel, setSelectedModel] = useState("CLAP");
 
   const featureHasModels = ["vocal tone", "pitch mod."].includes(
-    selectedAnalysisFeature
+    selectedAnalysisFeature,
   );
+
+  // Set selectedModel based on available models in the response
+  useEffect(() => {
+    if (!featureHasModels) return;
+
+    const featureData = inputAudioFeatures[selectedAnalysisFeature]?.data;
+    if (!featureData || typeof featureData !== "object") return;
+
+    const availableModels = Object.keys(featureData).filter(
+      (key) =>
+        ["CLAP", "Whisper"].includes(key) && featureData[key]?.length > 0,
+    );
+
+    if (availableModels.length > 0) {
+      // Set to first available model if current selection isn't available
+      if (!availableModels.includes(selectedModel)) {
+        setSelectedModel(availableModels[0]);
+      }
+    }
+  }, [
+    selectedAnalysisFeature,
+    inputAudioFeatures,
+    featureHasModels,
+    selectedModel,
+  ]);
 
   // Handle consent response
   const handleConsent = (agreed) => {
@@ -260,11 +285,8 @@ const Analyzer = ({
                               ?.audioUrl
                           }
                           inputFeatureData={
-                            (featureHasModels
-                              ? inputAudioFeatures[selectedAnalysisFeature]
-                                  ?.data?.[selectedModel]
-                              : inputAudioFeatures[selectedAnalysisFeature]
-                                  ?.data) || []
+                            inputAudioFeatures[selectedAnalysisFeature]?.data ||
+                            []
                           }
                           selectedAnalysisFeature={selectedAnalysisFeature}
                           inputAudioDuration={
