@@ -398,23 +398,26 @@ const uploadUserStudyExitSurvey = async (subjectId, exitSurveyAnswers) => {
   }
 };
 
-const uploadUserStudySectionEndSurvey = async (
+const uploadUserStudySectionField = async ({
   subjectId,
-  sectionId,
-  sectionEndSurveyAnswers
-) => {
+  sectionKey,
+  field,
+  data,
+  addStartedAt = false,
+  addEndedAt = false,
+}) => {
   try {
-    const response = await apiClient.post("/api/save-section-end-survey", {
+    const response = await apiClient.post("/api/save-section-field", {
       subjectId,
-      sectionId,
-      answers: sectionEndSurveyAnswers,
+      sectionKey,
+      field,
+      data,
+      addStartedAt,
+      addEndedAt,
     });
     return response.data;
   } catch (error) {
-    console.error(
-      "Error uploading Musa User Study section end survey answers:",
-      error
-    );
+    console.error("Error uploading section field: ", field, error);
     throw error;
   }
 };
@@ -444,6 +447,6 @@ export {
   uploadAllMusaUserStudyData,
   uploadUserStudyEntrySurvey,
   uploadUserStudyExitSurvey,
-  uploadUserStudySectionEndSurvey,
+  uploadUserStudySectionField,
   upsertUserStudySection,
 };

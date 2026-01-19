@@ -4,20 +4,16 @@ const SecondaryButton = ({
   onMouseLeave,
   children,
   className = "",
-  isActive = true,
   disabled = false,
 }) => {
-  // Detect gradient colors in className (like from-darkpink / to-lightpink)
   const fromMatch = className.match(/from-[\w-/]+/);
   const toMatch = className.match(/to-[\w-/]+/);
 
-  // Extract them or use defaults
   const fromColor = fromMatch ? fromMatch[0] : "from-warmyellow/80";
   const toColor = toMatch ? toMatch[0] : "to-electricblue/80";
 
-  // Construct hover states dynamically (remove transparency if present)
-  const hoverFrom = fromColor.replace(/\/\d+/, ""); // e.g. from-warmyellow
-  const hoverTo = toColor.replace(/\/\d+/, ""); // e.g. to-electricblue
+  const hoverFrom = fromColor.replace(/\/\d+/, "");
+  const hoverTo = toColor.replace(/\/\d+/, "");
 
   return (
     <button
@@ -26,15 +22,15 @@ const SecondaryButton = ({
       onMouseLeave={onMouseLeave}
       onClick={onClick}
       className={`
-        bg-radial ${fromColor} ${toColor}
-        ${
-          !disabled
-            ? `hover:${hoverFrom} hover:${hoverTo}`
-            : "grayscale opacity-40 cursor-not-allowed"
-        }
         text-blueblack font-semibold text-sm rounded-full
         px-4 py-2 transition-all duration-200
-        ${isActive || disabled ? "" : "opacity-60"}
+
+        ${
+          disabled
+            ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+            : `bg-radial ${fromColor} ${toColor} hover:${hoverFrom} hover:${hoverTo}`
+        }
+
         ${className}
       `}
     >

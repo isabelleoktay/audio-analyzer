@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const SectionSchema = new mongoose.Schema({
-  sectionId: { type: String, required: true },
+  sectionKey: { type: String, required: true },
   startedAt: Date,
   endedAt: Date,
   instructionConfidence: { type: String },
@@ -9,13 +9,13 @@ const SectionSchema = new mongoose.Schema({
     audioId: String,
     analysis: mongoose.Schema.Types.Mixed,
   },
-  surveyBeforePractice: { type: mongoose.Schema.Types.Mixed, required: true },
+  surveyBeforePracticeAnswers: { type: mongoose.Schema.Types.Mixed, required: true },
   practiceData: { type: mongoose.Schema.Types.Mixed, required: true },
   recordingAfterPractice: {
     audioId: String,
     analysis: mongoose.Schema.Types.Mixed,
   },
-  sectionEndSurveyAnswers: {
+  surveyAfterPracticeAnswers: {
     type: mongoose.Schema.Types.Mixed,
     required: true,
   },

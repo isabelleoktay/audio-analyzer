@@ -59,10 +59,10 @@ const uploadMusaUserStudy = async (req, res) => {
     // handle sections upsert individually (if sections array provided)
     if (Array.isArray(sections) && sections.length) {
       for (const section of sections) {
-        if (!section.sectionId) continue; // skip invalid
+        if (!section.sectionKey) continue; // skip invalid
 
         const updated = await MusaUserTest.findOneAndUpdate(
-          { subjectId, "sections.sectionId": section.sectionId },
+          { subjectId, "sections.sectionKey": section.sectionKey },
           { $set: { "sections.$": section } },
           { new: true }
         );
@@ -111,19 +111,19 @@ const saveEntrySurvey = async (req, res) => {
   }
 };
 
-// Upsert a single section (by sectionId) for a subject
+// Upsert a single section (by sectionKey) for a subject
 const upsertSection = async (req, res) => {
   const { subjectId } = req.params;
   const section = req.body;
 
-  if (!subjectId || !section || !section.sectionId)
+  if (!subjectId || !section || !section.sectionKey)
     return res
       .status(400)
-      .json({ ok: false, error: "Missing subjectId or section.sectionId" });
+      .json({ ok: false, error: "Missing subjectId or section.sectionKey" });
 
   try {
     let doc = await MusaUserTest.findOneAndUpdate(
-      { subjectId, "sections.sectionId": section.sectionId },
+      { subjectId, "sections.sectionKey": section.sectionKey },
       { $set: { "sections.$": section } },
       { new: true }
     );
@@ -145,40 +145,60 @@ const upsertSection = async (req, res) => {
   }
 };
 
-// Update only the section end survey answers for a given sectionId
-const saveSectionEndSurvey = async (req, res) => {
-  const { subjectId, sectionId, answers } = req.body;
+/**
+ * Generic function to save/update a section field
+ * @param {Object} req.body
+ *  - subjectId: string
+ *  - sectionKey: string
+ *  - field: string (name of the field to set, e.g., "surveyBeforePracticeAnswers")
+ *  - data: any (value to set)
+ *  - addEndedAt: boolean (whether to also update endedAt timestamp)
+ */
+const saveSectionField = async (req, res) => {
+  const {
+    subjectId,
+    sectionKey,
+    field,
+    data,
+    addStartedAt,
+    addEndedAt = false,
+  } = req.body;
 
-  if (!subjectId || !sectionId || !answers) {
-    return res.status(400).json({ ok: false, error: "Missing body params" });
+  if (!subjectId || !sectionKey || !field || data === undefined) {
+    return res.status(400).json({
+      ok: false,
+      error: "Missing body params (subjectId, sectionKey, field, data)",
+    });
   }
 
   try {
+    // Build the $set object dynamically
+    const setObj = { [`sections.$.${field}`]: data };
+
+    if (addStartedAt) {
+      setObj["sections.$.startedAt"] = new Date();
+    }
+
+    if (addEndedAt) {
+      setObj["sections.$.endedAt"] = new Date();
+    }
+
     // Try updating existing section
     let doc = await MusaUserTest.findOneAndUpdate(
-      { subjectId, "sections.sectionId": sectionId },
-      {
-        $set: {
-          "sections.$.sectionEndSurveyAnswers": answers,
-          "sections.$.endedAt": new Date(),
-        },
-      },
+      { subjectId, "sections.sectionKey": sectionKey },
+      { $set: setObj },
       { new: true }
     );
 
     // If section doesn't exist, push a new one
     if (!doc) {
+      const newSection = { sectionKey, [field]: data };
+      if (addEndedAt) newSection.endedAt = new Date();
+      if (addStartedAt) newSection.startedAt = new Date();
+
       doc = await MusaUserTest.findOneAndUpdate(
         { subjectId },
-        {
-          $push: {
-            sections: {
-              sectionId,
-              sectionEndSurveyAnswers: answers,
-              endedAt: new Date(),
-            },
-          },
-        },
+        { $push: { sections: newSection } },
         { new: true }
       );
     }
@@ -192,7 +212,7 @@ const saveSectionEndSurvey = async (req, res) => {
     console.error(err);
     return res
       .status(500)
-      .json({ ok: false, error: "Failed to save section end survey" });
+      .json({ ok: false, error: "Failed to save section field" });
   }
 };
 
@@ -243,7 +263,7 @@ export {
   uploadMusaUserStudy,
   saveEntrySurvey,
   upsertSection,
-  saveSectionEndSurvey,
+  saveSectionField,
   saveExitSurvey,
   //   getStudyBySubject,
 };

@@ -4,7 +4,7 @@ import {
   Instructions,
   RecordTask,
   Practice,
-  SectionExitSurvey,
+  SectionSurvey,
   FinalExitSurvey,
 } from "../components/user_testing/index.jsx";
 
@@ -13,7 +13,8 @@ import { musaVoiceTestInstructionsConfig } from "./musaVoiceTestInstructionsConf
 import { musaVoiceTestRecordConfig } from "./musaVoiceTestRecordConfig.js";
 import {
   EntryQuestionsConfig,
-  SectionExitConfig,
+  SurveyBeforePracticeConfig,
+  SurveyAfterPracticeConfig,
   FinalExitConfig,
 } from "./musaVoiceTestSurveysConfig.js";
 
@@ -44,10 +45,11 @@ const buildConditionBlocks = (taskIndex) => {
   ];
 
   return shuffle(conditions).flatMap((cond) => {
-    const suffix = `${taskSlug}-${cond.condition}`;
+    const sectionKey = `${taskSlug}-${cond.condition}`; // Unique key per section for MongoDB entries
     return [
       {
-        id: `record-initial-${suffix}`,
+        id: `record-initial-${sectionKey}`,
+        sectionKey: sectionKey,
         component: RecordTask,
         config: musaVoiceTestRecordConfig,
         configIndex: taskIndex,
@@ -60,7 +62,16 @@ const buildConditionBlocks = (taskIndex) => {
         },
       },
       {
-        id: `practice-${suffix}`,
+        // Section exit after this condition’s record-practice-record block
+        id: `before-practice-survey-${sectionKey}`,
+        sectionKey: sectionKey,
+        component: SectionSurvey,
+        config: SurveyBeforePracticeConfig,
+        configIndex: taskIndex,
+      },
+      {
+        id: `practice-${sectionKey}`,
+        sectionKey: sectionKey,
         component: Practice,
         config: {
           condition: cond.condition,
@@ -70,7 +81,8 @@ const buildConditionBlocks = (taskIndex) => {
         },
       },
       {
-        id: `record-final-${suffix}`,
+        id: `record-final-${sectionKey}`,
+        sectionKey: sectionKey,
         component: RecordTask,
         config: musaVoiceTestRecordConfig,
         configIndex: taskIndex,
@@ -84,9 +96,10 @@ const buildConditionBlocks = (taskIndex) => {
       },
       {
         // Section exit after this condition’s record-practice-record block
-        id: `sectionEnd-${suffix}`,
-        component: SectionExitSurvey,
-        config: SectionExitConfig,
+        id: `after-practice-survey-${sectionKey}`,
+        sectionKey: sectionKey,
+        component: SectionSurvey,
+        config: SurveyAfterPracticeConfig,
         configIndex: taskIndex,
       },
     ];
@@ -96,6 +109,9 @@ const buildConditionBlocks = (taskIndex) => {
 const taskFlow = (taskIndex) => [
   {
     id: `instructions-${taskIndex}`,
+    sectionKey: `instructions-${musaVoiceTestInstructionsConfig[taskIndex]?.task
+      .replace(/\s+/g, "-")
+      .toLowerCase()}`,
     component: Instructions,
     config: musaVoiceTestInstructionsConfig,
     configIndex: taskIndex,
