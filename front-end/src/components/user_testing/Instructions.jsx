@@ -38,6 +38,9 @@ const Instructions = ({
       });
       window.scrollTo(0, 0);
     } catch (error) {
+      onNext({
+        instructionConfidence: confidence,
+      });
       console.error("Error uploading survey before practice answers:", error);
     }
   };

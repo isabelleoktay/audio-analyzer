@@ -26,6 +26,9 @@ const OverlayGraphWithWaveform = ({
   const [chartState, setChartState] = useState(null);
   const emptyHighlightedSections = useMemo(() => [], []);
 
+  console.log("overlay graph");
+  console.log(inputFeatureData);
+
   const handleZoomChange = useCallback((changeData) => {
     setChartState(changeData);
   }, []);

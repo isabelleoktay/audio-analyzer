@@ -23,6 +23,7 @@ const EntryQuestions = ({ surveyData, config, onNext }) => {
       if (onNext) onNext(); // Advance to next step
     } catch (error) {
       console.error("Error uploading entry survey:", error);
+      if (onNext) onNext();
     }
   };
 

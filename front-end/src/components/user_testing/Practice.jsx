@@ -1,7 +1,7 @@
 import { useState } from "react";
 import SecondaryButton from "../../components/buttons/SecondaryButton.jsx";
 import HighlightedText from "../text/HighlightedText.jsx";
-import ResponsiveWaveformPlayer from "../visualizations/ResponsiveWaveformPlayer.jsx";
+import AudioPlayButton from "./AudioPlayButton.jsx";
 import AudioRecorder from "./AudioRecorder.jsx";
 import OverlayGraphWithWaveform from "../visualizations/OverlayGraphWithWaveform.jsx"; // Added import
 import { processFeatures } from "../../utils/api.js";
@@ -120,38 +120,26 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
 
         <div className="flex flex-col space-y-1">
           <p className="text-left text-lg text-warmyellow font-semibold">
-            The phrase to sing:
+            Listen and sing the phrase:
           </p>
-          <HighlightedText
-            text={currentTaskConfig.phrase}
-            highlightWords={currentTaskConfig.highlightedText}
-            highlightClass={currentTaskConfig.highlightClass}
-            defaultClass={currentTaskConfig.defaultClass}
-            highlightLabel={baseConfig.highlightLabel}
-            defaultLabel={baseConfig.defaultLabel}
-            highlightLabelColor={baseConfig.highlightLabelColor}
-            defaultLabelColor={baseConfig.defaultLabelColor}
-            className="text-center justify-center self-center bg-blueblack/50 p-3 pb-5 rounded-3xl w-full"
-          />
+          <div className="flex flex-row items-center gap-4 bg-blueblack/50 p-3 rounded-3xl w-full">
+            <AudioPlayButton audioUrl="https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3" />
+            <HighlightedText
+              text={currentTaskConfig.phrase}
+              highlightWords={currentTaskConfig.highlightedText}
+              highlightClass={currentTaskConfig.highlightClass}
+              defaultClass={currentTaskConfig.defaultClass}
+              highlightLabel={baseConfig.highlightLabel}
+              defaultLabel={baseConfig.defaultLabel}
+              highlightLabelColor={baseConfig.highlightLabelColor}
+              defaultLabelColor={baseConfig.defaultLabelColor}
+              className="text-center justify-center flex-grow"
+            />
+          </div>
         </div>
 
         {!currentAnalysis ? (
           <div className="flex flex-col mt-8 space-y-3">
-            <div>
-              <p className="text-left text-lg font-semibold text-lightpink mb-1">
-                Reference Audio:
-              </p>
-              <div className="bg-lightgray/20 p-4 rounded-3xl w-full">
-                <ResponsiveWaveformPlayer
-                  audioUrl="https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3"
-                  highlightedSections={[]}
-                  progressColor="#FFD6E8"
-                  waveColor="#E0E0E0"
-                  showTimeline={false}
-                  playButtonColor="text-lightgray"
-                />
-              </div>
-            </div>
             <div>
               <p className="text-left text-lg font-semibold text-lightpink mb-1">
                 Your Recording:
