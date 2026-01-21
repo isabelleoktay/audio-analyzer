@@ -32,8 +32,6 @@ const SectionSurvey = ({
     surveyData.selectedTestFlow ??
     "Pitch Modulation Control";
 
-  console.log("SectionSurvey currentTaskName:", currentTaskName);
-
   const usesToolFlag = surveyData.lastPracticeUsesTool;
 
   const currentTaskConfig = config?.find(
@@ -41,7 +39,7 @@ const SectionSurvey = ({
       entry.task === currentTaskName &&
       (usesToolFlag === undefined ||
         entry.usesTool === undefined ||
-        entry.usesTool === usesToolFlag)
+        entry.usesTool === usesToolFlag),
   ) ?? { task: "", questions: [] };
 
   const handleSubmitSurveyBeforePractice = async (submittedAnswers) => {

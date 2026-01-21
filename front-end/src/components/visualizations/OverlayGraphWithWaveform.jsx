@@ -24,10 +24,43 @@ const OverlayGraphWithWaveform = ({
 }) => {
   const [selectedDataIndex, setSelectedDataIndex] = useState(0);
   const [chartState, setChartState] = useState(null);
-  const emptyHighlightedSections = useMemo(() => [], []);
 
-  console.log("overlay graph");
-  console.log(inputFeatureData);
+  // Filter inputFeatureData based on selectedModel if it's a model-based feature
+  const displayedInputFeatureData = useMemo(() => {
+    if (!inputFeatureData) return [];
+
+    // Check if data has model keys (CLAP, Whisper, etc.)
+    if (
+      typeof inputFeatureData === "object" &&
+      !Array.isArray(inputFeatureData) &&
+      (inputFeatureData.CLAP || inputFeatureData.Whisper)
+    ) {
+      // Model-based structure: return data for selected model
+      return inputFeatureData[selectedModel] || [];
+    }
+
+    // Flat array structure: return as-is
+    return Array.isArray(inputFeatureData) ? inputFeatureData : [];
+  }, [inputFeatureData, selectedModel]);
+
+  // Filter referenceFeatureData based on selectedModel if it's a model-based feature
+  const displayedReferenceFeatureData = useMemo(() => {
+    if (!referenceFeatureData) return [];
+
+    // Check if data has model keys
+    if (
+      typeof referenceFeatureData === "object" &&
+      !Array.isArray(referenceFeatureData) &&
+      (referenceFeatureData.CLAP || referenceFeatureData.Whisper)
+    ) {
+      // Model-based structure: return data for selected model
+      return referenceFeatureData[selectedModel] || [];
+    }
+
+    // Flat array structure: return as-is
+    return Array.isArray(referenceFeatureData) ? referenceFeatureData : [];
+  }, [referenceFeatureData, selectedModel]);
+  const emptyHighlightedSections = useMemo(() => [], []);
 
   const handleZoomChange = useCallback((changeData) => {
     setChartState(changeData);
@@ -41,7 +74,7 @@ const OverlayGraphWithWaveform = ({
   const referenceFrameToTime = (
     frameIndex,
     referenceAudioDuration,
-    numFrames
+    numFrames,
   ) => {
     return frameIndex * (referenceAudioDuration / numFrames);
   };
@@ -53,6 +86,10 @@ const OverlayGraphWithWaveform = ({
   useEffect(() => {
     setSelectedDataIndex(0);
   }, [selectedAnalysisFeature]);
+
+  //   useEffect(() => {
+  //     console.log(inputFeatureData);
+  //   }, [inputFeatureData]);
 
   const calculatePitchYMin = (data) => {
     // Filter out values that are 0 or negative
@@ -66,15 +103,15 @@ const OverlayGraphWithWaveform = ({
 
   // --- added: combine input + reference values for global min/max calculation ---
   const combinedValuesForIndex = (index) => {
-    const inputVals = inputFeatureData?.[index]?.data || [];
-    const refVals = referenceFeatureData?.[index]?.data || [];
+    const inputVals = displayedInputFeatureData?.[index]?.data || [];
+    const refVals = displayedReferenceFeatureData?.[index]?.data || [];
     return [...inputVals, ...refVals].filter(
-      (v) => typeof v === "number" && !isNaN(v)
+      (v) => typeof v === "number" && !isNaN(v),
     );
   };
 
   const computeYBounds = (index) => {
-    const label = inputFeatureData?.[index]?.label;
+    const label = displayedInputFeatureData?.[index]?.label;
     const combined = combinedValuesForIndex(index);
     const hasValues = combined.length > 0;
     const globalMin = hasValues ? Math.min(...combined) : 0;
@@ -119,13 +156,13 @@ const OverlayGraphWithWaveform = ({
   // Active feature data
 
   const inputFeature =
-    inputFeatureData === "invalid"
+    displayedInputFeatureData === "invalid"
       ? null
-      : inputFeatureData?.[selectedDataIndex];
+      : displayedInputFeatureData?.[selectedDataIndex];
   const referenceFeature =
-    referenceFeatureData === "invalid"
+    displayedReferenceFeatureData === "invalid"
       ? null
-      : referenceFeatureData?.[selectedDataIndex];
+      : displayedReferenceFeatureData?.[selectedDataIndex];
 
   const hasInputFeatureData =
     inputFeature &&
@@ -167,7 +204,7 @@ const OverlayGraphWithWaveform = ({
                       ? referenceFrameToTime(
                           chartState.zoom.startIndex,
                           referenceAudioDuration,
-                          referenceFeature.data.length
+                          referenceFeature.data.length,
                         )
                       : 0
                   }
@@ -176,7 +213,7 @@ const OverlayGraphWithWaveform = ({
                       ? referenceFrameToTime(
                           chartState.zoom.endIndex,
                           referenceAudioDuration,
-                          referenceFeature.data.length
+                          referenceFeature.data.length,
                         )
                       : referenceAudioDuration || undefined
                   }
@@ -197,7 +234,11 @@ const OverlayGraphWithWaveform = ({
 
       {!selectedAnalysisFeature ? (
         <div>Select an analysis feature above to start analyzing audio.</div>
-      ) : inputFeatureData.length === 0 && selectedAnalysisFeature ? (
+      ) : (typeof inputFeatureData === "object" &&
+        !Array.isArray(inputFeatureData)
+          ? Object.keys(inputFeatureData).length === 0
+          : displayedInputFeatureData.length === 0) &&
+        selectedAnalysisFeature ? (
         <LoadingSpinner />
       ) : inputFeatureData === "invalid" ? (
         <div className="text-lightpink text-xl font-semibold">
@@ -214,7 +255,7 @@ const OverlayGraphWithWaveform = ({
                 </li>
               </ul>
               <div className="flex space-x-4 self-end">
-                {inputFeatureData?.map((d, index) => (
+                {displayedInputFeatureData?.map((d, index) => (
                   <div
                     key={index}
                     onClick={() => handleButtonClick(index)}
@@ -258,21 +299,21 @@ const OverlayGraphWithWaveform = ({
                         inputFeatureData[selectedDataIndex]?.label === "pitch"
                           ? "pitch (note)"
                           : inputFeatureData[selectedDataIndex]?.label ===
-                            "dynamics"
-                          ? "amplitude (dB)"
-                          : inputFeatureData[selectedDataIndex]?.label ===
-                              "rates" ||
-                            inputFeatureData[selectedDataIndex]?.label ===
-                              "extents"
-                          ? "hz"
-                          : inputFeatureData[selectedDataIndex]?.label ===
-                            "tempo"
-                          ? "beats per minute (bpm)"
-                          : selectedAnalysisFeature === "phonation" ||
-                            selectedAnalysisFeature === "vocal tone" ||
-                            selectedAnalysisFeature === "pitch mod."
-                          ? "probability"
-                          : selectedAnalysisFeature
+                              "dynamics"
+                            ? "amplitude (dB)"
+                            : inputFeatureData[selectedDataIndex]?.label ===
+                                  "rates" ||
+                                inputFeatureData[selectedDataIndex]?.label ===
+                                  "extents"
+                              ? "hz"
+                              : inputFeatureData[selectedDataIndex]?.label ===
+                                  "tempo"
+                                ? "beats per minute (bpm)"
+                                : selectedAnalysisFeature === "phonation" ||
+                                    selectedAnalysisFeature === "vocal tone" ||
+                                    selectedAnalysisFeature === "pitch mod."
+                                  ? "probability"
+                                  : selectedAnalysisFeature
                       }
                       //   highlightedSections={
                       //     inputFeatureData[selectedDataIndex]?.highlighted
@@ -325,7 +366,7 @@ const OverlayGraphWithWaveform = ({
                       ? frameToTime(
                           chartState.zoom.startIndex,
                           inputAudioDuration,
-                          inputFeature.data.length
+                          inputFeature.data.length,
                         )
                       : 0
                   }
@@ -334,7 +375,7 @@ const OverlayGraphWithWaveform = ({
                       ? frameToTime(
                           chartState.zoom.endIndex,
                           inputAudioDuration,
-                          inputFeature.data.length
+                          inputFeature.data.length,
                         )
                       : inputAudioDuration || undefined
                   }
@@ -344,20 +385,39 @@ const OverlayGraphWithWaveform = ({
               </div>
             </div>
             {["vocal tone", "pitch mod."].includes(
-              selectedAnalysisFeature?.toLowerCase()
+              selectedAnalysisFeature?.toLowerCase(),
             ) && (
               <div className="flex justify-end w-full">
-                <ToggleButton
-                  question="Select Model:"
-                  options={["CLAP", "Whisper"]}
-                  allowOther={false}
-                  background_color="bg-white/10"
-                  onChange={(selected) => setSelectedModel(selected)}
-                  isMultiSelect={false}
-                  showToggle={false}
-                  miniVersion={true}
-                  selected={selectedModel}
-                />
+                {(() => {
+                  // Check if original data has both models
+                  const hasClap =
+                    Array.isArray(inputFeatureData?.CLAP) &&
+                    inputFeatureData.CLAP.length > 0;
+                  const hasWhisper =
+                    Array.isArray(inputFeatureData?.Whisper) &&
+                    inputFeatureData.Whisper.length > 0;
+                  const availableModels = [];
+                  if (hasClap) availableModels.push("CLAP");
+                  if (hasWhisper) availableModels.push("Whisper");
+
+                  // Only show toggle if we have more than one model
+                  if (availableModels.length > 1) {
+                    return (
+                      <ToggleButton
+                        question="Select Model:"
+                        options={availableModels}
+                        allowOther={false}
+                        background_color="bg-white/10"
+                        onChange={(selected) => setSelectedModel(selected)}
+                        isMultiSelect={false}
+                        showToggle={false}
+                        miniVersion={true}
+                        selected={selectedModel}
+                      />
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             )}
           </>

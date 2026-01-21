@@ -23,7 +23,7 @@ pythonClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 pythonClient.interceptors.response.use(
@@ -47,7 +47,7 @@ pythonClient.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 const startNewSession = async () => {
@@ -61,23 +61,27 @@ const startNewSession = async () => {
   }
 };
 
-const processFeatures = async (
-  audioFile,
-  feature,
+const processFeatures = async ({
+  file: audioFile,
+  featureLabel: feature,
   voiceType,
+  useWhisper = true,
+  useCLAP = true,
+  monitorResources = true,
   sessionId = null,
-  fileKey = "input"
-) => {
+  fileKey = "input",
+} = {}) => {
   const formData = new FormData();
   formData.append("audioFile", audioFile);
   if (sessionId) formData.append("sessionId", sessionId);
   if (fileKey) formData.append("fileKey", fileKey);
+  formData.append("monitorResources", String(monitorResources).toLowerCase());
 
   try {
     if (feature === "dynamics") {
       const response = await pythonClient.post(
         "/python-service/process-dynamics",
-        formData
+        formData,
       );
       return response.data;
     } else if (feature === "pitch") {
@@ -91,18 +95,19 @@ const processFeatures = async (
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     } else if (feature === "tempo") {
       const response = await pythonClient.post(
         "/python-service/process-tempo",
-        formData
+        formData,
       );
       return response.data;
     } else if (feature === "vocal tone") {
       formData.append("voiceType", voiceType);
-
+      formData.append("useWhisper", useWhisper);
+      formData.append("useCLAP", useCLAP);
       const response = await pythonClient.post(
         "/python-service/process-vocal-tone",
         formData,
@@ -110,12 +115,14 @@ const processFeatures = async (
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
+      console.log("Vocal tone response:", response.data);
       return response.data;
     } else if (feature === "pitch mod.") {
-      const voiceType = "alto"; // TO DO: needs to be handled properly - get from frontend selection
       formData.append("voiceType", voiceType);
+      formData.append("useWhisper", useWhisper);
+      formData.append("useCLAP", useCLAP);
 
       const response = await pythonClient.post(
         "/python-service/process-pitch-mod",
@@ -124,19 +131,19 @@ const processFeatures = async (
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     } else if (feature === "vibrato") {
       const response = await pythonClient.post(
         "/python-service/process-vibrato",
-        formData
+        formData,
       );
       return response.data;
     } else if (feature === "phonation") {
       const response = await pythonClient.post(
         "/python-service/process-phonation",
-        formData
+        formData,
       );
       return response.data;
     } else {
@@ -161,7 +168,7 @@ const uploadAudioToPythonService = async (
   audioFile,
   group = null,
   stage = null,
-  feature = null
+  feature = null,
 ) => {
   const formData = new FormData();
   formData.append("file", audioFile);
@@ -184,7 +191,7 @@ const uploadAudioToPythonService = async (
   try {
     const response = await pythonClient.post(
       "/python-service/audio/upload",
-      formData
+      formData,
     );
     return response.data;
   } catch (error) {
@@ -226,7 +233,7 @@ const uploadAudio = async (
   id,
   instrument,
   features,
-  musaVoiceSessionId = null
+  musaVoiceSessionId = null,
 ) => {
   try {
     const originalName = audioFile.name;
@@ -251,7 +258,7 @@ const uploadAudio = async (
       console.log(
         "Uploading to MusaVoice session:",
         musaVoiceSessionId,
-        audioData
+        audioData,
       );
       // If MusaVoice session, update the session with audio data
       const backendResponse = await apiClient.post(
@@ -259,7 +266,7 @@ const uploadAudio = async (
         {
           sessionId: musaVoiceSessionId,
           audioData,
-        }
+        },
       );
       return backendResponse.data;
     } else {
@@ -279,7 +286,7 @@ const uploadAudio = async (
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return backendResponse.data;
     }
@@ -332,7 +339,7 @@ const uploadMusaVoiceSessionData = async (musaVoiceSessionData) => {
 const cleanupTempFiles = async (clearCache = false) => {
   try {
     const response = await pythonClient.post(
-      `/python-service/audio/cleanup-temp-files?clear_cache=${clearCache}`
+      `/python-service/audio/cleanup-temp-files?clear_cache=${clearCache}`,
     );
     console.log("Cleanup response:", response.data);
   } catch (error) {
@@ -345,7 +352,7 @@ const uploadAllMusaUserStudyData = async (
   testName,
   entrySurveyAnswers,
   sections,
-  exitSurveyAnswers
+  exitSurveyAnswers,
 ) => {
   try {
     const response = await apiClient.post("/api/upload-musa-user-study", {
@@ -372,7 +379,7 @@ const uploadUserStudyEntrySurvey = async (subjectId, entrySurveyAnswers) => {
   } catch (error) {
     console.error(
       "Error uploading Musa User Study entry survey answers:",
-      error
+      error,
     );
     throw error;
   }
@@ -380,10 +387,6 @@ const uploadUserStudyEntrySurvey = async (subjectId, entrySurveyAnswers) => {
 
 const uploadUserStudyExitSurvey = async (subjectId, exitSurveyAnswers) => {
   try {
-    console.log("uploadUserStudyExitSurvey:", {
-      subjectId,
-      exitSurveyAnswers,
-    });
     const response = await apiClient.post("/api/save-exit-survey", {
       subjectId,
       exitSurveyAnswers,
@@ -392,7 +395,7 @@ const uploadUserStudyExitSurvey = async (subjectId, exitSurveyAnswers) => {
   } catch (error) {
     console.error(
       "Error uploading Musa User Study exit survey answers:",
-      error
+      error,
     );
     throw error;
   }

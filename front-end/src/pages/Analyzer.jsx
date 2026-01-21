@@ -73,10 +73,44 @@ const Analyzer = ({
   });
 
   const [selectedModel, setSelectedModel] = useState("CLAP");
+  const [audioData, setAudioData] = useState(null);
+  const [audioSource, setAudioSource] = useState(null);
 
   const featureHasModels = ["vocal tone", "pitch mod."].includes(
-    selectedAnalysisFeature
+    selectedAnalysisFeature,
   );
+
+  const getAudioFileOrBlob = (data, source) => {
+    if (!data || !source) return null;
+    return data;
+  };
+
+  const inputFileOrBlob = getAudioFileOrBlob(audioData, audioSource);
+
+  // Set selectedModel based on available models in the response
+  useEffect(() => {
+    if (!featureHasModels) return;
+
+    const featureData = inputAudioFeatures[selectedAnalysisFeature]?.data;
+    if (!featureData || typeof featureData !== "object") return;
+
+    const availableModels = Object.keys(featureData).filter(
+      (key) =>
+        ["CLAP", "Whisper"].includes(key) && featureData[key]?.length > 0,
+    );
+
+    if (availableModels.length > 0) {
+      // Set to first available model if current selection isn't available
+      if (!availableModels.includes(selectedModel)) {
+        setSelectedModel(availableModels[0]);
+      }
+    }
+  }, [
+    selectedAnalysisFeature,
+    inputAudioFeatures,
+    featureHasModels,
+    selectedModel,
+  ]);
 
   // Handle consent response
   const handleConsent = (agreed) => {
@@ -99,6 +133,8 @@ const Analyzer = ({
         console.log("Resetting audio features");
         setInputFile(null);
         setAudioBlob(null);
+        setAudioData(null);
+        setAudioSource(null);
         setAudioName("untitled.wav");
         setAudioURL(null);
         setInputAudioFeatures({});
@@ -113,6 +149,8 @@ const Analyzer = ({
   const handleFileUpload = (file) => {
     setInputFile(file);
     setAudioURL(URL.createObjectURL(file));
+    setAudioData(file);
+    setAudioSource("upload");
   };
 
   // Switches the app to recording mode.
@@ -139,6 +177,8 @@ const Analyzer = ({
     setSelectedAnalysisFeature(null);
     setInputFile(null);
     setAudioBlob(null);
+    setAudioData(null);
+    setAudioSource(null);
 
     const newAudioName = "untitled.wav";
     setAudioName(newAudioName);
@@ -198,6 +238,8 @@ const Analyzer = ({
                   audioURL={audioURL}
                   setAudioURL={setAudioURL}
                   handleDownloadRecording={handleDownloadRecording}
+                  setAudioData={setAudioData}
+                  setAudioSource={setAudioSource}
                   className="w-full "
                 />
               ) : (
@@ -220,7 +262,7 @@ const Analyzer = ({
             </div>
 
             {/* Display uploaded file, analysis buttons, and visualization for selected analysis feature */}
-            {inputFile && (
+            {inputFileOrBlob && (
               <div className="flex flex-col items-center w-full space-y-8">
                 <Tooltip
                   text="select an analysis feature"
@@ -233,18 +275,19 @@ const Analyzer = ({
                     selectedInstrument={selectedInstrument}
                     selectedAnalysisFeature={selectedAnalysisFeature}
                     onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
-                    inputFile={inputFile}
+                    inputFileOrBlob={inputFileOrBlob}
                     inputAudioFeatures={inputAudioFeatures}
                     setInputAudioFeatures={setInputAudioFeatures}
                     inputAudioUuid={inputAudioUuid}
                     setInputAudioUuid={setInputAudioUuid}
                     uploadsEnabled={uploadsEnabled}
+                    // monitorResources={false}
                   />
                 </Tooltip>
                 {selectedAnalysisFeature && (
                   <div className="flex flex-col w-full lg:w-fit">
                     <div className="text-xl font-semibold text-lightpink mb-1">
-                      {inputFile.name}
+                      {inputFile?.name || audioName}
                     </div>
                     <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
                       {/* Add overflow-x-auto on mobile only */}
@@ -260,11 +303,8 @@ const Analyzer = ({
                               ?.audioUrl
                           }
                           inputFeatureData={
-                            (featureHasModels
-                              ? inputAudioFeatures[selectedAnalysisFeature]
-                                  ?.data?.[selectedModel]
-                              : inputAudioFeatures[selectedAnalysisFeature]
-                                  ?.data) || []
+                            inputAudioFeatures[selectedAnalysisFeature]?.data ||
+                            []
                           }
                           selectedAnalysisFeature={selectedAnalysisFeature}
                           inputAudioDuration={

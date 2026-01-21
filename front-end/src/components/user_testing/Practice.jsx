@@ -7,7 +7,15 @@ import OverlayGraphWithWaveform from "../visualizations/OverlayGraphWithWaveform
 import { processFeatures } from "../../utils/api.js";
 import TertiaryButton from "../buttons/TertiaryButton.jsx";
 
-const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
+const Practice = ({
+  onNext,
+  config,
+  configIndex,
+  metadata,
+  surveyData,
+  voiceType = "alto",
+}) => {
+  // TO DO: need to have voiceType set by the first survey answer !!!
   const [hasRecordings, setHasRecordings] = useState(false);
   const [inputAudioFeatures, setInputAudioFeatures] = useState({});
   const [selectedModel, setSelectedModel] = useState("CLAP"); // Added for graph toggle
@@ -39,17 +47,6 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
     setSimilarityScore(null);
   };
 
-  const formattedGraphData =
-    currentAnalysis?.data && currentAnalysis.data !== "invalid"
-      ? Object.keys(currentAnalysis.data).map((modelName) => ({
-          label: modelName,
-          // The API returns an array for each model, so we pass that array directly
-          data: currentAnalysis.data[modelName],
-        }))
-      : currentAnalysis?.data === "invalid"
-      ? "invalid"
-      : [];
-
   const handleAnalysis = async (blob) => {
     const featureLabel = featureLabelMap[baseConfig.task];
     if (!featureLabel) return;
@@ -66,32 +63,51 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
     }));
 
     try {
-      // 1. Process Features
-      const featureResult = await processFeatures(
-        blob,
-        featureLabel,
-        "voice", // voiceType
-        musaVoiceSessionId,
-        "input"
-      );
+      // Create a File object from the blob
+      const file = new File([blob], `recording_${Date.now()}.wav`, {
+        type: "audio/wav",
+      });
 
+      // 1. Process Features
+      const featureResult = await processFeatures({
+        file, // Pass the File object
+        featureLabel,
+        voiceType: voiceType,
+        useWhisper: false,
+        useCLAP: true,
+        monitorResources: false,
+        sessionId: musaVoiceSessionId,
+        fileKey: "input",
+      });
+      console.log("featureResult, practice.jsx:");
       console.log(featureResult);
       // 2. Reorganize and validate data
-      const clapData = featureResult.data["CLAP"];
-      const whisperData = featureResult.data["Whisper"];
+      const featureHasModels = ["vocal tone", "pitch mod."].includes(
+        featureLabel,
+      );
 
-      const isDataInvalid =
-        !clapData ||
-        !whisperData ||
-        !Array.isArray(clapData) ||
-        !Array.isArray(whisperData) ||
-        clapData.length === 0 ||
-        whisperData.length === 0;
+      let isDataInvalid = false;
+
+      if (!featureHasModels) {
+        // Simple features: expect data to be an array
+        isDataInvalid = !Array.isArray(featureResult.data);
+      } else {
+        // For features with models (CLAP/Whisper), at least one model should have data
+        const clapData = featureResult.data["CLAP"];
+        const whisperData = featureResult.data["Whisper"];
+
+        const hasClapData = Array.isArray(clapData) && clapData.length > 0;
+        const hasWhisperData =
+          Array.isArray(whisperData) && whisperData.length > 0;
+
+        // Data is invalid only if BOTH models are missing or empty
+        isDataInvalid = !hasClapData && !hasWhisperData;
+      }
 
       const featureData = {
         data: isDataInvalid ? "invalid" : featureResult.data,
         sampleRate: featureResult.sample_rate,
-        audioUrl: featureResult.audio_url || localUrl,
+        audioUrl: featureResult.audio_url || "",
         duration: featureResult.duration || 0,
       };
 
@@ -100,8 +116,6 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
         [featureLabel]: featureData,
       }));
       setHasRecordings(true);
-
-      console.log("Analysis Complete:", featureLabel);
     } catch (error) {
       console.error("Analysis failed:", error);
       // Optional: Reset state on error so the user can try again
@@ -160,7 +174,7 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
             <div className="py-4 px-6 bg-lightgray/20 rounded-3xl w-fit self-center">
               <OverlayGraphWithWaveform
                 inputAudioURL={currentAnalysis.audioUrl}
-                inputFeatureData={formattedGraphData}
+                inputFeatureData={currentAnalysis?.data || []}
                 selectedAnalysisFeature={featureLabel}
                 inputAudioDuration={currentAnalysis.duration}
                 selectedModel={selectedModel}

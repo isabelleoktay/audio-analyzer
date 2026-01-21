@@ -116,7 +116,7 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
   };
 
   const featureHasModels = ["vocal tone", "pitch mod."].includes(
-    selectedAnalysisFeature
+    selectedAnalysisFeature,
   );
 
   // showIntro ? (
@@ -178,8 +178,8 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
             selectedInstrument={"voice"}
             selectedAnalysisFeature={selectedAnalysisFeature}
             onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
-            inputFile={userFileOrBlob}
-            referenceFile={referenceFileOrBlob}
+            inputFileOrBlob={userFileOrBlob}
+            referenceFileOrBlob={referenceFileOrBlob}
             inputAudioFeatures={inputAudioFeatures}
             setInputAudioFeatures={setInputAudioFeatures}
             referenceAudioFeatures={referenceAudioFeatures}
@@ -189,6 +189,7 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
             uploadsEnabled={uploadsEnabled}
             voiceType={selectedVoiceType}
             musaVoiceSessionId={sessionId}
+            monitorResources={false}
           />
 
           {selectedAnalysisFeature && (
@@ -209,19 +210,11 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
                       referenceAudioFeatures[selectedAnalysisFeature]?.audioUrl
                     }
                     inputFeatureData={
-                      (featureHasModels
-                        ? inputAudioFeatures[selectedAnalysisFeature]?.data?.[
-                            selectedModel
-                          ]
-                        : inputAudioFeatures[selectedAnalysisFeature]?.data) ||
-                      []
+                      inputAudioFeatures[selectedAnalysisFeature]?.data || []
                     }
                     referenceFeatureData={
-                      (featureHasModels
-                        ? referenceAudioFeatures[selectedAnalysisFeature]
-                            ?.data?.[selectedModel]
-                        : referenceAudioFeatures[selectedAnalysisFeature]
-                            ?.data) || []
+                      referenceAudioFeatures[selectedAnalysisFeature]?.data ||
+                      []
                     }
                     selectedAnalysisFeature={selectedAnalysisFeature}
                     selectedVoiceType={selectedVoiceType}
