@@ -32,7 +32,7 @@ const FinalExitSurvey = ({ surveyData, config, onNext }) => {
       ...specific.map((q) =>
         isVocalTechniquesQuestion(q)
           ? { ...q, options: filterOptionsForTask(q.options) }
-          : q
+          : q,
       ),
     ];
   }, [selectedSectionConfig, selectedTask]);
@@ -73,7 +73,7 @@ const FinalExitSurvey = ({ surveyData, config, onNext }) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full max-w-5xl px-4">
-      <h1 className="text-xl font-bold mb-5">
+      <h1 className="text-xl text-lightpink pt-10 font-bold mb-5">
         {selectedSectionConfig?.section}
       </h1>
 

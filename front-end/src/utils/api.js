@@ -386,10 +386,6 @@ const uploadUserStudyEntrySurvey = async (subjectId, entrySurveyAnswers) => {
 
 const uploadUserStudyExitSurvey = async (subjectId, exitSurveyAnswers) => {
   try {
-    console.log("uploadUserStudyExitSurvey:", {
-      subjectId,
-      exitSurveyAnswers,
-    });
     const response = await apiClient.post("/api/save-exit-survey", {
       subjectId,
       exitSurveyAnswers,
