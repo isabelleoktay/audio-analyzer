@@ -79,7 +79,7 @@ const Practice = ({
         sessionId: musaVoiceSessionId,
         fileKey: "input",
       });
-      
+
       // 2. Reorganize and validate data
       const featureHasModels = ["vocal tone", "pitch mod."].includes(
         featureLabel,
@@ -106,7 +106,7 @@ const Practice = ({
       const featureData = {
         data: isDataInvalid ? "invalid" : featureResult.data,
         sampleRate: featureResult.sample_rate,
-        audioUrl: localUrl, // Use the local blob URL instead of backend URL to avoid 404s
+        audioUrl: featureResult.audio_url, // Use backend trimmed audio URL
         duration: featureResult.duration || 0,
       };
 
