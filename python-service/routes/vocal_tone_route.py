@@ -16,8 +16,18 @@ def handle_vocal_tone():
 
     if not audio_file:
         return jsonify({'error': 'No file uploaded'}), 400
+    
+    use_clap = request.form.get('useCLAP', 'true').lower() == 'true'
+    use_whisper = request.form.get('useWhisper', 'true').lower() == 'true'
+    if not use_clap and not use_whisper:
+        use_clap = True 
+        use_whisper = True
+    
+    
 
-    result, error = process_vocal_tone(audio_file.read(), gender)
+    monitor_resources = request.form.get('monitorResources', 'true').lower() == 'true'
+
+    result, error = process_vocal_tone(audio_file.read(), gender, use_clap=use_clap, use_whisper=use_whisper, monitor_resources=monitor_resources)
     result = convert_to_builtin_types(result)
     if error:
         return jsonify({'error': error}), 400
