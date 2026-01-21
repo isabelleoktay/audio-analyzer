@@ -73,14 +73,13 @@ const Practice = ({
         file, // Pass the File object
         featureLabel,
         voiceType: voiceType,
-        useWhisper: false,
-        useCLAP: true,
-        monitorResources: false,
+        useWhisper: selectedModel === "Whisper" || false,
+        useCLAP: selectedModel === "CLAP" || true,
+        monitorResources: true,
         sessionId: musaVoiceSessionId,
         fileKey: "input",
       });
-      console.log("featureResult, practice.jsx:");
-      console.log(featureResult);
+      
       // 2. Reorganize and validate data
       const featureHasModels = ["vocal tone", "pitch mod."].includes(
         featureLabel,
@@ -107,7 +106,7 @@ const Practice = ({
       const featureData = {
         data: isDataInvalid ? "invalid" : featureResult.data,
         sampleRate: featureResult.sample_rate,
-        audioUrl: featureResult.audio_url || "",
+        audioUrl: localUrl, // Use the local blob URL instead of backend URL to avoid 404s
         duration: featureResult.duration || 0,
       };
 

@@ -117,7 +117,6 @@ const processFeatures = async ({
           },
         },
       );
-      console.log("Vocal tone response:", response.data);
       return response.data;
     } else if (feature === "pitch mod.") {
       formData.append("voiceType", voiceType);
