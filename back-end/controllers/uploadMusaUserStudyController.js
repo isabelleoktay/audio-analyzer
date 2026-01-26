@@ -265,5 +265,4 @@ export {
   upsertSection,
   saveSectionField,
   saveExitSurvey,
-  //   getStudyBySubject,
 };

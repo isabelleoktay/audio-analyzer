@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SecondaryButton from "../../components/buttons/SecondaryButton.jsx";
 import HighlightedText from "../text/HighlightedText.jsx";
 import AudioPlayButton from "./AudioPlayButton.jsx";
 import AudioRecorder from "./AudioRecorder.jsx";
 import OverlayGraphWithWaveform from "../visualizations/OverlayGraphWithWaveform.jsx"; // Added import
-import { processFeatures } from "../../utils/api.js";
+import {
+  processFeatures,
+  uploadUserStudySectionField,
+} from "../../utils/api.js";
 import TertiaryButton from "../buttons/TertiaryButton.jsx";
 
 const Practice = ({
@@ -16,16 +19,18 @@ const Practice = ({
   voiceType = "alto",
 }) => {
   // TO DO: need to have voiceType set by the first survey answer !!!
+  const baseConfig = config?.[configIndex] ?? {};
+  const { condition = "control", usesTool = false, taskIndex } = metadata || {};
+  const conditionConfig = baseConfig.conditions?.[condition] ?? {};
+
   const [hasRecordings, setHasRecordings] = useState(false);
+  const [numAnalyses, setNumAnalyses] = useState(0);
   const [inputAudioFeatures, setInputAudioFeatures] = useState({});
   const [selectedModel, setSelectedModel] = useState("CLAP"); // Added for graph toggle
   const [similarityScore, setSimilarityScore] = useState(null); // Added for graph
+  const [timeLeft, setTimeLeft] = useState(baseConfig.practiceTime || 420); // Default 7 mins
 
-  const { condition = "control", usesTool = false, taskIndex } = metadata || {};
   const musaVoiceSessionId = surveyData?.sessionId;
-
-  const baseConfig = config?.[configIndex] ?? {};
-  const conditionConfig = baseConfig.conditions?.[condition] ?? {};
 
   const currentTaskConfig = {
     title: baseConfig.title,
@@ -40,6 +45,49 @@ const Practice = ({
 
   const featureLabel = featureLabelMap[baseConfig.task];
   const currentAnalysis = inputAudioFeatures[featureLabel];
+
+  const triggerNext = async () => {
+    const timeSpent = baseConfig.practiceTime - timeLeft;
+    try {
+      if (surveyData?.subjectId && metadata?.sectionKey) {
+        // Use the existing generic field uploader
+        await uploadUserStudySectionField({
+          subjectId: surveyData.subjectId,
+          sectionKey: metadata.sectionKey,
+          field: "practiceData",
+          data: { timeSpentSeconds: timeSpent },
+          // addEndedAt: true // Optional: if you want to mark section completion time here
+        });
+      }
+    } catch (e) {
+      console.error("Failed to save practice data", e);
+    }
+
+    onNext({
+      lastPracticeCondition: condition,
+      lastPracticeUsesTool: usesTool,
+      lastPracticeTaskIndex: taskIndex,
+    });
+  };
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      triggerNext();
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
 
   const handleResetAnalysis = () => {
     setHasRecordings(false);
@@ -82,7 +130,7 @@ const Practice = ({
 
       // 2. Reorganize and validate data
       const featureHasModels = ["vocal tone", "pitch mod."].includes(
-        featureLabel,
+        featureLabel
       );
 
       let isDataInvalid = false;
@@ -114,7 +162,7 @@ const Practice = ({
         ...prev,
         [featureLabel]: featureData,
       }));
-      setHasRecordings(true);
+      setNumAnalyses((prev) => prev + 1);
     } catch (error) {
       console.error("Analysis failed:", error);
       // Optional: Reset state on error so the user can try again
@@ -123,7 +171,7 @@ const Practice = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray w-full px-8">
+    <div className="flex flex-col items-center justify-center min-h-screen text-lightgray w-full px-8 mt-16">
       <div className="w-9/12">
         <h2 className="text-4xl text-electricblue font-bold mb-4 text-center">
           Practising {currentTaskConfig.title}
@@ -132,9 +180,14 @@ const Practice = ({
         <hr className="border-t border-lightgray/20 mb-8 mt-2" />
 
         <div className="flex flex-col space-y-1">
-          <p className="text-left text-lg text-warmyellow font-semibold">
-            Listen and sing the phrase:
-          </p>
+          <div className="flex justify-between items-end w-full">
+            <p className="text-left text-lg text-warmyellow font-semibold">
+              Listen and sing the phrase:
+            </p>
+            <div className="text-electricblue font-mono font-bold bg-electricblue/10 px-3 py-1 rounded-lg border border-electricblue/20">
+              {formatTime(timeLeft)}
+            </div>
+          </div>
           <div className="flex flex-row items-center gap-4 bg-blueblack/50 p-3 rounded-3xl w-full">
             <AudioPlayButton audioUrl="https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3" />
             <HighlightedText
@@ -162,7 +215,6 @@ const Practice = ({
                 analyzeMode={true}
                 onAnalyze={handleAnalysis}
                 onAttemptsChange={() => {
-                  setHasRecordings(false);
                   setInputAudioFeatures({});
                 }}
               />
@@ -193,17 +245,8 @@ const Practice = ({
         <hr className="border-t border-lightgray/20 mb-4 mt-8" />
 
         <div className="flex justify-center">
-          <SecondaryButton
-            onClick={() =>
-              onNext({
-                lastPracticeCondition: condition,
-                lastPracticeUsesTool: usesTool,
-                lastPracticeTaskIndex: taskIndex,
-              })
-            }
-            disabled={!hasRecordings}
-          >
-            {hasRecordings
+          <SecondaryButton onClick={triggerNext} disabled={numAnalyses === 0}>
+            {numAnalyses > 0
               ? "Continue to the next task."
               : "Please record and analyse at least one attempt to continue"}
           </SecondaryButton>

@@ -2,6 +2,7 @@ export const musaVoiceTestPracticeConfig = [
   {
     task: "Pitch Modulation Control",
     title: "Pitch Modulation",
+    practiceTime: 420,
     instructions:
       "You now will have a maximum of 7 minutes to practice attaining the same vocal technique placement as the reference audio with feedback from the pitch modulation feedback tool.",
     techniques: ["straight", "vibrato"],
@@ -28,6 +29,7 @@ export const musaVoiceTestPracticeConfig = [
   {
     task: "Vocal Tone Control",
     title: "Vocal Tone",
+    practiceTime: 420,
     instructions:
       "You now will have a maximum of 7 minutes to practice attaining the same vocal technique placement as the reference audio with feedback from the pitch modulation feedback tool.",
     techniques: ["belt", "breathy"],
