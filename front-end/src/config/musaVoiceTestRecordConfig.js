@@ -14,12 +14,14 @@ export const musaVoiceTestRecordConfig = [
     conditions: {
       control: {
         phrase: "Let it be, let it be, let it be, let it be.",
+        audio: "/audio/reference/vocal_tone_control.wav",
         highlightedText: [{ phrase: "Let it be,", occurrences: [1, 3] }],
         highlightClass: "bg-darkpink text-blueblack",
         defaultClass: "bg-warmyellow text-blueblack",
       },
       tool: {
         phrase: "And I-I will always love you.",
+        audio: "/audio/reference/vocal_tone_control.wav",
         highlightedText: [{ phrase: "-I" }, { phrase: "ways love" }],
         highlightClass: "bg-darkpink text-blueblack",
         defaultClass: "bg-warmyellow text-blueblack",
@@ -43,6 +45,7 @@ export const musaVoiceTestRecordConfig = [
       control: {
         phrase:
           "Hello... it's me. I was wondering if after all these years you'd like to meet.",
+        audio: "/audio/reference/vocal_tone_control.wav",
         highlightedText: [
           { phrase: "Hello..." },
           { phrase: "I was" },
@@ -55,6 +58,7 @@ export const musaVoiceTestRecordConfig = [
       tool: {
         phrase:
           "We are the champions, my friend. And we'll keep on fighting till the end.",
+        audio: "/audio/reference/vocal_tone_control.wav",
         highlightedText: [
           { phrase: "the champions," },
           { phrase: "and we'll" },

@@ -20,6 +20,7 @@ const AudioRecorder = ({
   analyzeMode = false,
   onAnalyze,
   showAttempts = true,
+  onRecordingChange,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedAudio, setRecordedAudio] = useState(null);
@@ -31,6 +32,12 @@ const AudioRecorder = ({
   const waveSurferRef = useRef(null);
   const recordRef = useRef(null);
   const waveformContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (onRecordingChange) {
+      onRecordingChange(recordings[selectedAttempt] || null);
+    }
+  }, [recordings, selectedAttempt, onRecordingChange]);
 
   // Initialize WaveSurfer with RecordPlugin
   useEffect(() => {
