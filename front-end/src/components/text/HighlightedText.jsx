@@ -34,22 +34,43 @@ const HighlightedText = ({
       occurrence += 1;
       const shouldHighlight = !occurrences || occurrences.includes(occurrence);
       if (!shouldHighlight) continue;
-      highlights.push({
+
+      const newHighlight = {
         start: match.index,
         end: match.index + match[0].length,
-      });
+      };
+
+      // Ensure we don't add overlapping or duplicate highlights
+      const isDuplicate = highlights.some(
+        (h) => h.start === newHighlight.start && h.end === newHighlight.end
+      );
+      if (!isDuplicate) {
+        highlights.push(newHighlight);
+      }
     }
   });
 
   highlights.sort((a, b) => a.start - b.start);
-  let lastIndex = 0;
+  const nonOverlapping = [];
+  let currentEnd = -1;
+
   highlights.forEach((h) => {
+    if (h.start >= currentEnd) {
+      nonOverlapping.push(h);
+      currentEnd = h.end;
+    }
+  });
+
+  let lastIndex = 0;
+  nonOverlapping.forEach((h) => {
     if (lastIndex < h.start) {
       parts.push({ type: "text", content: text.slice(lastIndex, h.start) });
     }
     parts.push({ type: "highlight", content: text.slice(h.start, h.end) });
     lastIndex = h.end;
   });
+
+  // Add the remaining text after the last highlight
   if (lastIndex < text.length) {
     parts.push({ type: "text", content: text.slice(lastIndex) });
   }

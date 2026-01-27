@@ -17,14 +17,17 @@ export const musaVoiceTestPracticeConfig = [
     conditions: {
       control: {
         phrase: "Let it be, let it be, let it be, let it be.",
-        audio: "/audio/reference/vocal_tone_control.wav",
-        highlightedText: [{ phrase: "Let it be,", occurrences: [1, 3] }],
+        audio: "/audio/reference/pitch_mod_control.wav",
+        highlightedText: [
+          { phrase: "let it be,", occurrences: [2] },
+          { phrase: "let it be." },
+        ],
         highlightClass: "bg-darkpink text-blueblack",
         defaultClass: "bg-warmyellow text-blueblack",
       },
       tool: {
         phrase: "And I-I will always love you.",
-        audio: "/audio/reference/vocal_tone_control.wav",
+        audio: "/audio/reference/pitch_mod_tool.wav",
         highlightedText: [{ phrase: "-I" }, { phrase: "ways love" }],
         highlightClass: "bg-darkpink text-blueblack",
         defaultClass: "bg-warmyellow text-blueblack",
@@ -64,11 +67,11 @@ export const musaVoiceTestPracticeConfig = [
       tool: {
         phrase:
           "We are the champions, my friend. And we'll keep on fighting till the end.",
-        audio: "/audio/reference/vocal_tone_control.wav",
+        audio: "/audio/reference/vocal_tone_tool.wav",
         highlightedText: [
           { phrase: "the champions," },
           { phrase: "and we'll" },
-          { phrase: "til the end." },
+          { phrase: "till the end." },
         ],
         highlightClass: "bg-purple-400 text-blueblack",
         defaultClass: "bg-electricblue text-blueblack",
