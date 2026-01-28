@@ -28,7 +28,6 @@ def process_pitch_mod(audio_bytes, gender, use_clap=True, use_whisper=True, moni
     whisper_class_names, whisper_predictions, clap_class_names, clap_predictions = extract_pitch_mod(audio_path, gender, use_clap=use_clap, use_whisper=use_whisper, monitor_resources=monitor_resources)
 
     if use_clap:
-        print("CLAPP...")
         smoothed_clap = np.zeros_like(clap_predictions)
         for c in range(len(clap_class_names)):
             smoothed_clap[:, c] = smooth_data(
@@ -62,8 +61,5 @@ def process_pitch_mod(audio_bytes, gender, use_clap=True, use_whisper=True, moni
             }
             for i, label in enumerate(whisper_class_names)
         ]
-
-    print(result)
-
 
     return result, None

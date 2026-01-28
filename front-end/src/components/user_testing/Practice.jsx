@@ -56,6 +56,49 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
   const currentAnalysis = inputAudioFeatures[featureLabel];
   const showAnalysisView = usesTool && currentAnalysis;
 
+  const referenceAudioMap = {
+    "pitch mod.": {
+      control: "/audio/reference/pitch_mod_control.wav",
+      tool: "/audio/reference/pitch_mod_tool.wav",
+    },
+    "vocal tone": {
+      control: "/audio/reference/vocal_tone_control.wav",
+      tool: "/audio/reference/vocal_tone_tool.wav",
+    },
+  };
+
+  const referenceAudioURL =
+    featureLabel &&
+    referenceAudioMap[featureLabel]?.[usesTool ? "tool" : "control"];
+
+  const labelWhitelistMap = {
+    "pitch mod.": ["straight", "vibrato"],
+    "vocal tone": ["belt", "breathy"],
+  };
+
+  const labelWhitelist = featureLabel
+    ? labelWhitelistMap[featureLabel]
+    : undefined;
+
+  const [referenceFeatureData, setReferenceFeatureData] = useState(null);
+
+  useEffect(() => {
+    if (!featureLabel) return;
+    const filename =
+      featureLabel === "vocal tone"
+        ? usesTool
+          ? "/user_test/reference-features/vocal_tone_tool.json"
+          : "/user_test/reference-features/vocal_tone_control.json"
+        : usesTool
+          ? "/user_test/reference-features/pitch_mod_tool.json"
+          : "/user_test/reference-features/pitch_mod_control.json";
+
+    fetch(filename)
+      .then((res) => res.json())
+      .then(setReferenceFeatureData)
+      .catch(console.error);
+  }, [featureLabel, usesTool]);
+
   const triggerNext = async () => {
     const timeSpent = baseConfig.practiceTime - timeLeft;
     try {
@@ -126,7 +169,7 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
           file,
           "practice",
           metadata.sectionKey,
-          featureLabel || "practice_audio"
+          featureLabel || "practice_audio",
         );
 
         if (uploadResult?.path) {
@@ -136,7 +179,7 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
         console.error("Background practice upload failed:", error);
       }
     },
-    [metadata.sectionKey, featureLabel]
+    [metadata.sectionKey, featureLabel],
   );
 
   const handleAnalysis = useCallback(
@@ -168,14 +211,14 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
           voiceType: voiceType,
           useWhisper: selectedModel === "Whisper" || false,
           useCLAP: selectedModel === "CLAP" || true,
-          monitorResources: true,
+          monitorResources: false,
           sessionId: musaVoiceSessionId,
           fileKey: "input",
         });
 
         // 2. Reorganize and validate data
         const featureHasModels = ["vocal tone", "pitch mod."].includes(
-          featureLabel
+          featureLabel,
         );
 
         let isDataInvalid = false;
@@ -213,7 +256,7 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
         handleResetAnalysis();
       }
     },
-    [featureLabel, voiceType, selectedModel, musaVoiceSessionId]
+    [featureLabel, voiceType, selectedModel, musaVoiceSessionId],
   ); // Dependencies for stability
 
   return (
@@ -292,7 +335,9 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
             <div className="py-4 px-6 bg-lightgray/20 rounded-3xl w-fit self-center">
               <OverlayGraphWithWaveform
                 inputAudioURL={currentAnalysis.audioUrl}
+                referenceAudioURL={referenceAudioURL}
                 inputFeatureData={currentAnalysis?.data || []}
+                referenceFeatureData={referenceFeatureData[featureLabel].data}
                 selectedAnalysisFeature={featureLabel}
                 inputAudioDuration={currentAnalysis.duration}
                 selectedModel={selectedModel}
@@ -300,6 +345,7 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
                 similarityScore={similarityScore}
                 setSimilarityScore={setSimilarityScore}
                 tooltipMode="none"
+                labelWhitelist={labelWhitelist}
               />
             </div>
             <div className="flex justify-end">
@@ -319,8 +365,8 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
             {(usesTool ? numAnalyses > 0 : numAttempts > 0)
               ? "Continue to the next task."
               : usesTool
-              ? "Please record and analyse at least one attempt to continue"
-              : "Please record at least one attempt to continue"}
+                ? "Please record and analyse at least one attempt to continue"
+                : "Please record at least one attempt to continue"}
           </SecondaryButton>
         </div>
       </div>

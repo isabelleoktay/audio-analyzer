@@ -3,7 +3,7 @@ export const musaVoiceTestRecordConfig = [
     task: "Pitch Modulation Control",
     title: "Pitch Modulation Exercise",
     instructions: {
-      pre: "Your task is to match the reference audio's placement of straight and vibrato vocal techniques. You can sing the same phrase in any key and tempo that feels natural to you.",
+      pre: "Your task is to match the reference audio's placement of straight and vibrato vocal techniques. You can sing the same phrase in any key that feels natural to you.",
       post: "To end this section, we ask you to record a final attempt to match the reference audio.",
     },
     techniques: ["straight", "vibrato"],
@@ -36,7 +36,7 @@ export const musaVoiceTestRecordConfig = [
     task: "Vocal Tone Control",
     title: "Vocal Tone Exercise",
     instructions: {
-      pre: "Your task is to match the reference audio's placement of belt and breathy vocal techniques. You can sing the same phrase in any key and tempo that feels natural to you.",
+      pre: "Your task is to match the reference audio's placement of belt and breathy vocal techniques. You can sing the same phrase in any key that feels natural to you.",
       post: "To end this section, we ask you to record a final attempt to match the reference audio.",
     },
     techniques: ["belt", "breathy"],
@@ -45,10 +45,10 @@ export const musaVoiceTestRecordConfig = [
     highlightLabelColor: "text-purple-400",
     defaultLabelColor: "text-electricblue",
     conditions: {
-      control: {
+      tool: {
         phrase:
           "Hello... it's me. I was wondering if after all these years you'd like to meet.",
-        audio: "/audio/reference/vocal_tone_control.wav",
+        audio: "/audio/reference/vocal_tone_tool.wav",
         highlightedText: [
           { phrase: "Hello..." },
           { phrase: "I was" },
@@ -58,10 +58,10 @@ export const musaVoiceTestRecordConfig = [
         highlightClass: "bg-purple-400 text-blueblack",
         defaultClass: "bg-electricblue text-blueblack",
       },
-      tool: {
+      control: {
         phrase:
           "We are the champions, my friend. And we'll keep on fighting till the end.",
-        audio: "/audio/reference/vocal_tone_tool.wav",
+        audio: "/audio/reference/vocal_tone_control.wav",
         highlightedText: [
           { phrase: "the champions," },
           { phrase: "and we'll" },

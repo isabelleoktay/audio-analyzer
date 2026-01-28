@@ -10,7 +10,7 @@ const graphHeight = 400;
 
 const OverlayGraphWithWaveform = ({
   inputAudioURL,
-  referenceAudioURL,
+  referenceAudioURL, // optional: reference performance feature data
   inputFeatureData, // input audio feature data
   referenceFeatureData, // optional: reference performance feature data
   selectedAnalysisFeature,
@@ -21,6 +21,7 @@ const OverlayGraphWithWaveform = ({
   setSelectedModel,
   similarityScore,
   setSimilarityScore,
+  labelWhitelist, // (optional)
 }) => {
   const [selectedDataIndex, setSelectedDataIndex] = useState(0);
   const [chartState, setChartState] = useState(null);
@@ -42,6 +43,18 @@ const OverlayGraphWithWaveform = ({
     // Flat array structure: return as-is
     return Array.isArray(inputFeatureData) ? inputFeatureData : [];
   }, [inputFeatureData, selectedModel]);
+
+  const filteredFeatureData = useMemo(() => {
+    if (!Array.isArray(displayedInputFeatureData)) return [];
+
+    if (!labelWhitelist || labelWhitelist.length === 0) {
+      return displayedInputFeatureData;
+    }
+
+    return displayedInputFeatureData.filter((d) =>
+      labelWhitelist.includes(d.label),
+    );
+  }, [displayedInputFeatureData, labelWhitelist]);
 
   // Filter referenceFeatureData based on selectedModel if it's a model-based feature
   const displayedReferenceFeatureData = useMemo(() => {
@@ -84,12 +97,22 @@ const OverlayGraphWithWaveform = ({
   };
 
   useEffect(() => {
-    setSelectedDataIndex(0);
-  }, [selectedAnalysisFeature]);
+    if (!filteredFeatureData || filteredFeatureData.length === 0) {
+      setSelectedDataIndex(0);
+      return;
+    }
 
-  //   useEffect(() => {
-  //     console.log(inputFeatureData);
-  //   }, [inputFeatureData]);
+    const currentLabel = filteredFeatureData[selectedDataIndex]?.label;
+    const newIndex = filteredFeatureData.findIndex(
+      (d) => d.label === currentLabel,
+    );
+
+    if (newIndex === -1) {
+      setSelectedDataIndex(0); // reset if current label not in filtered array
+    } else {
+      setSelectedDataIndex(newIndex); // keep current if still present
+    }
+  }, [selectedAnalysisFeature, labelWhitelist, filteredFeatureData]);
 
   const calculatePitchYMin = (data) => {
     // Filter out values that are 0 or negative
@@ -103,15 +126,20 @@ const OverlayGraphWithWaveform = ({
 
   // --- added: combine input + reference values for global min/max calculation ---
   const combinedValuesForIndex = (index) => {
-    const inputVals = displayedInputFeatureData?.[index]?.data || [];
-    const refVals = displayedReferenceFeatureData?.[index]?.data || [];
+    const inputVals = filteredFeatureData?.[index]?.data || [];
+
+    const refFeature = displayedReferenceFeatureData?.find(
+      (r) => r.label === filteredFeatureData?.[index]?.label,
+    );
+    const refVals = refFeature?.data || [];
+
     return [...inputVals, ...refVals].filter(
       (v) => typeof v === "number" && !isNaN(v),
     );
   };
 
   const computeYBounds = (index) => {
-    const label = displayedInputFeatureData?.[index]?.label;
+    const label = filteredFeatureData?.[index]?.label;
     const combined = combinedValuesForIndex(index);
     const hasValues = combined.length > 0;
     const globalMin = hasValues ? Math.min(...combined) : 0;
@@ -156,13 +184,15 @@ const OverlayGraphWithWaveform = ({
   // Active feature data
 
   const inputFeature =
-    displayedInputFeatureData === "invalid"
+    filteredFeatureData === "invalid"
       ? null
-      : displayedInputFeatureData?.[selectedDataIndex];
+      : filteredFeatureData?.[selectedDataIndex];
   const referenceFeature =
     displayedReferenceFeatureData === "invalid"
       ? null
-      : displayedReferenceFeatureData?.[selectedDataIndex];
+      : displayedReferenceFeatureData?.find(
+          (r) => r.label === inputFeature?.label,
+        );
 
   const hasInputFeatureData =
     inputFeature &&
@@ -255,9 +285,9 @@ const OverlayGraphWithWaveform = ({
                 </li>
               </ul>
               <div className="flex space-x-4 self-end">
-                {displayedInputFeatureData?.map((d, index) => (
+                {filteredFeatureData.map((d, index) => (
                   <div
-                    key={index}
+                    key={d.label}
                     onClick={() => handleButtonClick(index)}
                     className={`text-sm cursor-pointer ${
                       selectedDataIndex === index
@@ -296,22 +326,19 @@ const OverlayGraphWithWaveform = ({
                       height={graphHeight}
                       xLabel="time (s)"
                       yLabel={
-                        inputFeatureData[selectedDataIndex]?.label === "pitch"
+                        inputFeature?.label === "pitch"
                           ? "pitch (note)"
-                          : inputFeatureData[selectedDataIndex]?.label ===
-                              "dynamics"
+                          : inputFeature?.label === "dynamics"
                             ? "amplitude (dB)"
-                            : inputFeatureData[selectedDataIndex]?.label ===
-                                  "rates" ||
-                                inputFeatureData[selectedDataIndex]?.label ===
-                                  "extents"
+                            : ["rates", "extents"].includes(inputFeature?.label)
                               ? "hz"
-                              : inputFeatureData[selectedDataIndex]?.label ===
-                                  "tempo"
+                              : inputFeature?.label === "tempo"
                                 ? "beats per minute (bpm)"
-                                : selectedAnalysisFeature === "phonation" ||
-                                    selectedAnalysisFeature === "vocal tone" ||
-                                    selectedAnalysisFeature === "pitch mod."
+                                : [
+                                      "phonation",
+                                      "vocal tone",
+                                      "pitch mod.",
+                                    ].includes(selectedAnalysisFeature)
                                   ? "probability"
                                   : selectedAnalysisFeature
                       }

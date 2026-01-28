@@ -51,10 +51,10 @@ export const musaVoiceTestPracticeConfig = [
     highlightLabelColor: "text-purple-400",
     defaultLabelColor: "text-electricblue",
     conditions: {
-      control: {
+      tool: {
         phrase:
           "Hello... it's me. I was wondering if after all these years you'd like to meet.",
-        audio: "/audio/reference/vocal_tone_control.wav",
+        audio: "/audio/reference/vocal_tone_tool.wav",
         highlightedText: [
           { phrase: "Hello..." },
           { phrase: "I was" },
@@ -64,10 +64,10 @@ export const musaVoiceTestPracticeConfig = [
         highlightClass: "bg-purple-400 text-blueblack",
         defaultClass: "bg-electricblue text-blueblack",
       },
-      tool: {
+      control: {
         phrase:
           "We are the champions, my friend. And we'll keep on fighting till the end.",
-        audio: "/audio/reference/vocal_tone_tool.wav",
+        audio: "/audio/reference/vocal_tone_control.wav",
         highlightedText: [
           { phrase: "the champions," },
           { phrase: "and we'll" },
