@@ -52,7 +52,7 @@ const uploadMusaUserStudy = async (req, res) => {
       doc = await MusaUserTest.findOneAndUpdate(
         { subjectId },
         { $set: setObj },
-        { new: true }
+        { new: true },
       );
     }
 
@@ -64,7 +64,7 @@ const uploadMusaUserStudy = async (req, res) => {
         const updated = await MusaUserTest.findOneAndUpdate(
           { subjectId, "sections.sectionKey": section.sectionKey },
           { $set: { "sections.$": section } },
-          { new: true }
+          { new: true },
         );
 
         if (!updated) {
@@ -72,7 +72,7 @@ const uploadMusaUserStudy = async (req, res) => {
           doc = await MusaUserTest.findOneAndUpdate(
             { subjectId },
             { $push: { sections: section } },
-            { new: true }
+            { new: true },
           );
         } else {
           doc = updated;
@@ -100,7 +100,7 @@ const saveEntrySurvey = async (req, res) => {
   try {
     const doc = await MusaUserTest.updateEntrySurveyAnswers(
       subjectId,
-      entrySurveyAnswers
+      entrySurveyAnswers,
     );
     return res.status(200).json({ ok: true, doc });
   } catch (err) {
@@ -112,9 +112,9 @@ const saveEntrySurvey = async (req, res) => {
 };
 
 // Upsert a single section (by sectionKey) for a subject
+// Expects body: { subjectId, section }
 const upsertSection = async (req, res) => {
-  const { subjectId } = req.params;
-  const section = req.body;
+  const { subjectId, section } = req.body;
 
   if (!subjectId || !section || !section.sectionKey)
     return res
@@ -125,14 +125,14 @@ const upsertSection = async (req, res) => {
     let doc = await MusaUserTest.findOneAndUpdate(
       { subjectId, "sections.sectionKey": section.sectionKey },
       { $set: { "sections.$": section } },
-      { new: true }
+      { new: true },
     );
 
     if (!doc) {
       doc = await MusaUserTest.findOneAndUpdate(
         { subjectId },
         { $push: { sections: section } },
-        { new: true, upsert: true }
+        { new: true, upsert: true },
       );
     }
 
@@ -172,7 +172,35 @@ const saveSectionField = async (req, res) => {
   }
 
   try {
-    // Build the $set object dynamically
+    // Special-case: intro instructions are stored on the top-level `introSection`
+    if (sectionKey === "instructions-intro" || sectionKey === "intro") {
+      const setObj = {};
+      setObj[`introSection.${field}`] = data;
+      if (addStartedAt) setObj[`introSection.startedAt`] = new Date();
+      if (addEndedAt) setObj[`introSection.endedAt`] = new Date();
+
+      let doc = await MusaUserTest.findOneAndUpdate(
+        { subjectId },
+        { $set: setObj },
+        { new: true, upsert: true },
+      );
+
+      if (!doc) {
+        // Should not normally happen because upsert:true, but handle defensively
+        const newDoc = new MusaUserTest({
+          subjectId,
+          introSection: { [field]: data },
+        });
+        if (addStartedAt) newDoc.introSection.startedAt = new Date();
+        if (addEndedAt) newDoc.introSection.endedAt = new Date();
+        await newDoc.save();
+        doc = newDoc;
+      }
+
+      return res.status(200).json({ ok: true, doc });
+    }
+
+    // Build the $set object dynamically for normal sections
     const setObj = { [`sections.$.${field}`]: data };
 
     if (addStartedAt) {
@@ -187,7 +215,7 @@ const saveSectionField = async (req, res) => {
     let doc = await MusaUserTest.findOneAndUpdate(
       { subjectId, "sections.sectionKey": sectionKey },
       { $set: setObj },
-      { new: true }
+      { new: true },
     );
 
     // If section doesn't exist, push a new one
@@ -199,7 +227,7 @@ const saveSectionField = async (req, res) => {
       doc = await MusaUserTest.findOneAndUpdate(
         { subjectId },
         { $push: { sections: newSection } },
-        { new: true }
+        { new: true },
       );
     }
 
@@ -232,7 +260,7 @@ const saveExitSurvey = async (req, res) => {
       exitSurveyAnswers,
       {
         markCompleted: markCompleted === "true",
-      }
+      },
     );
     return res.status(200).json({ ok: true, doc });
   } catch (err) {

@@ -14,9 +14,9 @@ const SectionSurvey = ({
   id,
   sectionKey,
 }) => {
-  // Derive task name from configIndex, otherwise from last practice task index, otherwise from selectedTestFlow
+  // Derive task name from configIndex, last practice, sectionKey, or selectedTestFlow
   const taskNameFromIndex =
-    configIndex !== undefined
+    configIndex !== undefined && typeof configIndex === "number"
       ? musaVoiceTestInstructionsConfig?.[configIndex]?.task
       : undefined;
 
@@ -26,11 +26,23 @@ const SectionSurvey = ({
           ?.task
       : undefined;
 
-  const currentTaskName =
+  // Try to derive from sectionKey if no task name found yet
+  const taskNameFromSectionKey =
+    !taskNameFromIndex && sectionKey
+      ? musaVoiceTestInstructionsConfig?.find(
+          (e) => e.sectionKey === sectionKey,
+        )?.task
+      : undefined;
+
+  const fullTaskName =
     taskNameFromIndex ??
     taskNameFromLastPractice ??
+    taskNameFromSectionKey ??
     surveyData.selectedTestFlow ??
     "Pitch Modulation Control";
+
+  // Extract base task name (remove "No Tool" or "Tool" suffix for survey config matching)
+  const currentTaskName = fullTaskName.replace(/\s+(No Tool|Tool)$/, "").trim();
 
   const usesToolFlag = surveyData.lastPracticeUsesTool;
 

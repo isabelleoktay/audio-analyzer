@@ -26,7 +26,14 @@ const commonStart = [
     component: MusaVoiceTesting,
     config: musaVoiceTestConsentConfig,
   },
-  { id: "entry", component: EntryQuestions, config: EntryQuestionsConfig },
+  //   { id: "entry", component: EntryQuestions, config: EntryQuestionsConfig },
+  {
+    id: `instructions-intro`,
+    sectionKey: `instructions-intro`,
+    component: Instructions,
+    config: musaVoiceTestInstructionsConfig,
+    configIndex: 0,
+  },
 ];
 
 const commonEnd = [
@@ -37,29 +44,44 @@ const commonEnd = [
 const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
 // Build the two condition blocks (control vs tool) in randomized order
-const buildConditionBlocks = (taskIndex) => {
-  const taskName =
-    musaVoiceTestInstructionsConfig[taskIndex]?.task || `Task${taskIndex}`;
-  const taskSlug = taskName.replace(/\s+/g, "-").toLowerCase(); // Slugify for ID
+const buildConditionBlocks = (taskType) => {
+  // taskType should be "pitch" or "vocal"
+  const baseTaskLabel =
+    taskType === "pitch" ? "Pitch Modulation Control" : "Vocal Tone Control";
+  const taskSlug = baseTaskLabel.replace(/\s+/g, "-").toLowerCase(); // Slugify for ID
   const conditions = [
     { condition: "control", usesTool: false, label: "Control (no tool)" },
     { condition: "tool", usesTool: true, label: "With Tool" },
   ];
 
   return shuffle(conditions).flatMap((cond) => {
-    const sectionKey = `${taskSlug}-${cond.condition}`; // Unique key per section for MongoDB entries
+    // Find the instruction entry that matches this task and condition (No Tool vs Tool)
+    const condKeyword = cond.condition === "control" ? "No Tool" : "Tool";
+    const instrIndex = musaVoiceTestInstructionsConfig.findIndex(
+      (e) => e.task?.includes(baseTaskLabel) && e.task?.includes(condKeyword),
+    );
+
+    const sectionKey = `${taskSlug}-${cond.condition}`;
+
     return [
+      {
+        id: `instructions-${sectionKey}`,
+        sectionKey: sectionKey,
+        component: Instructions,
+        config: musaVoiceTestInstructionsConfig,
+        configIndex: instrIndex,
+      },
       {
         id: `record-initial-${sectionKey}`,
         sectionKey: sectionKey,
         component: RecordTask,
         config: musaVoiceTestRecordConfig,
-        configIndex: taskIndex,
+        configIndex: instrIndex,
         metadata: {
           phase: "pre-practice",
           condition: cond.condition,
-          usesTool: false,
-          taskIndex,
+          usesTool: cond.usesTool,
+          taskType,
           label: cond.label,
         },
       },
@@ -69,18 +91,17 @@ const buildConditionBlocks = (taskIndex) => {
         sectionKey: sectionKey,
         component: SectionSurvey,
         config: SurveyBeforePracticeConfig,
-        configIndex: taskIndex,
       },
       {
         id: `practice-${sectionKey}`,
         sectionKey: sectionKey,
         component: Practice,
         config: musaVoiceTestPracticeConfig,
-        configIndex: taskIndex,
+        configIndex: instrIndex,
         metadata: {
           condition: cond.condition,
           usesTool: cond.usesTool,
-          taskIndex,
+          taskType,
           label: cond.label,
         },
       },
@@ -89,12 +110,12 @@ const buildConditionBlocks = (taskIndex) => {
         sectionKey: sectionKey,
         component: RecordTask,
         config: musaVoiceTestRecordConfig,
-        configIndex: taskIndex,
+        configIndex: instrIndex,
         metadata: {
           phase: "post-practice",
           condition: cond.condition,
-          usesTool: false,
-          taskIndex,
+          usesTool: cond.usesTool,
+          taskType,
           label: cond.label,
         },
       },
@@ -104,41 +125,30 @@ const buildConditionBlocks = (taskIndex) => {
         sectionKey: sectionKey,
         component: SectionSurvey,
         config: SurveyAfterPracticeConfig,
-        configIndex: taskIndex,
+        configIndex: instrIndex,
       },
     ];
   });
 };
 
-const taskFlow = (taskIndex) => [
-  {
-    id: `instructions-${taskIndex}`,
-    sectionKey: `instructions-${musaVoiceTestInstructionsConfig[taskIndex]?.task
-      .replace(/\s+/g, "-")
-      .toLowerCase()}`,
-    component: Instructions,
-    config: musaVoiceTestInstructionsConfig,
-    configIndex: taskIndex,
-  },
-  ...buildConditionBlocks(taskIndex),
-];
+const taskFlow = (taskType) => [...buildConditionBlocks(taskType)];
 
 export const musaVoiceUserTestFlow = [
   ...commonStart,
-  ...taskFlow(0),
+  ...taskFlow("pitch"),
   ...commonEnd,
 ];
 
 export const buildFlowForSelection = (selectedTestFlow) => {
   if (selectedTestFlow === "Full Test Procedure") {
     // Both tasks, random task order; each task internally randomizes control/tool order
-    const flows = [taskFlow(0), taskFlow(1)];
+    const flows = [taskFlow("pitch"), taskFlow("vocal")];
     const shuffledTasks = shuffle(flows);
     return [...commonStart, ...shuffledTasks.flat(), ...commonEnd];
   } else if (selectedTestFlow === "Vocal Tone Control") {
-    return [...commonStart, ...taskFlow(1), ...commonEnd];
+    return [...commonStart, ...taskFlow("vocal"), ...commonEnd];
   } else {
     // Default: Pitch Modulation Control
-    return [...commonStart, ...taskFlow(0), ...commonEnd];
+    return [...commonStart, ...taskFlow("pitch"), ...commonEnd];
   }
 };

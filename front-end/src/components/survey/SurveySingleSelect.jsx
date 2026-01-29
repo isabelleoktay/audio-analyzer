@@ -12,7 +12,7 @@ export default function SurveySingleSelect({
   const [otherText, setOtherText] = useState("");
 
   useEffect(() => {
-    // If an explicit value is provided
+    // If an explicit value is provided, use it
     if (value && !options.includes(value)) {
       // value is an 'Other' free-text value
       setSelected("Other");
@@ -26,12 +26,11 @@ export default function SurveySingleSelect({
       return;
     }
 
-    // No explicit controlled value: preserve the current selection if the option still exists
-    // This avoids clearing selection when `options` is re-created (new reference) by parent
-    setSelected((prev) => (options.includes(prev) ? prev : null));
-    // clear other text if `Other` is no longer selected
-    setOtherText((prev) => (options.includes(prev) ? prev : ""));
-  }, [value, options]);
+    // No explicit controlled value: reset to null only when question changes
+    // Don't reset on every parent render due to options array reference change
+    setSelected(null);
+    setOtherText("");
+  }, [value, question]);
 
   const handleSelect = (option) => {
     setSelected(option);

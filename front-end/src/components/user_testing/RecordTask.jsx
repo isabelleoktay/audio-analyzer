@@ -21,6 +21,8 @@ const RecordTask = ({
 
   const [selectedBlob, setSelectedBlob] = useState(null);
 
+  console.log(configIndex);
+
   const {
     phase = "pre-practice",
     condition = "control",
@@ -42,6 +44,7 @@ const RecordTask = ({
     audio: conditionConfig.audio,
     ...conditionConfig,
   };
+  
 
   const handleContinue = () => {
     const fieldName = isPost
