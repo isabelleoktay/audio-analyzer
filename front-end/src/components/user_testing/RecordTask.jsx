@@ -21,7 +21,8 @@ const RecordTask = ({
 
   const [selectedBlob, setSelectedBlob] = useState(null);
 
-  console.log(configIndex);
+  console.log(config);
+  console.log("config index:", configIndex);
 
   const {
     phase = "pre-practice",
@@ -31,6 +32,9 @@ const RecordTask = ({
   const isPost = phase === "post-practice";
 
   const baseConfig = config?.[configIndex] ?? {};
+
+  console.log("base config");
+  console.log(baseConfig);
   const conditionConfig = baseConfig.conditions?.[condition] ?? {};
 
   // Select instruction based on phase
@@ -44,7 +48,6 @@ const RecordTask = ({
     audio: conditionConfig.audio,
     ...conditionConfig,
   };
-  
 
   const handleContinue = () => {
     const fieldName = isPost
