@@ -26,7 +26,7 @@ const commonStart = [
     component: MusaVoiceTesting,
     config: musaVoiceTestConsentConfig,
   },
-  //   { id: "entry", component: EntryQuestions, config: EntryQuestionsConfig },
+    { id: "entry", component: EntryQuestions, config: EntryQuestionsConfig },
   {
     id: `instructions-intro`,
     sectionKey: `instructions-intro`,

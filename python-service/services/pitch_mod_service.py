@@ -45,7 +45,6 @@ def process_pitch_mod(audio_bytes, gender, use_clap=True, use_whisper=True, moni
         ]
     
     if use_whisper:
-        print("Whisperr...")
         smoothed_whisper = np.zeros_like(whisper_predictions)
         for c in range(len(whisper_class_names)):
             smoothed_whisper[:, c] = smooth_data(
