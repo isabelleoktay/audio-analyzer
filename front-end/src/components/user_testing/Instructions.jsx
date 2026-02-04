@@ -12,6 +12,8 @@ const Instructions = ({
 }) => {
   const [confidence, setConfidence] = useState(null);
 
+  console.log("Instructions component config index:", configIndex);
+
   // Reset confidence when moving to a new section (via component remount with key)
   useEffect(() => {
     setConfidence(null);

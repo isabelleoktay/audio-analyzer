@@ -46,6 +46,8 @@ const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 // Build the two condition blocks (control vs tool) in randomized order
 const buildConditionBlocks = (taskType) => {
   // taskType should be "pitch" or "vocal"
+  const getTaskIndex = (taskType) => (taskType === "pitch" ? 0 : 1);
+
   const baseTaskLabel =
     taskType === "pitch" ? "Pitch Modulation Control" : "Vocal Tone Control";
   const taskSlug = baseTaskLabel.replace(/\s+/g, "-").toLowerCase(); // Slugify for ID
@@ -56,9 +58,18 @@ const buildConditionBlocks = (taskType) => {
 
   return shuffle(conditions).flatMap((cond) => {
     // Find the instruction entry that matches this task and condition (No Tool vs Tool)
-    const condKeyword = cond.condition === "control" ? "No Tool" : "Tool";
+    // const condKeyword = cond.condition === "control" ? "No Tool" : "Tool";
+    // const instrIndex = musaVoiceTestInstructionsConfig.findIndex(
+    //   (e) => e.task?.includes(baseTaskLabel) && e.task?.includes(condKeyword),
+    // );
+
+    // const sectionKey = `${taskSlug}-${cond.condition}`;
+
+    const hasNoKeyword = cond.condition === "control";
     const instrIndex = musaVoiceTestInstructionsConfig.findIndex(
-      (e) => e.task?.includes(baseTaskLabel) && e.task?.includes(condKeyword),
+      (e) =>
+        e.task?.includes(baseTaskLabel) &&
+        (hasNoKeyword ? e.task?.includes("No") : !e.task?.includes("No")),
     );
 
     const sectionKey = `${taskSlug}-${cond.condition}`;
@@ -76,7 +87,7 @@ const buildConditionBlocks = (taskType) => {
         sectionKey: sectionKey,
         component: RecordTask,
         config: musaVoiceTestRecordConfig,
-        configIndex: instrIndex,
+        configIndex: getTaskIndex(taskType),
         metadata: {
           phase: "pre-practice",
           condition: cond.condition,
@@ -91,13 +102,14 @@ const buildConditionBlocks = (taskType) => {
         sectionKey: sectionKey,
         component: SectionSurvey,
         config: SurveyBeforePracticeConfig,
+        configIndex: instrIndex,
       },
       {
         id: `practice-${sectionKey}`,
         sectionKey: sectionKey,
         component: Practice,
         config: musaVoiceTestPracticeConfig,
-        configIndex: instrIndex,
+        configIndex: getTaskIndex(taskType),
         metadata: {
           condition: cond.condition,
           usesTool: cond.usesTool,
@@ -110,7 +122,7 @@ const buildConditionBlocks = (taskType) => {
         sectionKey: sectionKey,
         component: RecordTask,
         config: musaVoiceTestRecordConfig,
-        configIndex: instrIndex,
+        configIndex: getTaskIndex(taskType),
         metadata: {
           phase: "post-practice",
           condition: cond.condition,
