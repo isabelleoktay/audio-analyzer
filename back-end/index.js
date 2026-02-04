@@ -9,6 +9,7 @@ import uploadAudioRouter from "./routes/uploadAudioRoutes.js";
 import uploadTestSubjectRouter from "./routes/uploadTestSubjectRoutes.js";
 import uploadFeedbackRouter from "./routes/uploadFeedbackRoutes.js";
 import uploadMusaVoiceSessionRouter from "./routes/uploadMusaVoiceSessionRoutes.js";
+import musaUserStudyRouter from "./routes/uploadMusaUserStudyRoutes.js";
 
 import connectDB from "./db.js";
 
@@ -42,6 +43,7 @@ app.use("/api", uploadAudioRouter);
 app.use("/api", uploadTestSubjectRouter);
 app.use("/api", uploadFeedbackRouter);
 app.use("/api", uploadMusaVoiceSessionRouter);
+app.use("/api", musaUserStudyRouter);
 
 const port = process.env.PORT || 5000;
 

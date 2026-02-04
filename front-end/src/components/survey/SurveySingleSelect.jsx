@@ -12,14 +12,25 @@ export default function SurveySingleSelect({
   const [otherText, setOtherText] = useState("");
 
   useEffect(() => {
+    // If an explicit value is provided, use it
     if (value && !options.includes(value)) {
+      // value is an 'Other' free-text value
       setSelected("Other");
       setOtherText(value);
-    } else {
-      setSelected(value || null);
-      setOtherText("");
+      return;
     }
-  }, [value, options]);
+
+    if (value) {
+      setSelected(value);
+      setOtherText("");
+      return;
+    }
+
+    // No explicit controlled value: reset to null only when question changes
+    // Don't reset on every parent render due to options array reference change
+    setSelected(null);
+    setOtherText("");
+  }, [value, question]);
 
   const handleSelect = (option) => {
     setSelected(option);

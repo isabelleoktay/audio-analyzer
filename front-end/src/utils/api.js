@@ -23,7 +23,7 @@ pythonClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 pythonClient.interceptors.response.use(
@@ -47,7 +47,7 @@ pythonClient.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 const startNewSession = async () => {
@@ -61,23 +61,27 @@ const startNewSession = async () => {
   }
 };
 
-const processFeatures = async (
-  audioFile,
-  feature,
+const processFeatures = async ({
+  file: audioFile,
+  featureLabel: feature,
   voiceType,
+  useWhisper = true,
+  useCLAP = true,
+  monitorResources = true,
   sessionId = null,
-  fileKey = "input"
-) => {
+  fileKey = "input",
+} = {}) => {
   const formData = new FormData();
   formData.append("audioFile", audioFile);
   if (sessionId) formData.append("sessionId", sessionId);
   if (fileKey) formData.append("fileKey", fileKey);
+  formData.append("monitorResources", String(monitorResources).toLowerCase());
 
   try {
     if (feature === "dynamics") {
       const response = await pythonClient.post(
         "/python-service/process-dynamics",
-        formData
+        formData,
       );
       return response.data;
     } else if (feature === "pitch") {
@@ -91,18 +95,19 @@ const processFeatures = async (
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     } else if (feature === "tempo") {
       const response = await pythonClient.post(
         "/python-service/process-tempo",
-        formData
+        formData,
       );
       return response.data;
     } else if (feature === "vocal tone") {
       formData.append("voiceType", voiceType);
-
+      formData.append("useWhisper", useWhisper);
+      formData.append("useCLAP", useCLAP);
       const response = await pythonClient.post(
         "/python-service/process-vocal-tone",
         formData,
@@ -110,12 +115,13 @@ const processFeatures = async (
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     } else if (feature === "pitch mod.") {
-      const voiceType = "alto"; // TO DO: needs to be handled properly - get from frontend selection
       formData.append("voiceType", voiceType);
+      formData.append("useWhisper", useWhisper);
+      formData.append("useCLAP", useCLAP);
 
       const response = await pythonClient.post(
         "/python-service/process-pitch-mod",
@@ -124,19 +130,19 @@ const processFeatures = async (
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     } else if (feature === "vibrato") {
       const response = await pythonClient.post(
         "/python-service/process-vibrato",
-        formData
+        formData,
       );
       return response.data;
     } else if (feature === "phonation") {
       const response = await pythonClient.post(
         "/python-service/process-phonation",
-        formData
+        formData,
       );
       return response.data;
     } else {
@@ -161,7 +167,7 @@ const uploadAudioToPythonService = async (
   audioFile,
   group = null,
   stage = null,
-  feature = null
+  feature = null,
 ) => {
   const formData = new FormData();
   formData.append("file", audioFile);
@@ -177,14 +183,14 @@ const uploadAudioToPythonService = async (
   }
 
   if (feature) {
-    console.log("Feature to upload:", feature);
+    // console.log("Feature to upload:", feature);
     formData.append("feature", feature);
   }
 
   try {
     const response = await pythonClient.post(
       "/python-service/audio/upload",
-      formData
+      formData,
     );
     return response.data;
   } catch (error) {
@@ -226,7 +232,7 @@ const uploadAudio = async (
   id,
   instrument,
   features,
-  musaVoiceSessionId = null
+  musaVoiceSessionId = null,
 ) => {
   try {
     const originalName = audioFile.name;
@@ -251,7 +257,7 @@ const uploadAudio = async (
       console.log(
         "Uploading to MusaVoice session:",
         musaVoiceSessionId,
-        audioData
+        audioData,
       );
       // If MusaVoice session, update the session with audio data
       const backendResponse = await apiClient.post(
@@ -259,7 +265,7 @@ const uploadAudio = async (
         {
           sessionId: musaVoiceSessionId,
           audioData,
-        }
+        },
       );
       return backendResponse.data;
     } else {
@@ -279,7 +285,7 @@ const uploadAudio = async (
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return backendResponse.data;
     }
@@ -332,11 +338,102 @@ const uploadMusaVoiceSessionData = async (musaVoiceSessionData) => {
 const cleanupTempFiles = async (clearCache = false) => {
   try {
     const response = await pythonClient.post(
-      `/python-service/audio/cleanup-temp-files?clear_cache=${clearCache}`
+      `/python-service/audio/cleanup-temp-files?clear_cache=${clearCache}`,
     );
     console.log("Cleanup response:", response.data);
   } catch (error) {
     console.error("Error cleaning up temporary files:", error);
+  }
+};
+
+const uploadAllMusaUserStudyData = async (
+  subjectId,
+  testName,
+  entrySurveyAnswers,
+  sections,
+  exitSurveyAnswers,
+) => {
+  try {
+    const response = await apiClient.post("/api/upload-musa-user-study", {
+      subjectId,
+      testName,
+      entrySurveyAnswers,
+      sections,
+      exitSurveyAnswers,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading Musa User Study:", error);
+    throw error;
+  }
+};
+
+const uploadUserStudyEntrySurvey = async (subjectId, entrySurveyAnswers) => {
+  try {
+    const response = await apiClient.post("/api/save-entry-survey", {
+      subjectId,
+      entrySurveyAnswers,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error uploading Musa User Study entry survey answers:",
+      error,
+    );
+    throw error;
+  }
+};
+
+const uploadUserStudyExitSurvey = async (subjectId, exitSurveyAnswers) => {
+  try {
+    const response = await apiClient.post("/api/save-exit-survey", {
+      subjectId,
+      exitSurveyAnswers,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error uploading Musa User Study exit survey answers:",
+      error,
+    );
+    throw error;
+  }
+};
+
+const uploadUserStudySectionField = async ({
+  subjectId,
+  sectionKey,
+  field,
+  data,
+  addStartedAt = false,
+  addEndedAt = false,
+}) => {
+  try {
+    const response = await apiClient.post("/api/save-section-field", {
+      subjectId,
+      sectionKey,
+      field,
+      data,
+      addStartedAt,
+      addEndedAt,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading section field: ", field, error);
+    throw error;
+  }
+};
+
+const upsertUserStudySection = async (subjectId, section) => {
+  try {
+    const response = await apiClient.post("/api/upsert-section", {
+      subjectId,
+      section,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error upserting section of Musa User Study:", error);
+    throw error;
   }
 };
 
@@ -349,4 +446,9 @@ export {
   startNewSession,
   uploadFeedback,
   uploadMusaVoiceSessionData,
+  uploadAllMusaUserStudyData,
+  uploadUserStudyEntrySurvey,
+  uploadUserStudyExitSurvey,
+  uploadUserStudySectionField,
+  upsertUserStudySection,
 };

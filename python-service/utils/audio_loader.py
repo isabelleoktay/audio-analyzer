@@ -189,7 +189,7 @@ def load_and_process_audio(file_bytes, sample_rate=44100, return_path=True):
     try:
         file_stream = convert_to_wav_if_needed(file_bytes, return_path=return_path)
         audio, sr = load_audio(file_stream, sample_rate=sample_rate)
-        audio, _ = universal_trim(audio, sr, top_db=20)
+        audio, _ = universal_trim(audio, sr, top_db=40)
         
         file_hash = get_file_hash(file_bytes)
         audio_url = get_audio_url(audio, file_hash, sr=sr)

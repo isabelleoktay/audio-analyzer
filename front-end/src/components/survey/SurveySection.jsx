@@ -24,6 +24,14 @@ const SurveySection = ({
 }) => {
   const [answers, setAnswers] = useState(savedAnswers || {});
 
+  const isFormComplete = config.every((item) => {
+    const answer = answers[item.question];
+    if (answer === undefined || answer === null) return false;
+    if (typeof answer === "string") return answer.trim().length > 0;
+    if (Array.isArray(answer)) return answer.length > 0;
+    return true;
+  });
+
   const handleAnswerChange = useCallback((question, answer) => {
     setAnswers((prev) => ({ ...prev, [question]: answer }));
   }, []);
@@ -60,11 +68,12 @@ const SurveySection = ({
           <SecondaryButton
             onClick={() => backButtonClick(answers)}
             className="ml-4 bg-lightpink/50 hover:bg-lightpink/70"
+            disabled={!isFormComplete}
           >
             Back
           </SecondaryButton>
         )}
-        <SecondaryButton onClick={handleSubmit}>
+        <SecondaryButton onClick={handleSubmit} disabled={!isFormComplete}>
           {buttonText || "Submit"}
         </SecondaryButton>
       </div>

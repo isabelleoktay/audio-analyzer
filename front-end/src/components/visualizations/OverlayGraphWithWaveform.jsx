@@ -10,7 +10,7 @@ const graphHeight = 400;
 
 const OverlayGraphWithWaveform = ({
   inputAudioURL,
-  referenceAudioURL,
+  referenceAudioURL, // optional: reference performance feature data
   inputFeatureData, // input audio feature data
   referenceFeatureData, // optional: reference performance feature data
   selectedAnalysisFeature,
@@ -21,9 +21,58 @@ const OverlayGraphWithWaveform = ({
   setSelectedModel,
   similarityScore,
   setSimilarityScore,
+  labelWhitelist, // (optional)
 }) => {
   const [selectedDataIndex, setSelectedDataIndex] = useState(0);
   const [chartState, setChartState] = useState(null);
+
+  // Filter inputFeatureData based on selectedModel if it's a model-based feature
+  const displayedInputFeatureData = useMemo(() => {
+    if (!inputFeatureData) return [];
+
+    // Check if data has model keys (CLAP, Whisper, etc.)
+    if (
+      typeof inputFeatureData === "object" &&
+      !Array.isArray(inputFeatureData) &&
+      (inputFeatureData.CLAP || inputFeatureData.Whisper)
+    ) {
+      // Model-based structure: return data for selected model
+      return inputFeatureData[selectedModel] || [];
+    }
+
+    // Flat array structure: return as-is
+    return Array.isArray(inputFeatureData) ? inputFeatureData : [];
+  }, [inputFeatureData, selectedModel]);
+
+  const filteredFeatureData = useMemo(() => {
+    if (!Array.isArray(displayedInputFeatureData)) return [];
+
+    if (!labelWhitelist || labelWhitelist.length === 0) {
+      return displayedInputFeatureData;
+    }
+
+    return displayedInputFeatureData.filter((d) =>
+      labelWhitelist.includes(d.label),
+    );
+  }, [displayedInputFeatureData, labelWhitelist]);
+
+  // Filter referenceFeatureData based on selectedModel if it's a model-based feature
+  const displayedReferenceFeatureData = useMemo(() => {
+    if (!referenceFeatureData) return [];
+
+    // Check if data has model keys
+    if (
+      typeof referenceFeatureData === "object" &&
+      !Array.isArray(referenceFeatureData) &&
+      (referenceFeatureData.CLAP || referenceFeatureData.Whisper)
+    ) {
+      // Model-based structure: return data for selected model
+      return referenceFeatureData[selectedModel] || [];
+    }
+
+    // Flat array structure: return as-is
+    return Array.isArray(referenceFeatureData) ? referenceFeatureData : [];
+  }, [referenceFeatureData, selectedModel]);
   const emptyHighlightedSections = useMemo(() => [], []);
 
   const handleZoomChange = useCallback((changeData) => {
@@ -38,7 +87,7 @@ const OverlayGraphWithWaveform = ({
   const referenceFrameToTime = (
     frameIndex,
     referenceAudioDuration,
-    numFrames
+    numFrames,
   ) => {
     return frameIndex * (referenceAudioDuration / numFrames);
   };
@@ -48,8 +97,22 @@ const OverlayGraphWithWaveform = ({
   };
 
   useEffect(() => {
-    setSelectedDataIndex(0);
-  }, [selectedAnalysisFeature]);
+    if (!filteredFeatureData || filteredFeatureData.length === 0) {
+      setSelectedDataIndex(0);
+      return;
+    }
+
+    const currentLabel = filteredFeatureData[selectedDataIndex]?.label;
+    const newIndex = filteredFeatureData.findIndex(
+      (d) => d.label === currentLabel,
+    );
+
+    if (newIndex === -1) {
+      setSelectedDataIndex(0); // reset if current label not in filtered array
+    } else {
+      setSelectedDataIndex(newIndex); // keep current if still present
+    }
+  }, [selectedAnalysisFeature, labelWhitelist, filteredFeatureData]);
 
   const calculatePitchYMin = (data) => {
     // Filter out values that are 0 or negative
@@ -63,15 +126,20 @@ const OverlayGraphWithWaveform = ({
 
   // --- added: combine input + reference values for global min/max calculation ---
   const combinedValuesForIndex = (index) => {
-    const inputVals = inputFeatureData?.[index]?.data || [];
-    const refVals = referenceFeatureData?.[index]?.data || [];
+    const inputVals = filteredFeatureData?.[index]?.data || [];
+
+    const refFeature = displayedReferenceFeatureData?.find(
+      (r) => r.label === filteredFeatureData?.[index]?.label,
+    );
+    const refVals = refFeature?.data || [];
+
     return [...inputVals, ...refVals].filter(
-      (v) => typeof v === "number" && !isNaN(v)
+      (v) => typeof v === "number" && !isNaN(v),
     );
   };
 
   const computeYBounds = (index) => {
-    const label = inputFeatureData?.[index]?.label;
+    const label = filteredFeatureData?.[index]?.label;
     const combined = combinedValuesForIndex(index);
     const hasValues = combined.length > 0;
     const globalMin = hasValues ? Math.min(...combined) : 0;
@@ -116,13 +184,15 @@ const OverlayGraphWithWaveform = ({
   // Active feature data
 
   const inputFeature =
-    inputFeatureData === "invalid"
+    filteredFeatureData === "invalid"
       ? null
-      : inputFeatureData?.[selectedDataIndex];
+      : filteredFeatureData?.[selectedDataIndex];
   const referenceFeature =
-    referenceFeatureData === "invalid"
+    displayedReferenceFeatureData === "invalid"
       ? null
-      : referenceFeatureData?.[selectedDataIndex];
+      : displayedReferenceFeatureData?.find(
+          (r) => r.label === inputFeature?.label,
+        );
 
   const hasInputFeatureData =
     inputFeature &&
@@ -164,7 +234,7 @@ const OverlayGraphWithWaveform = ({
                       ? referenceFrameToTime(
                           chartState.zoom.startIndex,
                           referenceAudioDuration,
-                          referenceFeature.data.length
+                          referenceFeature.data.length,
                         )
                       : 0
                   }
@@ -173,7 +243,7 @@ const OverlayGraphWithWaveform = ({
                       ? referenceFrameToTime(
                           chartState.zoom.endIndex,
                           referenceAudioDuration,
-                          referenceFeature.data.length
+                          referenceFeature.data.length,
                         )
                       : referenceAudioDuration || undefined
                   }
@@ -194,7 +264,11 @@ const OverlayGraphWithWaveform = ({
 
       {!selectedAnalysisFeature ? (
         <div>Select an analysis feature above to start analyzing audio.</div>
-      ) : inputFeatureData.length === 0 && selectedAnalysisFeature ? (
+      ) : (typeof inputFeatureData === "object" &&
+        !Array.isArray(inputFeatureData)
+          ? Object.keys(inputFeatureData).length === 0
+          : displayedInputFeatureData.length === 0) &&
+        selectedAnalysisFeature ? (
         <LoadingSpinner />
       ) : inputFeatureData === "invalid" ? (
         <div className="text-lightpink text-xl font-semibold">
@@ -211,9 +285,9 @@ const OverlayGraphWithWaveform = ({
                 </li>
               </ul>
               <div className="flex space-x-4 self-end">
-                {inputFeatureData?.map((d, index) => (
+                {filteredFeatureData.map((d, index) => (
                   <div
-                    key={index}
+                    key={d.label}
                     onClick={() => handleButtonClick(index)}
                     className={`text-sm cursor-pointer ${
                       selectedDataIndex === index
@@ -252,24 +326,21 @@ const OverlayGraphWithWaveform = ({
                       height={graphHeight}
                       xLabel="time (s)"
                       yLabel={
-                        inputFeatureData[selectedDataIndex]?.label === "pitch"
+                        inputFeature?.label === "pitch"
                           ? "pitch (note)"
-                          : inputFeatureData[selectedDataIndex]?.label ===
-                            "dynamics"
-                          ? "amplitude (dB)"
-                          : inputFeatureData[selectedDataIndex]?.label ===
-                              "rates" ||
-                            inputFeatureData[selectedDataIndex]?.label ===
-                              "extents"
-                          ? "hz"
-                          : inputFeatureData[selectedDataIndex]?.label ===
-                            "tempo"
-                          ? "beats per minute (bpm)"
-                          : selectedAnalysisFeature === "phonation" ||
-                            selectedAnalysisFeature === "vocal tone" ||
-                            selectedAnalysisFeature === "pitch mod."
-                          ? "probability"
-                          : selectedAnalysisFeature
+                          : inputFeature?.label === "dynamics"
+                            ? "amplitude (dB)"
+                            : ["rates", "extents"].includes(inputFeature?.label)
+                              ? "hz"
+                              : inputFeature?.label === "tempo"
+                                ? "beats per minute (bpm)"
+                                : [
+                                      "phonation",
+                                      "vocal tone",
+                                      "pitch mod.",
+                                    ].includes(selectedAnalysisFeature)
+                                  ? "probability"
+                                  : selectedAnalysisFeature
                       }
                       //   highlightedSections={
                       //     inputFeatureData[selectedDataIndex]?.highlighted
@@ -322,7 +393,7 @@ const OverlayGraphWithWaveform = ({
                       ? frameToTime(
                           chartState.zoom.startIndex,
                           inputAudioDuration,
-                          inputFeature.data.length
+                          inputFeature.data.length,
                         )
                       : 0
                   }
@@ -331,7 +402,7 @@ const OverlayGraphWithWaveform = ({
                       ? frameToTime(
                           chartState.zoom.endIndex,
                           inputAudioDuration,
-                          inputFeature.data.length
+                          inputFeature.data.length,
                         )
                       : inputAudioDuration || undefined
                   }
@@ -341,20 +412,39 @@ const OverlayGraphWithWaveform = ({
               </div>
             </div>
             {["vocal tone", "pitch mod."].includes(
-              selectedAnalysisFeature?.toLowerCase()
+              selectedAnalysisFeature?.toLowerCase(),
             ) && (
               <div className="flex justify-end w-full">
-                <ToggleButton
-                  question="Select Model:"
-                  options={["CLAP", "Whisper"]}
-                  allowOther={false}
-                  background_color="bg-white/10"
-                  onChange={(selected) => setSelectedModel(selected)}
-                  isMultiSelect={false}
-                  showToggle={false}
-                  miniVersion={true}
-                  selected={selectedModel}
-                />
+                {(() => {
+                  // Check if original data has both models
+                  const hasClap =
+                    Array.isArray(inputFeatureData?.CLAP) &&
+                    inputFeatureData.CLAP.length > 0;
+                  const hasWhisper =
+                    Array.isArray(inputFeatureData?.Whisper) &&
+                    inputFeatureData.Whisper.length > 0;
+                  const availableModels = [];
+                  if (hasClap) availableModels.push("CLAP");
+                  if (hasWhisper) availableModels.push("Whisper");
+
+                  // Only show toggle if we have more than one model
+                  if (availableModels.length > 1) {
+                    return (
+                      <ToggleButton
+                        question="Select Model:"
+                        options={availableModels}
+                        allowOther={false}
+                        background_color="bg-white/10"
+                        onChange={(selected) => setSelectedModel(selected)}
+                        isMultiSelect={false}
+                        showToggle={false}
+                        miniVersion={true}
+                        selected={selectedModel}
+                      />
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             )}
           </>

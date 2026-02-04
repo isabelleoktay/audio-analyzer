@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Layout from "./components/Layout.jsx";
-import NavBar from "./components/NavBar.jsx";
 import {
   Analyzer,
   Testing,
@@ -15,6 +14,8 @@ import {
 
 import { cleanupTempFiles } from "./utils/api.js";
 import { tokenManager } from "./utils/tokenManager.js";
+import { musaVoiceUserTestFlow } from "./config/musaVoiceUserTestFlow.js";
+import TestRunner from "./pages/TestRunner.jsx";
 
 /**
  * The main application component for the Audio Analyzer frontend.
@@ -86,15 +87,13 @@ const App = () => {
       <div className="relative z-10">
         <div className="flex flex-col min-h-screen">
           <Router>
-            <Layout>
-              {/* Navigation bar with reset functionality and tooltip controls */}
-              <NavBar
-                handleReset={handleReset}
-                uploadsEnabled={uploadsEnabled}
-                setUploadsEnabled={setUploadsEnabled}
-                setTooltipMode={setTooltipMode}
-                tooltipMode={tooltipMode}
-              />
+            <Layout
+              handleReset={handleReset}
+              uploadsEnabled={uploadsEnabled}
+              setUploadsEnabled={setUploadsEnabled}
+              setTooltipMode={setTooltipMode}
+              tooltipMode={tooltipMode}
+            >
               <Routes>
                 {/* Main Analyzer page for audio analysis */}
                 <Route
@@ -151,7 +150,11 @@ const App = () => {
                   }
                 />
                 <Route path="/musa-feedback" element={<FeedbackForm />} />
-
+                {/* MusaVoice Testing Pages */}
+                <Route
+                  path="/musavoice-testing"
+                  element={<TestRunner flow={musaVoiceUserTestFlow} />}
+                />
                 {/* Fallback route for undefined paths */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
