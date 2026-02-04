@@ -10,8 +10,8 @@ const AnalysisButtons = ({
   selectedInstrument,
   selectedAnalysisFeature,
   onAnalysisFeatureSelect,
-  inputFile,
-  referenceFile,
+  inputFileOrBlob,
+  referenceFileOrBlob,
   inputAudioFeatures,
   setInputAudioFeatures,
   referenceAudioFeatures,
@@ -63,10 +63,9 @@ const AnalysisButtons = ({
       });
 
       // Timing: response received
-      const requestEnd = performance.now();
-      const duration = (requestEnd - requestStart).toFixed(2);
-
       if (monitorResources) {
+        const requestEnd = performance.now();
+        const duration = (requestEnd - requestStart).toFixed(2);
         console.log(
           `[processFeatures] Received response for "${featureLabel}". Duration: ${duration} ms`,
         );
@@ -128,9 +127,9 @@ const AnalysisButtons = ({
       let referenceFeatureData = null;
 
       // Process Reference File (if it exists)
-      if (referenceFile) {
+      if (referenceFileOrBlob) {
         referenceFeatureData = await fetchAndSetFeatures(
-          referenceFile,
+          referenceFileOrBlob,
           featureLabel,
           referenceAudioFeatures,
           setReferenceAudioFeatures,
@@ -143,9 +142,9 @@ const AnalysisButtons = ({
       }
 
       // Process Input File (Your Audio)
-      if (inputFile) {
+      if (inputFileOrBlob) {
         inputFeatureData = await fetchAndSetFeatures(
-          inputFile,
+          inputFileOrBlob,
           featureLabel,
           inputAudioFeatures,
           setInputAudioFeatures,
@@ -162,13 +161,13 @@ const AnalysisButtons = ({
       // Upload is only necessary if the input feature data was actually calculated/available,
       // and we use the *newest* feature data (which is either the one we just calculated
       // or the one already in state if we skipped calculation).
-      if (uploadsEnabled && inputFile && inputFeatureData) {
+      if (uploadsEnabled && inputFileOrBlob && inputFeatureData) {
         const featuresToUpload = {
           ...inputAudioFeatures,
           [featureLabel]: inputFeatureData,
         };
         const uploadResult = await uploadAudio(
-          inputFile,
+          inputFileOrBlob,
           inputAudioUuid,
           selectedInstrument,
           featuresToUpload,

@@ -10,8 +10,8 @@ const ThankYou = () => {
       <p className="md:w-3/4 text-justify-center pt-5 pb-5">
         We are extremely grateful for your participation and time. If you are
         interested in our future work and participating in upcoming Vocal
-        Performance Technology studies, we invite you to provide your email
-        below.
+        Performance Technology studies (e.g. comparing different models), 
+        we invite you to provide your email below.
       </p>
       <div className="w-full mt-6">
         <SurveyTextAnswer

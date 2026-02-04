@@ -75,7 +75,7 @@ const processFeatures = async ({
   formData.append("audioFile", audioFile);
   if (sessionId) formData.append("sessionId", sessionId);
   if (fileKey) formData.append("fileKey", fileKey);
-  formData.append("monitorResources", monitorResources);
+  formData.append("monitorResources", String(monitorResources).toLowerCase());
 
   try {
     if (feature === "dynamics") {
@@ -183,7 +183,7 @@ const uploadAudioToPythonService = async (
   }
 
   if (feature) {
-    console.log("Feature to upload:", feature);
+    // console.log("Feature to upload:", feature);
     formData.append("feature", feature);
   }
 

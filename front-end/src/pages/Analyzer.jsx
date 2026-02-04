@@ -73,10 +73,19 @@ const Analyzer = ({
   });
 
   const [selectedModel, setSelectedModel] = useState("CLAP");
+  const [audioData, setAudioData] = useState(null);
+  const [audioSource, setAudioSource] = useState(null);
 
   const featureHasModels = ["vocal tone", "pitch mod."].includes(
     selectedAnalysisFeature,
   );
+
+  const getAudioFileOrBlob = (data, source) => {
+    if (!data || !source) return null;
+    return data;
+  };
+
+  const inputFileOrBlob = getAudioFileOrBlob(audioData, audioSource);
 
   // Set selectedModel based on available models in the response
   useEffect(() => {
@@ -124,6 +133,8 @@ const Analyzer = ({
         console.log("Resetting audio features");
         setInputFile(null);
         setAudioBlob(null);
+        setAudioData(null);
+        setAudioSource(null);
         setAudioName("untitled.wav");
         setAudioURL(null);
         setInputAudioFeatures({});
@@ -138,6 +149,8 @@ const Analyzer = ({
   const handleFileUpload = (file) => {
     setInputFile(file);
     setAudioURL(URL.createObjectURL(file));
+    setAudioData(file);
+    setAudioSource("upload");
   };
 
   // Switches the app to recording mode.
@@ -164,6 +177,8 @@ const Analyzer = ({
     setSelectedAnalysisFeature(null);
     setInputFile(null);
     setAudioBlob(null);
+    setAudioData(null);
+    setAudioSource(null);
 
     const newAudioName = "untitled.wav";
     setAudioName(newAudioName);
@@ -178,6 +193,21 @@ const Analyzer = ({
     // enable enabling uploads in main application
     setUploadsEnabled(true);
   }, [setUploadsEnabled]);
+
+//   //   save reference features precalc
+//   const saveJSON = (obj, filename) => {
+//     const blob = new Blob([JSON.stringify(obj, null, 2)], {
+//       type: "application/json",
+//     });
+
+//     const url = URL.createObjectURL(blob);
+//     const a = document.createElement("a");
+//     a.href = url;
+//     a.download = filename;
+//     a.click();
+//     URL.revokeObjectURL(url);
+//   };
+//   saveJSON(inputAudioFeatures, "pitch_mod_tool.json");
 
   return (
     <div className="min-h-screen w-full">
@@ -223,6 +253,8 @@ const Analyzer = ({
                   audioURL={audioURL}
                   setAudioURL={setAudioURL}
                   handleDownloadRecording={handleDownloadRecording}
+                  setAudioData={setAudioData}
+                  setAudioSource={setAudioSource}
                   className="w-full "
                 />
               ) : (
@@ -245,7 +277,7 @@ const Analyzer = ({
             </div>
 
             {/* Display uploaded file, analysis buttons, and visualization for selected analysis feature */}
-            {inputFile && (
+            {inputFileOrBlob && (
               <div className="flex flex-col items-center w-full space-y-8">
                 <Tooltip
                   text="select an analysis feature"
@@ -258,18 +290,19 @@ const Analyzer = ({
                     selectedInstrument={selectedInstrument}
                     selectedAnalysisFeature={selectedAnalysisFeature}
                     onAnalysisFeatureSelect={handleAnalysisFeatureSelect}
-                    inputFile={inputFile}
+                    inputFileOrBlob={inputFileOrBlob}
                     inputAudioFeatures={inputAudioFeatures}
                     setInputAudioFeatures={setInputAudioFeatures}
                     inputAudioUuid={inputAudioUuid}
                     setInputAudioUuid={setInputAudioUuid}
                     uploadsEnabled={uploadsEnabled}
+                    // monitorResources={false}
                   />
                 </Tooltip>
                 {selectedAnalysisFeature && (
                   <div className="flex flex-col w-full lg:w-fit">
                     <div className="text-xl font-semibold text-lightpink mb-1">
-                      {inputFile.name}
+                      {inputFile?.name || audioName}
                     </div>
                     <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8 overflow-x-auto lg:overflow-x-visible">
                       {/* Add overflow-x-auto on mobile only */}

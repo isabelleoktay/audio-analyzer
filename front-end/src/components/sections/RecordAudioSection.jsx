@@ -26,6 +26,8 @@ const RecordAudioSection = ({
   testGroup,
   setIsProceedButtonEnabled,
   isProceedButtonEnabled,
+  setAudioData = null,
+  setAudioSource = null,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -85,6 +87,8 @@ const RecordAudioSection = ({
       if (audioBlob) {
         const file = new File([audioBlob], audioName, { type: "audio/wav" });
         setInputFile(file);
+        if (setAudioData) setAudioData(file);
+        if (setAudioSource) setAudioSource("record");
       }
       setInRecordMode(false);
     }

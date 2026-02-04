@@ -7,23 +7,29 @@ const EntryQuestions = ({ surveyData, config, onNext }) => {
   const [sectionIndex, setSectionIndex] = useState(0);
 
   const handleSubmit = (newAnswers) => {
-    setAnswers((prev) => ({ ...prev, [sectionIndex]: newAnswers }));
-    handleSubmitEntrySurvey({ ...answers, [sectionIndex]: newAnswers });
+    const updatedAnswers = { ...answers, [sectionIndex]: newAnswers };
+    setAnswers(updatedAnswers);
+
+    const flatAnswers = Object.values(updatedAnswers).reduce(
+      (acc, curr) => ({ ...acc, ...curr }),
+      {}
+    );
+
+    handleSubmitEntrySurvey(flatAnswers);
 
     window.scrollTo(0, 0);
   };
 
   const handleSubmitEntrySurvey = async (allAnswers) => {
     try {
-      const response = await uploadUserStudyEntrySurvey(
-        surveyData.subjectId,
-        allAnswers
-      );
+      console.log(allAnswers);
+      await uploadUserStudyEntrySurvey(surveyData.subjectId, allAnswers);
       // console.log("Entry survey uploaded successfully:", response);
-      if (onNext) onNext(); // Advance to next step
     } catch (error) {
       console.error("Error uploading entry survey:", error);
     }
+
+    if (onNext) onNext(allAnswers);
   };
 
   return (

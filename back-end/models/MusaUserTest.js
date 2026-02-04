@@ -9,7 +9,10 @@ const SectionSchema = new mongoose.Schema({
     audioId: String,
     analysis: mongoose.Schema.Types.Mixed,
   },
-  surveyBeforePracticeAnswers: { type: mongoose.Schema.Types.Mixed, required: true },
+  surveyBeforePracticeAnswers: {
+    type: mongoose.Schema.Types.Mixed,
+    required: true,
+  },
   practiceData: { type: mongoose.Schema.Types.Mixed, required: true },
   recordingAfterPractice: {
     audioId: String,
@@ -24,6 +27,13 @@ const SectionSchema = new mongoose.Schema({
 const musaUserTestSchema = new mongoose.Schema({
   testName: { type: String }, // e.g. VTC User Study, VTE User Study, etc.
   subjectId: { type: String, required: true },
+  // Top-level intro section (instructions intro kept separate from per-section data)
+  introSection: {
+    instructionConfidence: { type: String },
+    surveyAnswers: mongoose.Schema.Types.Mixed,
+    startedAt: Date,
+    endedAt: Date,
+  },
   entrySurveyAnswers: { type: mongoose.Schema.Types.Mixed },
   sections: { type: [SectionSchema], default: [] },
   exitSurveyAnswers: { type: mongoose.Schema.Types.Mixed },
@@ -39,18 +49,18 @@ const musaUserTestSchema = new mongoose.Schema({
 musaUserTestSchema.statics.upsertSectionByName = async function (
   sessionId,
   sectionName,
-  sectionDoc
+  sectionDoc,
 ) {
   const existing = await this.findOneAndUpdate(
     { sessionId, "sections.sectionName": sectionName },
     { $set: { "sections.$": sectionDoc } },
-    { new: true }
+    { new: true },
   );
   if (existing) return existing;
   return this.findOneAndUpdate(
     { sessionId },
     { $push: { sections: sectionDoc } },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
 };
 
@@ -59,7 +69,7 @@ musaUserTestSchema.statics.upsertSectionByName = async function (
 musaUserTestSchema.statics.updateSectionFieldsByName = function (
   sessionId,
   sectionName,
-  fields
+  fields,
 ) {
   const setObj = {};
   for (const key of Object.keys(fields)) {
@@ -68,7 +78,7 @@ musaUserTestSchema.statics.updateSectionFieldsByName = function (
   return this.findOneAndUpdate(
     { sessionId, "sections.sectionName": sectionName },
     { $set: setObj },
-    { new: true }
+    { new: true },
   );
 };
 
@@ -77,7 +87,7 @@ musaUserTestSchema.statics.updateSectionFieldsByName = function (
 musaUserTestSchema.statics.updateSectionEndSurveyByName = function (
   sessionId,
   sectionName,
-  answers
+  answers,
 ) {
   return this.findOneAndUpdate(
     { sessionId, "sections.sectionName": sectionName },
@@ -87,7 +97,7 @@ musaUserTestSchema.statics.updateSectionEndSurveyByName = function (
         "sections.$.endedAt": new Date(),
       },
     },
-    { new: true }
+    { new: true },
   );
 };
 
@@ -95,12 +105,12 @@ musaUserTestSchema.statics.updateSectionEndSurveyByName = function (
 
 musaUserTestSchema.statics.updateEntrySurveyAnswers = function (
   subjectId,
-  answers
+  answers,
 ) {
   return this.findOneAndUpdate(
     { subjectId },
     { $set: { entrySurveyAnswers: answers } },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
 };
 
@@ -109,21 +119,21 @@ musaUserTestSchema.statics.updateEntrySurveyAnswers = function (
 musaUserTestSchema.statics.updateExitSurveyAnswers = function (
   subjectId,
   answers,
-  opts = { markCompleted: false }
+  opts = { markCompleted: false },
 ) {
   const setObj = { exitSurveyAnswers: answers };
   if (opts.markCompleted) setObj.completed = true;
   return this.findOneAndUpdate(
     { subjectId },
     { $set: { exitSurveyAnswers: answers } },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
 };
 
 const MusaUserTest = mongoose.model(
   "MusaUserTest",
   musaUserTestSchema,
-  "musa-user-test"
+  "musa-user-test",
 );
 
 export default MusaUserTest;

@@ -6,6 +6,8 @@ from feature_extraction.pitch_mod import extract_pitch_mod
 def process_pitch_mod(audio_bytes, gender, use_clap=True, use_whisper=True, monitor_resources=True):
     clear_cache_if_new_file(audio_bytes)
 
+    print("Trying...")
+
     # Load & preprocess audio
     audio, sr, audio_url, audio_path, error = load_and_process_audio(audio_bytes, sample_rate=16000)
     if error:
@@ -19,6 +21,8 @@ def process_pitch_mod(audio_bytes, gender, use_clap=True, use_whisper=True, moni
         'audio_url': audio_url,
         'duration': audio_duration,
     }
+
+    print("Running models...")
 
     # Run both models (Whisper + CLAP)
     whisper_class_names, whisper_predictions, clap_class_names, clap_predictions = extract_pitch_mod(audio_path, gender, use_clap=use_clap, use_whisper=use_whisper, monitor_resources=monitor_resources)
@@ -41,6 +45,7 @@ def process_pitch_mod(audio_bytes, gender, use_clap=True, use_whisper=True, moni
         ]
     
     if use_whisper:
+        print("Whisperr...")
         smoothed_whisper = np.zeros_like(whisper_predictions)
         for c in range(len(whisper_class_names)):
             smoothed_whisper[:, c] = smooth_data(
@@ -56,6 +61,5 @@ def process_pitch_mod(audio_bytes, gender, use_clap=True, use_whisper=True, moni
             }
             for i, label in enumerate(whisper_class_names)
         ]
-
 
     return result, None
