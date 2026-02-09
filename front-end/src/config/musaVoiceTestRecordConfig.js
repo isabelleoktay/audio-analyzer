@@ -65,7 +65,7 @@ export const musaVoiceTestRecordConfig = [
         highlightedText: [
           { phrase: "the champions," },
           { phrase: "and we'll" },
-          { phrase: "til the end." },
+          { phrase: "till the end." },
         ],
         highlightClass: "bg-purple-400 text-blueblack",
         defaultClass: "bg-electricblue text-blueblack",

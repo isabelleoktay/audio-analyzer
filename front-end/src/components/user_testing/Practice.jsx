@@ -349,9 +349,14 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
               />
             </div>
             <div className="flex justify-end">
-              <TertiaryButton onClick={handleResetAnalysis} className="text-sm">
-                Analyze another recording
-              </TertiaryButton>
+              {currentAnalysis?.data && referenceFeatureData && (
+                <TertiaryButton
+                  onClick={handleResetAnalysis}
+                  className="text-sm"
+                >
+                  Analyze another recording
+                </TertiaryButton>
+              )}
             </div>
           </div>
         )}
