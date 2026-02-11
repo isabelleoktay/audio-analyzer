@@ -3,6 +3,7 @@ export const EntryQuestionsConfig = [
     type: "singleselect",
     question: "How much singing experience do you have?",
     options: ["Beginner", "Intermediate", "Advanced", "Professional"],
+    required: true,
   },
   {
     type: "multiselect",
@@ -15,17 +16,20 @@ export const EntryQuestionsConfig = [
       "With a band(s)",
       "Recording videos/audio of myself",
     ],
+    required: true,
   },
   {
     type: "singleselect",
     question: "How many hours do you practice per week?",
     options: ["< 1h", "1-2h", "2-5h", "5-10h", "10-15h", "> 15h"],
+    required: true,
   },
   {
     type: "singleselect",
     question:
       "Have you used automatic vocal analysis or visualiser tools before?",
     options: ["Yes", "No", "I'm not sure"],
+    required: true,
   },
   {
     type: "multiselect",
@@ -43,6 +47,7 @@ export const EntryQuestionsConfig = [
       "Hip Hop",
       "Heavy metal",
     ],
+    required: true,
   },
   {
     type: "singleselect",
@@ -56,39 +61,33 @@ export const EntryQuestionsConfig = [
       "Soprano",
       "I'm not sure",
     ],
+    required: true,
   },
   {
-    type: "multiscale",
+    type: "statementRating",
     question:
-      "Rate how useful it would be for you to get feedback (presence/absence of them) on the following vocal techniques:",
-    options: [
-      "Vibrato",
-      "Trill",
-      "Trillo",
-      "Straight tone",
-      "Belting",
-      "Breathiness",
-      "Speech tone",
-      "Lip trill",
-      "Vocal fry",
-      "Inhaled singing",
-      "Glissando",
-      "Mixed voice",
-      "Head voice",
-      "Falsetto",
-      "Pharyngeal",
+      "Rate how useful it would be for you to receive feedback on whether your singing has the following qualities:",
+    statements: [
+      "How steady or expressive your pitch sounds (e.g. how much it wavers or uses vibrato)",
+      "The overall character of your voice (e.g. powerful, soft, breathy)",
+      "Use of stylistic vocal sounds (e.g. rough, buzzing, or warm effects)",
+      "Which part of your voice resonance you are using (e.g. lower vs higher voice)",
+      "Overall sound quality (e.g. nasal, clear, airy)",
     ],
     scaleLabels: ["Not useful", "", "", "", "", "Very useful"],
+    required: true,
   },
   {
     type: "singleselect",
     question: "Will you be in a quiet room while using the tool?",
     options: ["Yes", "No"],
+    required: true,
   },
   {
     type: "singleselect",
     question: "Are you using headphones while using the tool?",
     options: ["Yes", "No"],
+    required: true,
   },
 ];
 
@@ -103,6 +102,7 @@ export const SurveyBeforePracticeConfig = [
           "How well do you think you controlled your pitch modulation (vibrato VS straight tone)?",
         statements: [""],
         scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+        required: true,
       },
     ],
   },
@@ -116,6 +116,7 @@ export const SurveyBeforePracticeConfig = [
           "How well do you think you controlled your pitch modulation (vibrato VS straight tone)?",
         statements: [""],
         scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+        required: true,
       },
     ],
   },
@@ -129,6 +130,7 @@ export const SurveyBeforePracticeConfig = [
           "How well do you think you controlled your vocal tone (belt VS breathy tone)?",
         statements: [""],
         scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+        required: true,
       },
     ],
   },
@@ -142,6 +144,7 @@ export const SurveyBeforePracticeConfig = [
           "How well do you think you controlled your vocal tone (belt VS breathy tone)?",
         statements: [""],
         scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+        required: true,
       },
     ],
   },
@@ -158,6 +161,7 @@ export const SurveyAfterPracticeConfig = [
           "How well do you think you controlled your pitch modulation (vibrato VS straight tone)?",
         statements: [""],
         scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+        required: true,
       },
       {
         type: "statementRating",
@@ -165,6 +169,7 @@ export const SurveyAfterPracticeConfig = [
           "How helpful was the practice round (without the feedback tool) for you to achieve the pitch modulations you desired in the performance?",
         statements: [""],
         scaleLabels: ["Not helpful at all", "", "", "", "", "Very helpful"],
+        required: true,
       },
     ],
   },
@@ -178,6 +183,7 @@ export const SurveyAfterPracticeConfig = [
           "How well do you think you controlled your pitch modulation (vibrato VS straight tone)?",
         statements: [""],
         scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+        required: true,
       },
       {
         type: "statementRating",
@@ -185,6 +191,7 @@ export const SurveyAfterPracticeConfig = [
           "How helpful was the practice round (with the feedback tool) for you to achieve the pitch modulations you desired in the performance?",
         statements: [""],
         scaleLabels: ["Not helpful at all", "", "", "", "", "Very helpful"],
+        required: true,
       },
     ],
   },
@@ -198,6 +205,7 @@ export const SurveyAfterPracticeConfig = [
           "How well do you think you controlled your vocal tone (belt VS breathy tone)?",
         statements: [""],
         scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+        required: true,
       },
       {
         type: "statementRating",
@@ -205,6 +213,7 @@ export const SurveyAfterPracticeConfig = [
           "How helpful was the practice round (without the feedback tool) for you to achieve the vocal tone you desired in the performance?",
         statements: [""],
         scaleLabels: ["Not helpful at all", "", "", "", "", "Very helpful"],
+        required: true,
       },
     ],
   },
@@ -218,6 +227,7 @@ export const SurveyAfterPracticeConfig = [
           "How well do you think you controlled your vocal tone (belt VS breathy tone)?",
         statements: [""],
         scaleLabels: ["Very Poorly", "", "", "", "", "Very well"],
+        required: true,
       },
       {
         type: "statementRating",
@@ -225,6 +235,7 @@ export const SurveyAfterPracticeConfig = [
           "How helpful was the practice round (with the feedback tool) for you to achieve the vocal tone you desired in the performance?",
         statements: [""],
         scaleLabels: ["Not helpful at all", "", "", "", "", "Very helpful"],
+        required: true,
       },
     ],
   },
@@ -240,6 +251,7 @@ export const FinalExitConfig = [
         type: "textAnswer",
         question:
           "How was your experience with the tool? Did you learn something about your voice?",
+        required: true,
       },
       {
         type: "statementRating",
@@ -251,16 +263,19 @@ export const FinalExitConfig = [
           "I understood what each classifier label meant.",
         ],
         scaleLabels: ["Strongly disagree", "", "", "", "", "Strongly agree"],
+        required: true,
       },
       {
         type: "textAnswer",
         question:
           "Where there any classifications that did not make sense? If so, which ones and why?",
+        required: false,
       },
       {
         type: "textAnswer",
         question:
           "Which classifications did you trust the most/least? What impacted this?",
+        required: false,
       },
     ],
     specificQuestions: [
@@ -270,6 +285,7 @@ export const FinalExitConfig = [
           "Rate how useful it was to get feedback on each of the vocal techniques:",
         options: ["Vibrato", "Straight tone", "Belting", "Breathiness"],
         scaleLabels: ["Not useful", "", "", "", "", "Very useful"],
+        required: true,
       },
     ],
   },
@@ -294,11 +310,13 @@ export const FinalExitConfig = [
           "I needed to learn a lot of things before I could get going with this system.",
         ],
         scaleLabels: ["Strongly disagree", "", "", "", "", "Strongly agree"],
+        required: true,
       },
       {
         type: "textAnswer",
         question:
           "What further developments/features would you like this tool to have?",
+        required: false,
       },
     ],
   },
