@@ -164,6 +164,13 @@ const saveSectionField = async (req, res) => {
     addEndedAt = false,
   } = req.body;
 
+  console.log("saveSectionField received:", {
+    subjectId,
+    sectionKey,
+    field,
+    data,
+  });
+
   if (!subjectId || !sectionKey || !field || data === undefined) {
     return res.status(400).json({
       ok: false,
@@ -202,6 +209,8 @@ const saveSectionField = async (req, res) => {
 
     // Build the $set object dynamically for normal sections
     const setObj = { [`sections.$.${field}`]: data };
+    console.log("set obj)");
+    console.log(setObj);
 
     if (addStartedAt) {
       setObj["sections.$.startedAt"] = new Date();
@@ -271,21 +280,32 @@ const saveExitSurvey = async (req, res) => {
   }
 };
 
-// // Get study by subjectId
-// const getStudyBySubject = async (req, res) => {
-//   const { subjectId } = req.params;
-//   if (!subjectId)
-//     return res.status(400).json({ ok: false, error: "Missing subjectId" });
+const saveEmail = async (req, res) => {
+  const { subjectId, email } = req.body;
 
-//   try {
-//     const doc = await MusaUserTest.findOne({ subjectId });
-//     if (!doc) return res.status(404).json({ ok: false, error: "Not found" });
-//     return res.status(200).json({ ok: true, doc });
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({ ok: false, error: "Failed to fetch study" });
-//   }
-// };
+  if (!subjectId || !email) {
+    return res
+      .status(400)
+      .json({ ok: false, error: "Missing subjectId or email" });
+  }
+
+  try {
+    const doc = await MusaUserTest.findOneAndUpdate(
+      { subjectId },
+      { $set: { email } },
+      { new: true },
+    );
+
+    if (!doc) {
+      return res.status(404).json({ ok: false, error: "Subject not found" });
+    }
+
+    return res.status(200).json({ ok: true, doc });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ ok: false, error: "Failed to save email" });
+  }
+};
 
 export {
   uploadMusaUserStudy,
@@ -293,4 +313,5 @@ export {
   upsertSection,
   saveSectionField,
   saveExitSurvey,
+  saveEmail,
 };

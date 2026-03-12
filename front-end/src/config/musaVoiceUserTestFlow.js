@@ -26,7 +26,7 @@ const commonStart = [
     component: MusaVoiceTesting,
     config: musaVoiceTestConsentConfig,
   },
-    { id: "entry", component: EntryQuestions, config: EntryQuestionsConfig },
+  { id: "entry", component: EntryQuestions, config: EntryQuestionsConfig },
   {
     id: `instructions-intro`,
     sectionKey: `instructions-intro`,
@@ -94,6 +94,7 @@ const buildConditionBlocks = (taskType) => {
           usesTool: cond.usesTool,
           taskType,
           label: cond.label,
+          sectionKey,
         },
       },
       {
@@ -115,6 +116,7 @@ const buildConditionBlocks = (taskType) => {
           usesTool: cond.usesTool,
           taskType,
           label: cond.label,
+          sectionKey,
         },
       },
       {
@@ -129,6 +131,7 @@ const buildConditionBlocks = (taskType) => {
           usesTool: cond.usesTool,
           taskType,
           label: cond.label,
+          sectionKey,
         },
       },
       {

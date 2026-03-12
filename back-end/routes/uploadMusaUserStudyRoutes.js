@@ -5,7 +5,7 @@ import {
   upsertSection,
   saveSectionField,
   saveExitSurvey,
-  //   getStudyBySubject,
+  saveEmail,
 } from "../controllers/uploadMusaUserStudyController.js";
 
 const musaUserStudyRouter = express.Router();
@@ -15,6 +15,6 @@ musaUserStudyRouter.route("/save-entry-survey").post(saveEntrySurvey);
 musaUserStudyRouter.route("/upsert-section").post(upsertSection);
 musaUserStudyRouter.route("/save-section-field").post(saveSectionField);
 musaUserStudyRouter.route("/save-exit-survey").post(saveExitSurvey);
-// musaUserStudyRouter.route("/get-study").get(getStudyBySubject);
+musaUserStudyRouter.route("/save-email").post(saveEmail);
 
 export default musaUserStudyRouter;
