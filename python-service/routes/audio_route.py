@@ -72,8 +72,11 @@ def upload_audio():
     if group in ['feedback', 'none'] and stage in ['before', 'during', 'after']:
         testing_folder = os.path.join(base_folder, 'testing')
         target_folder = os.path.join(testing_folder, group, stage)
+    elif group and stage is None and audio_feature is None:
+        # sectionKey-based upload: save directly under collected/<sectionKey>/
+        target_folder = os.path.join(base_folder, 'collected', group)
     else:
-        target_folder = os.path.join(base_folder, 'collected')  # Default to normal /static/audio folder
+        target_folder = os.path.join(base_folder, 'collected')
 
     # Add feature to the path if it exists
     if audio_feature:

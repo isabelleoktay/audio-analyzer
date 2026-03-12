@@ -94,6 +94,7 @@ const buildConditionBlocks = (taskType) => {
           usesTool: cond.usesTool,
           taskType,
           label: cond.label,
+          sectionKey,
         },
       },
       {
@@ -115,6 +116,7 @@ const buildConditionBlocks = (taskType) => {
           usesTool: cond.usesTool,
           taskType,
           label: cond.label,
+          sectionKey,
         },
       },
       {
@@ -129,6 +131,7 @@ const buildConditionBlocks = (taskType) => {
           usesTool: cond.usesTool,
           taskType,
           label: cond.label,
+          sectionKey,
         },
       },
       {

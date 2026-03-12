@@ -143,6 +143,7 @@ def clear_cache_if_new_file(file_bytes, session_id=None, file_key="input"):
 
 def load_audio(file_path, sample_rate=44100):
     """Load audio file using librosa."""
+    import os
     mono_loader = MonoLoader(filename=file_path, sampleRate=sample_rate)
     audio = mono_loader()
     return audio, sample_rate
@@ -188,6 +189,7 @@ def load_and_process_audio(file_bytes, sample_rate=44100, return_path=True):
     """
     try:
         file_stream = convert_to_wav_if_needed(file_bytes, return_path=return_path)
+        print(f"DEBUG file_stream type: {type(file_stream)}, value: {file_stream}")  # ← add this
         audio, sr = load_audio(file_stream, sample_rate=sample_rate)
         audio, _ = universal_trim(audio, sr, top_db=40)
         
@@ -203,7 +205,7 @@ def load_and_process_audio(file_bytes, sample_rate=44100, return_path=True):
         
     except Exception as e:
         print(f"Error loading audio: {e}")
-        return None, None, None, str(e)
+        return None, None, None, None, str(e)
 
 def convert_to_wav_if_needed(input_bytes, return_path=False):
     # Try reading the file as a WAV
@@ -216,6 +218,7 @@ def convert_to_wav_if_needed(input_bytes, return_path=False):
                 tf = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
                 tf.write(input_bytes)
                 tf.flush()
+                tf.close()
                 return tf.name
             else:
                 return BytesIO(input_bytes)
@@ -228,6 +231,8 @@ def convert_to_wav_if_needed(input_bytes, return_path=False):
         
         temp_in.write(input_bytes)
         temp_in.flush()
+        temp_in.close() 
+        temp_out.close()
 
         try:
             subprocess.run([

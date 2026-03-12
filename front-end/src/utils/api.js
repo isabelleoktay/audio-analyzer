@@ -437,6 +437,19 @@ const upsertUserStudySection = async (subjectId, section) => {
   }
 };
 
+const saveUserStudyEmail = async (subjectId, email) => {
+  try {
+    const response = await apiClient.post("/api/save-email", {
+      subjectId,
+      email,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error saving email:", error);
+    throw error;
+  }
+};
+
 export {
   uploadAudio,
   processFeatures,
@@ -451,4 +464,5 @@ export {
   uploadUserStudyExitSurvey,
   uploadUserStudySectionField,
   upsertUserStudySection,
+  saveUserStudyEmail,
 };

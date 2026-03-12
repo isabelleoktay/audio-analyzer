@@ -56,13 +56,17 @@ const RecordTask = ({
     const subjectId = surveyData?.subjectId;
 
     // Kick off background background upload/save
-    if (selectedBlob && subjectId && sectionKey) {
+    console.log(selectedBlob);
+    console.log(subjectId);
+    console.log(sectionKey);
+    if (selectedBlob && subjectId) {
       const file = new File([selectedBlob], `${fieldName}_${Date.now()}.wav`, {
         type: "audio/wav",
       });
 
-      uploadAudioToPythonService(file, "task", sectionKey, fieldName)
+      uploadAudioToPythonService(file, sectionKey, null, null)
         .then((uploadResult) => {
+          console.log("Upload result:", uploadResult);
           if (uploadResult?.path) {
             return uploadUserStudySectionField({
               subjectId,
@@ -71,6 +75,9 @@ const RecordTask = ({
               data: { path: uploadResult.path },
             });
           }
+        })
+        .then((sectionRes) => {
+          console.log("Section upload result:", sectionRes);
         })
         .catch((error) => {
           console.error("Background upload failed:", error);

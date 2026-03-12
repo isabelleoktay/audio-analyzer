@@ -6,8 +6,7 @@ const SectionSchema = new mongoose.Schema({
   endedAt: Date,
   instructionConfidence: { type: String },
   recordingBeforePractice: {
-    audioId: String,
-    analysis: mongoose.Schema.Types.Mixed,
+    path: String,
   },
   surveyBeforePracticeAnswers: {
     type: mongoose.Schema.Types.Mixed,
@@ -15,8 +14,7 @@ const SectionSchema = new mongoose.Schema({
   },
   practiceData: { type: mongoose.Schema.Types.Mixed, required: true },
   recordingAfterPractice: {
-    audioId: String,
-    analysis: mongoose.Schema.Types.Mixed,
+    path: String,
   },
   surveyAfterPracticeAnswers: {
     type: mongoose.Schema.Types.Mixed,
@@ -38,6 +36,7 @@ const musaUserTestSchema = new mongoose.Schema({
   sections: { type: [SectionSchema], default: [] },
   exitSurveyAnswers: { type: mongoose.Schema.Types.Mixed },
   timestamp: { type: Date, default: Date.now },
+  email: { type: String },
 });
 
 /**
