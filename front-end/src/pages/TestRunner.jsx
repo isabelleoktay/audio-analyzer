@@ -48,7 +48,7 @@ function TestRunner({ flow }) {
 
       <div className="w-full max-w-5xl px-4 flex justify-center">
         {isFinished ? (
-          <ThankYou />
+          <ThankYou surveyData={surveyData} />
         ) : (
           <Step
             onNext={handleNext}

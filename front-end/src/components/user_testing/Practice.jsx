@@ -14,7 +14,12 @@ import TertiaryButton from "../buttons/TertiaryButton.jsx";
 const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
   // TO DO: need to have voiceType set by the first survey answer !!!
   const baseConfig = config?.[configIndex] ?? {};
-  const { condition = "control", usesTool = false, taskIndex } = metadata || {};
+  const {
+    condition = "control",
+    usesTool = false,
+    taskIndex,
+    sectionKey,
+  } = metadata || {};
   const conditionConfig = baseConfig.conditions?.[condition] ?? {};
 
   const voiceTypeAnswer =
@@ -167,9 +172,9 @@ const Practice = ({ onNext, config, configIndex, metadata, surveyData }) => {
 
         const uploadResult = await uploadAudioToPythonService(
           file,
-          "practice",
-          metadata.sectionKey,
-          featureLabel || "practice_audio",
+          sectionKey,
+          null,
+          null,
         );
 
         if (uploadResult?.path) {
