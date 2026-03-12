@@ -5,9 +5,9 @@ export const musaVoiceTestPracticeConfig = [
     practiceTime: 420,
     instructions: {
       withTool:
-        "You now will have a maximum of 7 minutes to practice attaining the same vocal technique placement as the reference audio with feedback from the pitch modulation feedback tool.",
+        "You now will have a maximum of 7 minutes to practice attaining the same straight-vibrato placement as the reference audio with feedback from the pitch modulation feedback tool. You may listen to the reference audio as many times as you like, but please do not listen to the reference audio while recording your own audio.",
       withoutTool:
-        "You now will have a maximum of 7 minutes to practice attaining the same vocal technique placement as the reference audio without feedback from the pitch modulation feedback tool.",
+        "You now will have a maximum of 7 minutes to practice attaining the same straight-vibrato placement as the reference audio without feedback from the pitch modulation feedback tool. You may listen to the reference audio as many times as you like, but please do not listen to the reference audio while recording your own audio.",
     },
     techniques: ["straight", "vibrato"],
     highlightLabel: "vibrato",
@@ -41,9 +41,9 @@ export const musaVoiceTestPracticeConfig = [
     practiceTime: 420,
     instructions: {
       withTool:
-        "You now will have a maximum of 7 minutes to practice attaining the same vocal technique placement as the reference audio with feedback from the vocal tone control feedback tool.",
+        "You now will have a maximum of 7 minutes to practice attaining the same belt-breathy placement as the reference audio with feedback from the pitch modulation feedback tool. You may listen to the reference audio as many times as you like, but please do not listen to the reference audio while recording your own audio.",
       withoutTool:
-        "You now will have a maximum of 7 minutes to practice attaining the same vocal technique placement as the reference audio without feedback from the vocal tone control feedback tool.",
+        "You now will have a maximum of 7 minutes to practice attaining the same belt-breathy placement as the reference audio without feedback from the pitch modulation feedback tool. You may listen to the reference audio as many times as you like, but please do not listen to the reference audio while recording your own audio.",
     },
     techniques: ["belt", "breathy"],
     highlightLabel: "breathy",

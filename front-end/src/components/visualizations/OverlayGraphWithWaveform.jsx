@@ -339,7 +339,7 @@ const OverlayGraphWithWaveform = ({
                                       "vocal tone",
                                       "pitch mod.",
                                     ].includes(selectedAnalysisFeature)
-                                  ? "probability"
+                                  ? "presence of characteristic"
                                   : selectedAnalysisFeature
                       }
                       //   highlightedSections={

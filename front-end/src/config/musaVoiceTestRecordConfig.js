@@ -3,8 +3,8 @@ export const musaVoiceTestRecordConfig = [
     task: "Pitch Modulation Control",
     title: "Pitch Modulation Exercise",
     instructions: {
-      pre: "Your task is to match the reference audio's placement of straight and vibrato vocal techniques. You can sing the same phrase in any key that feels natural to you.",
-      post: "To end this section, we ask you to record a final attempt to match the reference audio.",
+      pre: "Your task is to match the reference audio's placement of straight and vibrato vocal techniques. You may listen to the reference audio as many times as you like. However, please do not listen to the reference audio while recording your own audio. You can sing the same phrase in any key that feels natural to you. You will have a maximum of three recording attempts.",
+      post: "To end this section, please record your final attempt to match the reference audio. Remember, you may listen to the reference as much as you like, but not while recording, and you have up to three total recording attempts.",
     },
     techniques: ["straight", "vibrato"],
     highlightLabel: "vibrato",
@@ -36,8 +36,8 @@ export const musaVoiceTestRecordConfig = [
     task: "Vocal Tone Control",
     title: "Vocal Tone Exercise",
     instructions: {
-      pre: "Your task is to match the reference audio's placement of belt and breathy vocal techniques. You can sing the same phrase in any key that feels natural to you.",
-      post: "To end this section, we ask you to record a final attempt to match the reference audio.",
+      pre: "Your task is to match the reference audio's placement of belt and breathy vocal techniques. You may listen to the reference audio as many times as you like. However, please do not listen to the reference audio while recording your own audio. You can sing the same phrase in any key that feels natural to you. You will have a maximum of three recording attempts.",
+      post: "To end this section, please record your final attempt to match the reference audio. Remember, you may listen to the reference as much as you like, but not while recording, and you have up to three total recording attempts.",
     },
     techniques: ["belt", "breathy"],
     highlightLabel: "breathy",

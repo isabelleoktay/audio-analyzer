@@ -24,12 +24,19 @@ const SurveySection = ({
 }) => {
   const [answers, setAnswers] = useState(savedAnswers || {});
 
-  const isFormComplete = config.every((item) => {
-    const answer = answers[item.question];
+  const isAnswerFilled = (answer) => {
     if (answer === undefined || answer === null) return false;
     if (typeof answer === "string") return answer.trim().length > 0;
     if (Array.isArray(answer)) return answer.length > 0;
     return true;
+  };
+
+  const isFormComplete = config.every((item) => {
+    // not required → always valid
+    if (!item.required) return true;
+
+    const answer = answers[item.question];
+    return isAnswerFilled(answer);
   });
 
   const handleAnswerChange = useCallback((question, answer) => {
