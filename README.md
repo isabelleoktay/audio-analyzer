@@ -58,6 +58,8 @@ Ensure you have the following software installed on your machine. The specified 
 - **Python:** 3.10 or higher
 - **MongoDB:** 6.x or higher
 
+You should have redis installed and running in your machine to run localhost.
+
 You can check your versions with the following commands:
 
 ```bash
