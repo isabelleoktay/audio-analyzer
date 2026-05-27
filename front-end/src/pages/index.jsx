@@ -6,3 +6,4 @@ export { default as MultiAudio } from "./MultiAudio.jsx";
 export { default as MusaVoice } from "./MusaVoice.jsx";
 export {default as FeedbackForm} from "./FeedbackForm.jsx";
 export {default as LandingPage} from "./LandingPage.jsx";
+export {default as MeetTheTeam} from "./MeetTheTeam.jsx";

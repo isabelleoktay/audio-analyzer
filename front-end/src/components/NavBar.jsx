@@ -102,9 +102,9 @@ const NavBar = ({
               },
               {
                 type: "right",
-                to: "/meet-the-team",
+                to: "/musa-team",
                 label: "meet the team",
-                active: isActive("/meet-the-team"),
+                active: isActive("/musa-team"),
               },
               //   {
               //     type: "right",

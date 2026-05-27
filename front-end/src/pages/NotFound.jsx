@@ -15,7 +15,7 @@ const NotFound = () => {
           </h2>
         </div>
 
-        {/* Navigation buttons */}
+        {/* // Navigation buttons
         <div className="flex flex-col sm:flex-row gap-4">
           <SecondaryButton onClick={() => navigate("/")}>
             return to analyzer
@@ -23,7 +23,7 @@ const NotFound = () => {
           <SecondaryButton onClick={() => navigate(-1)}>
             go back
           </SecondaryButton>
-        </div>
+        </div> */}
       </div>
     </div>
   );

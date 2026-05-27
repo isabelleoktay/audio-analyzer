@@ -11,6 +11,7 @@ import {
   //   MultiAudio,
   FeedbackForm,
   LandingPage,
+  MeetTheTeam,
 } from "./pages";
 
 import { cleanupTempFiles } from "./utils/api.js";
@@ -97,15 +98,13 @@ const App = () => {
             >
               <Routes>
                 {/* Main Analyzer page for audio analysis */}
-                <Route
-                  path="/"
-                  element = {<LandingPage />}
-                />
+                <Route path="/" element={<LandingPage />} />
                 {/* Testing page for additional functionality */}
                 <Route
                   path="/testing"
                   element={<Testing setUploadsEnabled={setUploadsEnabled} />}
                 />
+                <Route path="/musa-team" element={<MeetTheTeam />} />
                 <Route
                   path="/analyzer"
                   element={
