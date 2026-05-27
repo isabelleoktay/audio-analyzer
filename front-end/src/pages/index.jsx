@@ -5,3 +5,4 @@ export { default as NotFound } from "./NotFound.jsx";
 export { default as MultiAudio } from "./MultiAudio.jsx";
 export { default as MusaVoice } from "./MusaVoice.jsx";
 export {default as FeedbackForm} from "./FeedbackForm.jsx";
+export {default as LandingPage} from "./LandingPage.jsx";
