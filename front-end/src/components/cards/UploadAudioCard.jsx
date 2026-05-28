@@ -5,7 +5,7 @@ import AudioUploadSection from "./AudioUploadSection";
 import AudioRecordSection from "./AudioRecordSection";
 import AudioDivider from "./AudioDivider";
 import RecordingControls from "./RecordingControls";
-import AudioSourceSelector from "../selectors/AudioSourceSelector";
+import AudioSelector from "../selectors/AudioSelector";
 
 const SCROLLING_WAVEFORM = true;
 const CONTINUOUS_WAVEFORM = false;
@@ -320,8 +320,8 @@ const UploadAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
             onCancelRecord={handleCancelRecord}
           />
         ) : (
-          <AudioSourceSelector
-            selectedSource={selectedAudioSource}
+          <AudioSelector
+            selectedOption={selectedAudioSource}
             onSourceChange={handleSelectAudioSource}
             hasUploadedFile={!!selectedFile}
             hasRecordedAudio={!!audioBlob}

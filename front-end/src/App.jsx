@@ -12,6 +12,7 @@ import {
   FeedbackForm,
   LandingPage,
   MeetTheTeam,
+  Demo,
 } from "./pages";
 
 import { cleanupTempFiles } from "./utils/api.js";
@@ -149,7 +150,15 @@ const App = () => {
                     <MusaVoice
                       uploadsEnabled={uploadsEnabled}
                       setUploadsEnabled={setUploadsEnabled}
-                      tooltipMode={tooltipMode}
+                    />
+                  }
+                />
+                <Route
+                  path="/musa-demo"
+                  element={
+                    <Demo
+                      uploadsEnabled={uploadsEnabled}
+                      setUploadsEnabled={setUploadsEnabled}
                     />
                   }
                 />
