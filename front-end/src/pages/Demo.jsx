@@ -36,7 +36,6 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
   const [sessionId, setSessionId] = useState(null);
   const [userToken, setUserToken] = useState(null);
 
-
   useEffect(() => {
     // Always generate a new sessionId when the page/component mounts
     const newSessionId = uuidv4();
@@ -70,10 +69,84 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
     setSelectedAnalysisFeature(feature);
   };
 
+  useEffect(() => {
+    // output referenceAudioFeatures and inputAudioFeatures as json files for presets saving
+    if (
+      Object.keys(inputAudioFeatures).length > 0 &&
+      Object.keys(referenceAudioFeatures).length > 0
+    ) {
+      // Create reference features JSON in the correct format
+      const referenceJson = {};
+      Object.keys(referenceAudioFeatures).forEach((feature) => {
+        referenceJson[feature] = {
+          data: {
+            [selectedModel]: [
+              {
+                data: referenceAudioFeatures[feature].data || [],
+                label: "reference",
+              },
+            ],
+          },
+        };
+      });
+
+      // Create input features JSON in the correct format
+      const inputJson = {};
+      Object.keys(inputAudioFeatures).forEach((feature) => {
+        inputJson[feature] = {
+          data: {
+            [selectedModel]: [
+              {
+                data: inputAudioFeatures[feature].data || [],
+                label: "input",
+              },
+            ],
+          },
+        };
+      });
+
+      // Log to console for verification
+      console.log("Reference Features JSON:", referenceJson);
+      console.log("Input Features JSON:", inputJson);
+
+      // Optional: Auto-download the files
+      const downloadJson = (data, filename) => {
+        const jsonString = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      };
+
+      // Uncomment to auto-download (may be blocked by browser)
+      // downloadJson(referenceJson, 'reference-features.json');
+      // downloadJson(inputJson, 'input-features.json');
+
+      // Store in localStorage for manual retrieval
+      try {
+        localStorage.setItem(
+          "referenceAudioFeaturesJson",
+          JSON.stringify(referenceJson),
+        );
+        localStorage.setItem(
+          "inputAudioFeaturesJson",
+          JSON.stringify(inputJson),
+        );
+        console.log("Features saved to localStorage");
+      } catch (e) {
+        console.error("Failed to save to localStorage:", e);
+      }
+    }
+  }, [inputAudioFeatures, referenceAudioFeatures, selectedModel]);
+
   const featureHasModels = ["vocal tone", "pitch mod."].includes(
     selectedAnalysisFeature,
   );
-
 
   const getAudioFileOrBlob = (audioData) => {
     if (!audioData) return null;

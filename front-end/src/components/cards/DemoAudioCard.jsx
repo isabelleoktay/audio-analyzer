@@ -12,28 +12,72 @@ const pulsingRecordStyle = {
 const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
   // Audio source selection
   const [selectedAudioSource, setSelectedAudioSource] = useState("presets");
-  
+
   // Preset selection state
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playingPreset, setPlayingPreset] = useState(null);
-  
+
   // Recording state
   const [isRecordingMode, setIsRecordingMode] = useState(false);
   const [recordingName, setRecordingName] = useState("untitled");
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [recordingPlayback, setRecordingPlayback] = useState(false);
-  
+
   const waveSurferRef = useRef(null);
   const recordRef = useRef(null);
 
   // List of preset audio files with display names
   const presetAudios = [
-    { id: "vocal_tone_control", name: "Vocal Tone Control (Reference 1)", path: "/audio/reference/vocal_tone_control.wav", voiceType: "soprano" },
-    { id: "pitch_mod_control", name: "Pitch Modulation Control (Reference 1)", path: "/audio/reference/pitch_mod_control.wav", voiceType: "soprano" },
-    { id: "vocal_tone_tool", name: "Vocal Tone Control (Reference 2)", path: "/audio/reference/vocal_tone_tool.wav", voiceType: "soprano" },
-    { id: "pitch_mod_tool", name: "Pitch Modulation Control (Reference 2)", path: "/audio/reference/pitch_mod_tool.wav", voiceType: "soprano" },
+    {
+      id: "champions_1",
+      name: "Champions (version 1 - mezzo 1)",
+      path: "/demo_presets/audio/champions_1.wav",
+      voiceType: "mezzo",
+    },
+    {
+      id: "champions_2",
+      name: "Champions (version 2 - mezzo 1)",
+      path: "/demo_presets/audio/champions_2.wav",
+      voiceType: "mezzo",
+    },
+    {
+      id: "hello_1",
+      name: "Hello (version 1 - mezzo 1)",
+      path: "/demo_presets/audio/hello_1.wav",
+      voiceType: "mezzo",
+    },
+    {
+      id: "hello_2",
+      name: "Hello (version 2 - mezzo 1)",
+      path: "/demo_presets/audio/hello_2.wav",
+      voiceType: "mezzo",
+    },
+    {
+      id: "let_it_be_1",
+      name: "Let it be (version 1 - mezzo 1)",
+      path: "/demo_presets/audio/let_it_be_1.wav",
+      voiceType: "mezzo",
+    },
+    {
+      id: "let_it_be_2",
+      name: "Let it be (version 2 - mezzo 1)",
+      path: "/demo_presets/audio/let_it_be_2.wav",
+      voiceType: "mezzo",
+    },
+    {
+      id: "love_you_1",
+      name: "Love you (version 1 - mezzo 1)",
+      path: "/demo_presets/audio/love_you_1.wav",
+      voiceType: "mezzo",
+    },
+    {
+      id: "love_you_2",
+      name: "Love you (version 2 - mezzo 1)",
+      path: "/demo_presets/audio/love_you_2.wav",
+      voiceType: "mezzo",
+    },
   ];
 
   const handleSelectAudioSource = (source) => {
@@ -71,7 +115,11 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
 
   // Initialize WaveSurfer for preview/recording
   useEffect(() => {
-    if (selectedAudioSource === "presets" && playingPreset && !waveSurferRef.current) {
+    if (
+      selectedAudioSource === "presets" &&
+      playingPreset &&
+      !waveSurferRef.current
+    ) {
       const waveSurfer = WaveSurfer.create({
         container: "#demo-waveform",
         waveColor: "rgb(255, 214, 232)",
@@ -180,14 +228,16 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
       const resp = await fetch(preset.path);
       if (!resp.ok) throw new Error("Failed to fetch preset audio");
       const blob = await resp.blob();
-      const ext = preset.path.split('.').pop().split('?')[0] || 'wav';
+      const ext = preset.path.split(".").pop().split("?")[0] || "wav";
       const filename = `${preset.id}.${ext}`;
-      const file = new File([blob], filename, { type: blob.type || 'audio/wav' });
+      const file = new File([blob], filename, {
+        type: blob.type || "audio/wav",
+      });
 
       // Report as an upload so existing analysis helpers accept it
-      onAudioSourceChange?.('upload');
+      onAudioSourceChange?.("upload");
       onAudioDataChange?.({
-        source: 'upload',
+        source: "upload",
         file,
         blob: null,
         url: preset.path,
@@ -195,11 +245,11 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         presetId: preset.id,
       });
     } catch (err) {
-      console.error('Error selecting preset audio:', err);
+      console.error("Error selecting preset audio:", err);
       // Fallback: still notify parent with URL
-      onAudioSourceChange?.('presets');
+      onAudioSourceChange?.("presets");
       onAudioDataChange?.({
-        source: 'presets',
+        source: "presets",
         file: null,
         blob: null,
         url: preset.path,
@@ -356,12 +406,16 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
 
                   {/* Preset name */}
                   <div className="flex-grow">
-                    <div className="text-lightgray font-medium">{preset.name}</div>
+                    <div className="text-lightgray font-medium">
+                      {preset.name}
+                    </div>
                   </div>
 
                   {/* Check mark for selected */}
                   {selectedPreset?.id === preset.id && (
-                    <div className="flex-shrink-0 text-lightpink text-lg">✓</div>
+                    <div className="flex-shrink-0 text-lightpink text-lg">
+                      ✓
+                    </div>
                   )}
                 </div>
               ))}
@@ -411,12 +465,16 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
                         isRecording
                           ? "bg-red-500/30 text-red-400 hover:bg-red-500/40 border border-red-500/50"
                           : audioBlob
-                          ? "bg-lightpink text-blueblack hover:bg-lightpink/80"
-                          : "bg-lightpink/20 text-lightpink hover:bg-lightpink/30 border border-lightpink"
+                            ? "bg-lightpink text-blueblack hover:bg-lightpink/80"
+                            : "bg-lightpink/20 text-lightpink hover:bg-lightpink/30 border border-lightpink"
                       }`}
                       style={isRecording ? pulsingRecordStyle : {}}
                     >
-                      {isRecording ? "● Stop" : audioBlob ? "Re-record" : "● Record"}
+                      {isRecording
+                        ? "● Stop"
+                        : audioBlob
+                          ? "Re-record"
+                          : "● Record"}
                     </button>
                     <button
                       onClick={handleCancelRecord}

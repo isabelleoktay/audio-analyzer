@@ -136,7 +136,7 @@ const MusaDemoAudioSection = ({ onProceed }) => {
       <div className="flex flex-row w-full gap-20 justify-center items-stretch min-h-[400px]">
         <div className="flex flex-col w-full gap-3">
           <DemoAudioCard
-            label="reference audio"
+            label="select or record reference audio"
             onAudioSourceChange={(source) =>
               handleAudioSourceChange(source, "reference")
             }
@@ -161,7 +161,7 @@ const MusaDemoAudioSection = ({ onProceed }) => {
           )}
 
           <DemoAudioCard
-            label="input audio"
+            label="select or record input audio"
             onAudioSourceChange={(source) =>
               handleAudioSourceChange(source, "user")
             }

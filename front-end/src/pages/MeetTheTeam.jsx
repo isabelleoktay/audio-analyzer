@@ -1,5 +1,5 @@
-import SurveyTextAnswer from "../components/survey/SurveyTextAnswer";
-import SecondaryButton from "../components/buttons/SecondaryButton";
+// import SurveyTextAnswer from "../components/survey/SurveyTextAnswer";
+// import SecondaryButton from "../components/buttons/SecondaryButton";
 import TeamMemberCard from "../components/cards/TeamMemberCard";
 
 const MeetTheTeam = () => {

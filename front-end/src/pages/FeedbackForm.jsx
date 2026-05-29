@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import SurveySection from "../components/survey/SurveySection.jsx";
 import { uploadFeedback } from "../utils/api.js";
 import {
-  feedbackForm1Config,
-  feedbackForm2Config,
-  feedbackForm3Config,
+  // feedbackForm1Config,
+  // feedbackForm2Config,
+  // feedbackForm3Config,
   feedbackFormDemoConfig,
 } from "../config/feedbackFormConfig.js";
 
