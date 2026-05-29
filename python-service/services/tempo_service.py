@@ -30,8 +30,8 @@ def process_tempo(audio_bytes, session_id=None, file_key="input"):
 
     monitor.stop()
     stats = monitor.summary(feature_type="tempo")
-    print(f"Tempo inference metrics: {stats}")
-    file_logger.info(f"Tempo inference metrics: {stats}")
+    # print(f"Tempo inference metrics: {stats}")
+    # file_logger.info(f"Tempo inference metrics: {stats}")
 
     result = {
         'data': [

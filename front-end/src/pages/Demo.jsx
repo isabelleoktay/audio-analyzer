@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useEffectEvent } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { uploadMusaVoiceSessionData, cleanupTempFiles } from "../utils/api.js";
 import MusaDemoAudioSection from "../components/sections/MusaDemoAudioSection.jsx";
@@ -35,6 +35,7 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
   const [selectedModel, setSelectedModel] = useState("CLAP");
   const [sessionId, setSessionId] = useState(null);
   const [userToken, setUserToken] = useState(null);
+  const previousFeaturesJsonRef = useRef({ input: "", reference: "" });
 
   useEffect(() => {
     // Always generate a new sessionId when the page/component mounts
@@ -61,6 +62,7 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
     setReferenceAudioData(null);
     setUserAudioSource(null);
     setReferenceAudioSource(null);
+    setSelectedVoiceType(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -70,46 +72,25 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
   };
 
   useEffect(() => {
-    // output referenceAudioFeatures and inputAudioFeatures as json files for presets saving
     if (
       Object.keys(inputAudioFeatures).length > 0 &&
       Object.keys(referenceAudioFeatures).length > 0
     ) {
-      // Create reference features JSON in the correct format
-      const referenceJson = {};
-      Object.keys(referenceAudioFeatures).forEach((feature) => {
-        referenceJson[feature] = {
-          data: {
-            [selectedModel]: [
-              {
-                data: referenceAudioFeatures[feature].data || [],
-                label: "reference",
-              },
-            ],
-          },
-        };
-      });
+      const inputJson = JSON.stringify(inputAudioFeatures);
+      const referenceJson = JSON.stringify(referenceAudioFeatures);
 
-      // Create input features JSON in the correct format
-      const inputJson = {};
-      Object.keys(inputAudioFeatures).forEach((feature) => {
-        inputJson[feature] = {
-          data: {
-            [selectedModel]: [
-              {
-                data: inputAudioFeatures[feature].data || [],
-                label: "input",
-              },
-            ],
-          },
-        };
-      });
+      if (
+        previousFeaturesJsonRef.current.input === inputJson &&
+        previousFeaturesJsonRef.current.reference === referenceJson
+      ) {
+        return;
+      }
 
-      // Log to console for verification
-      console.log("Reference Features JSON:", referenceJson);
-      console.log("Input Features JSON:", inputJson);
+      previousFeaturesJsonRef.current = {
+        input: inputJson,
+        reference: referenceJson,
+      };
 
-      // Optional: Auto-download the files
       const downloadJson = (data, filename) => {
         const jsonString = JSON.stringify(data, null, 2);
         const blob = new Blob([jsonString], { type: "application/json" });
@@ -123,26 +104,21 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
         URL.revokeObjectURL(url);
       };
 
-      // Uncomment to auto-download (may be blocked by browser)
-      // downloadJson(referenceJson, 'reference-features.json');
-      // downloadJson(inputJson, 'input-features.json');
+      downloadJson(referenceAudioFeatures, "reference-features.json");
+      setTimeout(
+        () => downloadJson(inputAudioFeatures, "input-features.json"),
+        300,
+      );
 
-      // Store in localStorage for manual retrieval
       try {
-        localStorage.setItem(
-          "referenceAudioFeaturesJson",
-          JSON.stringify(referenceJson),
-        );
-        localStorage.setItem(
-          "inputAudioFeaturesJson",
-          JSON.stringify(inputJson),
-        );
+        localStorage.setItem("referenceAudioFeaturesJson", referenceJson);
+        localStorage.setItem("inputAudioFeaturesJson", inputJson);
         console.log("Features saved to localStorage");
       } catch (e) {
         console.error("Failed to save to localStorage:", e);
       }
     }
-  }, [inputAudioFeatures, referenceAudioFeatures, selectedModel]);
+  }, [inputAudioFeatures, referenceAudioFeatures]);
 
   const featureHasModels = ["vocal tone", "pitch mod."].includes(
     selectedAnalysisFeature,
@@ -171,7 +147,7 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
           onProceed={({
             userAudioData,
             referenceAudioData,
-            selectedVoiceType,
+            referenceVoiceType,
             selectedTechniques,
             userAudioSource,
             referenceAudioSource,
@@ -182,7 +158,7 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
             setAnalyzeAudio(true);
             setUserAudioData(userAudioData);
             setReferenceAudioData(referenceAudioData);
-            setSelectedVoiceType(selectedVoiceType);
+            setSelectedVoiceType(referenceVoiceType);
             setSelectedTechniques(selectedTechniques);
             setUserAudioSource(userAudioSource);
             setReferenceAudioSource(referenceAudioSource);

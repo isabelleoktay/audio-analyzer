@@ -8,10 +8,12 @@ vocal_tone_blueprint = Blueprint('vocal-tone', __name__)
 def handle_vocal_tone():
     audio_file = request.files.get('audioFile')
 
-    voice_type = request.files.get('voiceType')
+    voice_type = request.form.get('voiceType')
     if voice_type == "tenor" or voice_type == "bass":
+        print(f"VOCALTONE: MALE MODEL SELECTED: {voice_type}")
         gender = "male"
     else:
+        print(f"VOCALTONE: FEMALE MODEL SELECTED: {voice_type}")
         gender = "female"
 
     if not audio_file:

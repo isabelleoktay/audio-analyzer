@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import WaveSurfer from "wavesurfer.js";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
+import { presetAudios } from "../../config/presetAudios.js";
 
 const SCROLLING_WAVEFORM = true;
 const CONTINUOUS_WAVEFORM = false;
@@ -9,16 +10,16 @@ const pulsingRecordStyle = {
   animation: "pulse 2s infinite ease-in-out",
 };
 
-const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
-  // Audio source selection
+const DemoAudioCard = ({
+  label,
+  onAudioSourceChange,
+  onAudioDataChange,
+  filterVoiceCategory = null, // "female" | "male" | null (no filter)
+}) => {
   const [selectedAudioSource, setSelectedAudioSource] = useState("presets");
-
-  // Preset selection state
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playingPreset, setPlayingPreset] = useState(null);
-
-  // Recording state
   const [isRecordingMode, setIsRecordingMode] = useState(false);
   const [recordingName, setRecordingName] = useState("untitled");
   const [isRecording, setIsRecording] = useState(false);
@@ -28,63 +29,43 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
   const waveSurferRef = useRef(null);
   const recordRef = useRef(null);
 
-  // List of preset audio files with display names
-  const presetAudios = [
-    {
-      id: "champions_1",
-      name: "Champions (version 1 - mezzo 1)",
-      path: "/demo_presets/audio/champions_1.wav",
-      voiceType: "mezzo",
-    },
-    {
-      id: "champions_2",
-      name: "Champions (version 2 - mezzo 1)",
-      path: "/demo_presets/audio/champions_2.wav",
-      voiceType: "mezzo",
-    },
-    {
-      id: "hello_1",
-      name: "Hello (version 1 - mezzo 1)",
-      path: "/demo_presets/audio/hello_1.wav",
-      voiceType: "mezzo",
-    },
-    {
-      id: "hello_2",
-      name: "Hello (version 2 - mezzo 1)",
-      path: "/demo_presets/audio/hello_2.wav",
-      voiceType: "mezzo",
-    },
-    {
-      id: "let_it_be_1",
-      name: "Let it be (version 1 - mezzo 1)",
-      path: "/demo_presets/audio/let_it_be_1.wav",
-      voiceType: "mezzo",
-    },
-    {
-      id: "let_it_be_2",
-      name: "Let it be (version 2 - mezzo 1)",
-      path: "/demo_presets/audio/let_it_be_2.wav",
-      voiceType: "mezzo",
-    },
-    {
-      id: "love_you_1",
-      name: "Love you (version 1 - mezzo 1)",
-      path: "/demo_presets/audio/love_you_1.wav",
-      voiceType: "mezzo",
-    },
-    {
-      id: "love_you_2",
-      name: "Love you (version 2 - mezzo 1)",
-      path: "/demo_presets/audio/love_you_2.wav",
-      voiceType: "mezzo",
-    },
-  ];
+  const VOICE_CATEGORY_MAP = {
+    soprano: "female",
+    mezzo: "female",
+    alto: "female",
+    tenor: "male",
+    bass: "male",
+  };
+
+  // Filter presets by voice category if a filter is active
+  const filteredPresets = filterVoiceCategory
+    ? presetAudios.filter(
+        (p) => VOICE_CATEGORY_MAP[p.voiceType] === filterVoiceCategory,
+      )
+    : presetAudios;
+
+  // If selected preset no longer matches filter, clear it
+  useEffect(() => {
+    if (
+      selectedPreset &&
+      filterVoiceCategory &&
+      VOICE_CATEGORY_MAP[selectedPreset.voiceType] !== filterVoiceCategory
+    ) {
+      setSelectedPreset(null);
+      onAudioDataChange?.({
+        source: "presets",
+        file: null,
+        blob: null,
+        url: null,
+        voiceType: null,
+      });
+    }
+  }, [filterVoiceCategory]);
 
   const handleSelectAudioSource = (source) => {
     setSelectedAudioSource(source);
     onAudioSourceChange?.(source);
 
-    // Send the appropriate audio data based on selection
     if (source === "presets" && selectedPreset) {
       onAudioDataChange?.({
         source: "presets",
@@ -93,6 +74,7 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         url: selectedPreset.path,
         name: selectedPreset.name,
         presetId: selectedPreset.id,
+        voiceType: selectedPreset.voiceType,
       });
     } else if (source === "record" && audioBlob) {
       onAudioDataChange?.({
@@ -101,19 +83,19 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         blob: audioBlob,
         url: URL.createObjectURL(audioBlob),
         name: recordingName,
+        voiceType: null,
       });
     } else {
-      // Clear data if switching to a source that doesn't have content
       onAudioDataChange?.({
         source: source,
         file: null,
         blob: null,
         url: null,
+        voiceType: null,
       });
     }
   };
 
-  // Initialize WaveSurfer for preview/recording
   useEffect(() => {
     if (
       selectedAudioSource === "presets" &&
@@ -130,9 +112,7 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
 
       waveSurferRef.current = waveSurfer;
 
-      waveSurfer.on("finish", () => {
-        setIsPlaying(false);
-      });
+      waveSurfer.on("finish", () => setIsPlaying(false));
 
       return () => {
         waveSurfer.destroy();
@@ -141,7 +121,6 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
     }
   }, [playingPreset, selectedAudioSource]);
 
-  // Initialize WaveSurfer for recording
   useEffect(() => {
     if (selectedAudioSource === "record" && isRecordingMode) {
       const waveSurfer = WaveSurfer.create({
@@ -173,7 +152,6 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         setAudioBlob(blob);
         setRecordingPlayback(false);
 
-        // Only send data if record is the selected source
         if (selectedAudioSource === "record") {
           onAudioDataChange?.({
             source: "record",
@@ -181,6 +159,7 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
             blob: blob,
             url: url,
             name: recordingName,
+            voiceType: null,
           });
         }
 
@@ -190,13 +169,9 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         });
       });
 
-      waveSurfer.on("finish", () => {
-        setRecordingPlayback(false);
-      });
+      waveSurfer.on("finish", () => setRecordingPlayback(false));
 
-      return () => {
-        waveSurfer.destroy();
-      };
+      return () => waveSurfer.destroy();
     }
   }, [
     selectedAudioSource,
@@ -218,13 +193,10 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
     return () => document.head.removeChild(style);
   }, []);
 
-  // Preset handlers
   const handleSelectPreset = async (preset) => {
     try {
-      // Optimistically mark selected in UI
       setSelectedPreset(preset);
 
-      // Fetch preset audio and convert to File so it mirrors upload behavior
       const resp = await fetch(preset.path);
       if (!resp.ok) throw new Error("Failed to fetch preset audio");
       const blob = await resp.blob();
@@ -234,7 +206,6 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         type: blob.type || "audio/wav",
       });
 
-      // Report as an upload so existing analysis helpers accept it
       onAudioSourceChange?.("upload");
       onAudioDataChange?.({
         source: "upload",
@@ -243,10 +214,10 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         url: preset.path,
         name: preset.name,
         presetId: preset.id,
+        voiceType: preset.voiceType,
       });
     } catch (err) {
       console.error("Error selecting preset audio:", err);
-      // Fallback: still notify parent with URL
       onAudioSourceChange?.("presets");
       onAudioDataChange?.({
         source: "presets",
@@ -255,6 +226,7 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         url: preset.path,
         name: preset.name,
         presetId: preset.id,
+        voiceType: preset.voiceType,
       });
     }
   };
@@ -262,7 +234,6 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
   const handlePlayPreset = (e, preset) => {
     e.stopPropagation();
 
-    // If different preset, load it
     if (playingPreset?.id !== preset.id) {
       setPlayingPreset(preset);
       if (waveSurferRef.current) {
@@ -273,7 +244,6 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         }, 100);
       }
     } else {
-      // Toggle play/pause for same preset
       if (isPlaying) {
         waveSurferRef.current?.pause();
         setIsPlaying(false);
@@ -284,23 +254,15 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
     }
   };
 
-  // Recording handlers
-  const handleRecordClick = () => {
-    setIsRecordingMode(true);
-  };
-
-  const handleCancelRecord = () => {
-    setIsRecordingMode(false);
-  };
+  const handleRecordClick = () => setIsRecordingMode(true);
+  const handleCancelRecord = () => setIsRecordingMode(false);
 
   const handleRecordButtonClick = async () => {
     if (isRecording) {
       await handleStopRecording();
     } else if (audioBlob) {
       handleResetRecording();
-      setTimeout(() => {
-        handleStartRecording();
-      }, 100);
+      setTimeout(() => handleStartRecording(), 100);
     } else {
       handleStartRecording();
     }
@@ -320,13 +282,13 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
     setAudioBlob(null);
     waveSurferRef.current.empty();
 
-    // Only clear data if record is the selected source
     if (selectedAudioSource === "record") {
       onAudioDataChange?.({
         source: "record",
         file: null,
         blob: null,
         url: null,
+        voiceType: null,
       });
     }
   };
@@ -347,7 +309,6 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
         {label}
       </div>
       <div className="w-full bg-lightgray/15 rounded-3xl p-4 flex flex-col gap-4">
-        {/* Audio Source Selector */}
         <div className="flex gap-2">
           <button
             onClick={() => handleSelectAudioSource("presets")}
@@ -371,10 +332,8 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
           </button>
         </div>
 
-        {/* Presets View */}
         {selectedAudioSource === "presets" ? (
           <>
-            {/* Preview waveform */}
             {playingPreset && (
               <div className="w-full">
                 <div className="text-sm text-lightgray mb-2">
@@ -384,44 +343,50 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
               </div>
             )}
 
-            {/* Preset list */}
+            {/* Filter hint */}
+            {filterVoiceCategory && (
+              <div className="text-xs text-lightpink/70 italic">
+                Showing {filterVoiceCategory} voice presets only
+              </div>
+            )}
+
             <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
-              {presetAudios.map((preset) => (
-                <div
-                  key={preset.id}
-                  onClick={() => handleSelectPreset(preset)}
-                  className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-200 ${
-                    selectedPreset?.id === preset.id
-                      ? "bg-lightpink/30 border border-lightpink"
-                      : "bg-lightgray/10 hover:bg-lightgray/15 border border-transparent"
-                  }`}
-                >
-                  {/* Play button */}
-                  <button
-                    onClick={(e) => handlePlayPreset(e, preset)}
-                    className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-lightpink hover:bg-lightpink/80 transition-colors text-blueblack font-bold"
-                  >
-                    {playingPreset?.id === preset.id && isPlaying ? "⏸" : "▶"}
-                  </button>
-
-                  {/* Preset name */}
-                  <div className="flex-grow">
-                    <div className="text-lightgray font-medium">
-                      {preset.name}
-                    </div>
-                  </div>
-
-                  {/* Check mark for selected */}
-                  {selectedPreset?.id === preset.id && (
-                    <div className="flex-shrink-0 text-lightpink text-lg">
-                      ✓
-                    </div>
-                  )}
+              {filteredPresets.length === 0 ? (
+                <div className="text-sm text-lightgray/50 text-center py-4">
+                  No presets available for this voice category yet
                 </div>
-              ))}
+              ) : (
+                filteredPresets.map((preset) => (
+                  <div
+                    key={preset.id}
+                    onClick={() => handleSelectPreset(preset)}
+                    className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-200 ${
+                      selectedPreset?.id === preset.id
+                        ? "bg-lightpink/30 border border-lightpink"
+                        : "bg-lightgray/10 hover:bg-lightgray/15 border border-transparent"
+                    }`}
+                  >
+                    <button
+                      onClick={(e) => handlePlayPreset(e, preset)}
+                      className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-lightpink hover:bg-lightpink/80 transition-colors text-blueblack font-bold"
+                    >
+                      {playingPreset?.id === preset.id && isPlaying ? "⏸" : "▶"}
+                    </button>
+                    <div className="flex-grow">
+                      <div className="text-lightgray font-medium">
+                        {preset.name}
+                      </div>
+                    </div>
+                    {selectedPreset?.id === preset.id && (
+                      <div className="flex-shrink-0 text-lightpink text-lg">
+                        ✓
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
 
-            {/* Selected indicator */}
             {selectedPreset && (
               <div className="text-sm text-lightpink text-center pt-2 border-t border-lightgray/20">
                 Selected: {selectedPreset.name}
@@ -429,7 +394,6 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
             )}
           </>
         ) : (
-          /* Recording View */
           <>
             {!isRecordingMode ? (
               <div className="w-full h-32 flex flex-col items-center justify-center text-lightgray gap-2">
@@ -443,12 +407,8 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
               </div>
             ) : (
               <>
-                {/* Recording waveform */}
                 <div id="recording-waveform" className="w-full"></div>
-
-                {/* Recording controls */}
                 <div className="flex flex-col gap-3">
-                  {/* Recording name input */}
                   <input
                     type="text"
                     value={recordingName}
@@ -456,8 +416,6 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
                     placeholder="Recording name"
                     className="w-full px-4 py-2 bg-lightgray/10 border border-lightgray/20 rounded-xl text-lightgray placeholder-lightgray/50 focus:outline-none focus:border-lightpink transition-colors"
                   />
-
-                  {/* Action buttons */}
                   <div className="flex gap-2">
                     <button
                       onClick={handleRecordButtonClick}
@@ -483,8 +441,6 @@ const DemoAudioCard = ({ label, onAudioSourceChange, onAudioDataChange }) => {
                       Cancel
                     </button>
                   </div>
-
-                  {/* Playback controls */}
                   {audioBlob && (
                     <div className="flex gap-2">
                       <button

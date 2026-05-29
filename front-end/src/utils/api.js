@@ -122,7 +122,6 @@ const processFeatures = async ({
       formData.append("voiceType", voiceType);
       formData.append("useWhisper", useWhisper);
       formData.append("useCLAP", useCLAP);
-
       const response = await pythonClient.post(
         "/python-service/process-pitch-mod",
         formData,

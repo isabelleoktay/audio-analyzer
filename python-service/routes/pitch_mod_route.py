@@ -8,10 +8,12 @@ pitch_mod_blueprint = Blueprint('pitch-mod', __name__)
 def handle_pitch_mod():
     audio_file = request.files.get('audioFile')
 
-    voice_type = request.files.get('voiceType')
+    voice_type = request.form.get('voiceType')
     if voice_type == "tenor" or voice_type == "bass":
+        print(f"PITCHMOD: MALE MODEL SELECTED: {voice_type}")
         gender = "male"
     else:
+        print(f"PITCHMOD: FEMALE MODEL SELECTED: {voice_type}")
         gender = "female" 
 
     if not audio_file:
