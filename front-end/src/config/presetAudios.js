@@ -1,5 +1,53 @@
 export const presetAudios = [
   {
+    id: "f2_arpeggios_belt_e",
+    name: "f2_arpeggios_belt_e",
+    path: "/demo_presets/audio/f2_arpeggios_belt_e.wav",
+    voiceType: "soprano",
+  },
+  {
+    id: "m3_scales_belt_o",
+    name: "m3_scales_belt_o",
+    path: "/demo_presets/audio/m3_scales_belt_o.wav",
+    voiceType: "tenor",
+  },
+  {
+    id: "f8_scales_breathy_i",
+    name: "f8_scales_breathy_i",
+    path: "/demo_presets/audio/f8_scales_breathy_i.wav",
+    voiceType: "soprano",
+  },
+  {
+    id: "m10_scales_breathy_u",
+    name: "m10_scales_breathy_u",
+    path: "/demo_presets/audio/m10_scales_breathy_u.wav",
+    voiceType: "bass",
+  },
+  {
+    id: "f2_scales_vibrato_a",
+    name: "f2_scales_vibrato_a",
+    path: "/demo_presets/audio/f2_scales_vibrato_a.wav",
+    voiceType: "soprano",
+  },
+  {
+    id: "m10_arpeggios_vibrato_a",
+    name: "m10_arpeggios_vibrato_a",
+    path: "/demo_presets/audio/m10_arpeggios_vibrato_a.wav",
+    voiceType: "bass",
+  },
+  {
+    id: "f8_long_straight_a",
+    name: "f8_long_straight_a",
+    path: "/demo_presets/audio/f8_long_straight_a.wav",
+    voiceType: "soprano",
+  },
+  {
+    id: "m3_long_straight_u",
+    name: "m3_long_straight_u",
+    path: "/demo_presets/audio/m3_long_straight_u.wav",
+    voiceType: "bass",
+  },
+  {
     id: "champions_1",
     name: "Champions (version 1 - mezzo 1)",
     path: "/demo_presets/audio/champions_1.wav",
