@@ -104,8 +104,8 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
         URL.revokeObjectURL(url);
       };
 
-      const refName = referenceAudioData?.file?.name || referenceAudioData?.name || "Input Audio"
-      const inputName = userAudioData?.file?.name || userAudioData?.name || "Input Audio"
+      // const refName = referenceAudioData?.file?.name || referenceAudioData?.name || "Input Audio"
+      // const inputName = userAudioData?.file?.name || userAudioData?.name || "Input Audio"
 
       // downloadJson(referenceAudioFeatures, `${refName}.json`);
       // setTimeout(
@@ -135,6 +135,8 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
     }
     return null;
   };
+
+  const getPresetAudioFeatures = () => {};
 
   const userFileOrBlob = getAudioFileOrBlob(userAudioData);
   const referenceFileOrBlob = getAudioFileOrBlob(referenceAudioData);
@@ -186,7 +188,13 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
           {selectedAnalysisFeature && (
             <div className="flex flex-col w-full lg:w-fit pt-6 space-y-1">
               <div className="text-xl font-semibold text-lightpink">
-              {referenceAudioData?.file?.name || referenceAudioData?.name || "Reference Audio"} VS {userAudioData?.file?.name || userAudioData?.name || "Input Audio"}
+                {referenceAudioData?.file?.name ||
+                  referenceAudioData?.name ||
+                  "Reference Audio"}{" "}
+                VS{" "}
+                {userAudioData?.file?.name ||
+                  userAudioData?.name ||
+                  "Input Audio"}
               </div>
 
               <div className="bg-lightgray/25 rounded-3xl w-full p-4 lg:p-8">
@@ -199,10 +207,14 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
                       referenceAudioFeatures[selectedAnalysisFeature]?.audioUrl
                     }
                     inputAudioName={
-                      userAudioData?.file?.name || userAudioData?.name || "Input Audio"
+                      userAudioData?.file?.name ||
+                      userAudioData?.name ||
+                      "Input Audio"
                     }
                     referenceAudioName={
-                      referenceAudioData?.file?.name || referenceAudioData?.name || "Reference Audio"
+                      referenceAudioData?.file?.name ||
+                      referenceAudioData?.name ||
+                      "Reference Audio"
                     }
                     inputFeatureData={
                       inputAudioFeatures[selectedAnalysisFeature]?.data || []
