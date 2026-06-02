@@ -70,33 +70,59 @@ const AnalysisButtons = ({
           `[processFeatures] Received response for "${featureLabel}". Duration: ${duration} ms`,
         );
       }
+      // If response missing or malformed, treat as invalid and store that state
       if (!featureResult || !featureResult.data) {
         console.error(
           `[processFeatures] Invalid response for "${featureLabel}":`,
           featureResult,
         );
-        return null;
+        const featureData = {
+          data: "invalid",
+          sampleRate: featureResult?.sample_rate || 0,
+          audioUrl: featureResult?.audio_url || "",
+          duration: featureResult?.duration || 0,
+        };
+        setFeatures((prev) => ({
+          ...prev,
+          [featureLabel]: featureData,
+        }));
+        return featureData;
       }
 
       let isDataInvalid = false;
+
+      // Helper to check whether an array response contains any finite numeric value
+      const containsValidNumbers = (arr) => {
+        if (!Array.isArray(arr) || arr.length === 0) return false;
+        // If it's an array of numbers
+        if (typeof arr[0] === "number") {
+          return arr.some((v) => Number.isFinite(v));
+        }
+        // If it's an array of feature objects with a `.data` array
+        if (typeof arr[0] === "object" && Array.isArray(arr[0].data)) {
+          return arr.some((obj) =>
+            Array.isArray(obj.data) && obj.data.some((v) => Number.isFinite(v)),
+          );
+        }
+        return false;
+      };
 
       const featureHasModels = ["vocal tone", "pitch mod."].includes(
         featureLabel,
       );
 
       if (!featureHasModels) {
-        // Simple features: expect data to be an array
-        isDataInvalid = !Array.isArray(featureResult.data);
+        // Simple features: expect array-like response containing numeric values
+        isDataInvalid = !containsValidNumbers(featureResult.data);
       } else {
-        // For features with models (CLAP/Whisper), at least one model should have data
+        // For features with models (CLAP/Whisper), at least one model should have valid numbers
         const clapData = featureResult.data["CLAP"];
         const whisperData = featureResult.data["Whisper"];
 
-        const hasClapData = Array.isArray(clapData) && clapData.length > 0;
-        const hasWhisperData =
-          Array.isArray(whisperData) && whisperData.length > 0;
+        const hasClapData = containsValidNumbers(clapData);
+        const hasWhisperData = containsValidNumbers(whisperData);
 
-        // Data is invalid only if BOTH models are missing or empty
+        // Data is invalid only if BOTH models are missing valid numbers
         isDataInvalid = !hasClapData && !hasWhisperData;
       }
 

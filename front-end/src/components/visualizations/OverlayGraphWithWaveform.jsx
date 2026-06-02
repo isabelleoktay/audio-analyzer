@@ -11,6 +11,8 @@ const graphHeight = 400;
 const OverlayGraphWithWaveform = ({
   inputAudioURL,
   referenceAudioURL, // optional: reference performance feature data
+  inputAudioName,
+  referenceAudioName,
   inputFeatureData, // input audio feature data
   referenceFeatureData, // optional: reference performance feature data
   selectedAnalysisFeature,
@@ -205,7 +207,7 @@ const OverlayGraphWithWaveform = ({
     referenceFeature.data.length > 0
   );
 
-  const hasReferenceFile = Boolean(referenceAudioURL);
+  const hasReferenceFile = Boolean(referenceFeatureData);
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
@@ -216,7 +218,7 @@ const OverlayGraphWithWaveform = ({
             referenceFeature ? (
               <div>
                 <ul className="text-sm pb-2 pt-2">
-                  <li className="font-bold text-darkgray">reference audio</li>
+                  <li className="font-bold text-darkgray">reference audio: {referenceAudioName}</li>
                 </ul>
                 <WaveformPlayer
                   feature={referenceFeature?.label}
@@ -264,16 +266,16 @@ const OverlayGraphWithWaveform = ({
 
       {!selectedAnalysisFeature ? (
         <div>Select an analysis feature above to start analyzing audio.</div>
+      ) : inputFeatureData === "invalid" ? (
+        <div className="text-lightpink text-xl font-semibold">
+          Not able to compute feature for provided input file.
+        </div>
       ) : (typeof inputFeatureData === "object" &&
         !Array.isArray(inputFeatureData)
           ? Object.keys(inputFeatureData).length === 0
           : displayedInputFeatureData.length === 0) &&
         selectedAnalysisFeature ? (
         <LoadingSpinner />
-      ) : inputFeatureData === "invalid" ? (
-        <div className="text-lightpink text-xl font-semibold">
-          Not able to compute feature for provided input file.
-        </div>
       ) : (
         inputFeature && (
           <>
@@ -375,7 +377,7 @@ const OverlayGraphWithWaveform = ({
               {/* Input Audio Waveform player below */}
               <div>
                 <ul className="text-sm pb-2 pt-2">
-                  <li className="font-bold text-darkpink">performance audio</li>
+                  <li className="font-bold text-darkpink">performance audio: {inputAudioName}</li>
                 </ul>
                 <WaveformPlayer
                   feature={inputFeature.label}
