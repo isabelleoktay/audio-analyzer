@@ -4194,5 +4194,11 @@
     "sampleRate": 16000,
     "audioUrl": "http://localhost:8080/python-service/audio/f47d7b1d3ce9f5236e85b04c5c0c426f9761f941084872a3b5f401bcfbf1309e_16000Hz.wav",
     "duration": 12.3839375
+  },
+  "tempo": {
+    "data": "invalid",
+    "sampleRate": 0,
+    "audioUrl": "",
+    "duration": 0
   }
 }

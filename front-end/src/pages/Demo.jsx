@@ -104,9 +104,12 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
         URL.revokeObjectURL(url);
       };
 
-      // downloadJson(referenceAudioFeatures, "reference-features.json");
+      const refName = referenceAudioData?.file?.name || referenceAudioData?.name || "Input Audio"
+      const inputName = userAudioData?.file?.name || userAudioData?.name || "Input Audio"
+
+      // downloadJson(referenceAudioFeatures, `${refName}.json`);
       // setTimeout(
-      //   () => downloadJson(inputAudioFeatures, "input-features.json"),
+      //   () => downloadJson(inputAudioFeatures,  `${inputName}.json`),
       //   300,
       // );
 
