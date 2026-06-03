@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef, useEffectEvent } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { uploadMusaVoiceSessionData, cleanupTempFiles } from "../utils/api.js";
-import { fetchPresetFeatures } from "../utils/presetFeaturesUtils.js";
+import {
+  fetchPresetFeatures,
+  getPresetAudioPath,
+  isPresetAudio,
+} from "../utils/presetFeaturesUtils.js";
 import MusaDemoAudioSection from "../components/sections/MusaDemoAudioSection.jsx";
 import { AnalysisButtons, SecondaryButton } from "../components/buttons";
 import OverlayGraphWithWaveform from "../components/visualizations/OverlayGraphWithWaveform.jsx";
@@ -150,14 +154,17 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
     if (userAudioData?.presetId) {
       const presetFeatures = await fetchPresetFeatures(userAudioData.presetId);
       if (presetFeatures) {
+        // Get the correct local preset audio path as fallback
+        const presetAudioPath = getPresetAudioPath(userAudioData.presetId);
+
         // Preset JSON already has the correct structure matching the API response format
         for (const [featureLabel, featureData] of Object.entries(
           presetFeatures,
         )) {
-          // Use the correct audio URL from the preset audio data
+          // Use the local preset audio path, falling back to the URL from preset features if needed
           inputFeatures[featureLabel] = {
             ...featureData,
-            audioUrl: userAudioData.url || featureData.audioUrl,
+            audioUrl: presetAudioPath || featureData.audioUrl,
           };
         }
         console.log(
@@ -172,14 +179,17 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
         referenceAudioData.presetId,
       );
       if (presetFeatures) {
+        // Get the correct local preset audio path as fallback
+        const presetAudioPath = getPresetAudioPath(referenceAudioData.presetId);
+
         // Preset JSON already has the correct structure matching the API response format
         for (const [featureLabel, featureData] of Object.entries(
           presetFeatures,
         )) {
-          // Use the correct audio URL from the preset audio data
+          // Use the local preset audio path, falling back to the URL from preset features if needed
           referenceFeatures[featureLabel] = {
             ...featureData,
-            audioUrl: referenceAudioData.url || featureData.audioUrl,
+            audioUrl: presetAudioPath || featureData.audioUrl,
           };
         }
         console.log(
@@ -193,9 +203,6 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
 
   const userFileOrBlob = getAudioFileOrBlob(userAudioData);
   const referenceFileOrBlob = getAudioFileOrBlob(referenceAudioData);
-
-  console.log("referenceAudioFeatures:", referenceAudioFeatures);
-  console.log("inputAudioFeatures:", inputAudioFeatures);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
@@ -248,7 +255,9 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
             setReferenceAudioFeatures={setReferenceAudioFeatures}
             inputAudioUuid={inputAudioUuid}
             setInputAudioUuid={setInputAudioUuid}
-            uploadsEnabled={uploadsEnabled}
+            uploadsEnabled={
+              isPresetAudio(userAudioData) ? false : uploadsEnabled
+            }
             voiceType={selectedVoiceType}
             musaVoiceSessionId={sessionId}
             monitorResources={false}

@@ -5,6 +5,26 @@
 import { presetAudios } from "../config/presetAudios.js";
 
 /**
+ * Checks if audio data is a preset audio
+ * @param {Object} audioData - The audio data object
+ * @returns {boolean} True if the audio is a preset, false otherwise
+ */
+export const isPresetAudio = (audioData) => {
+  return audioData?.presetId ? true : false;
+};
+
+/**
+ * Gets the audio path for a preset audio by presetId
+ * @param {string} presetId - The preset ID
+ * @returns {string|null} The path to the preset audio file, or null if not found
+ */
+export const getPresetAudioPath = (presetId) => {
+  if (!presetId) return null;
+  const preset = presetAudios.find((p) => p.id === presetId);
+  return preset?.path || null;
+};
+
+/**
  * Gets the audioFeaturesPath for a preset audio by presetId
  * @param {string} presetId - The preset ID
  * @returns {string|null} The path to precalculated features, or null if not found
