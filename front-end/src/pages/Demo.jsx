@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useEffectEvent } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { uploadMusaVoiceSessionData, cleanupTempFiles } from "../utils/api.js";
+import { fetchPresetFeatures } from "../utils/presetFeaturesUtils.js";
 import MusaDemoAudioSection from "../components/sections/MusaDemoAudioSection.jsx";
 import { AnalysisButtons, SecondaryButton } from "../components/buttons";
 import OverlayGraphWithWaveform from "../components/visualizations/OverlayGraphWithWaveform.jsx";
@@ -136,16 +137,71 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
     return null;
   };
 
-  const getPresetAudioFeatures = () => {};
+  /**
+   * Fetches precalculated features for preset audios and pre-populates feature state
+   * If a preset has an audioFeaturesPath defined, loads the precalculated features
+   * instead of requiring model inference. Falls back gracefully if not available.
+   */
+  const getPresetAudioFeatures = async (userAudioData, referenceAudioData) => {
+    const inputFeatures = {};
+    const referenceFeatures = {};
+
+    // Fetch precalculated features for input audio if it's a preset
+    if (userAudioData?.presetId) {
+      const presetFeatures = await fetchPresetFeatures(userAudioData.presetId);
+      if (presetFeatures) {
+        // Preset JSON already has the correct structure matching the API response format
+        for (const [featureLabel, featureData] of Object.entries(
+          presetFeatures,
+        )) {
+          // Use the correct audio URL from the preset audio data
+          inputFeatures[featureLabel] = {
+            ...featureData,
+            audioUrl: userAudioData.url || featureData.audioUrl,
+          };
+        }
+        console.log(
+          `[Demo] Loaded precalculated features for input preset: ${userAudioData.name}`,
+        );
+      }
+    }
+
+    // Fetch precalculated features for reference audio if it's a preset
+    if (referenceAudioData?.presetId) {
+      const presetFeatures = await fetchPresetFeatures(
+        referenceAudioData.presetId,
+      );
+      if (presetFeatures) {
+        // Preset JSON already has the correct structure matching the API response format
+        for (const [featureLabel, featureData] of Object.entries(
+          presetFeatures,
+        )) {
+          // Use the correct audio URL from the preset audio data
+          referenceFeatures[featureLabel] = {
+            ...featureData,
+            audioUrl: referenceAudioData.url || featureData.audioUrl,
+          };
+        }
+        console.log(
+          `[Demo] Loaded precalculated features for reference preset: ${referenceAudioData.name}`,
+        );
+      }
+    }
+
+    return { inputFeatures, referenceFeatures };
+  };
 
   const userFileOrBlob = getAudioFileOrBlob(userAudioData);
   const referenceFileOrBlob = getAudioFileOrBlob(referenceAudioData);
+
+  console.log("referenceAudioFeatures:", referenceAudioFeatures);
+  console.log("inputAudioFeatures:", inputAudioFeatures);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
       {showUploadAudio ? (
         <MusaDemoAudioSection
-          onProceed={({
+          onProceed={async ({
             userAudioData,
             referenceAudioData,
             referenceVoiceType,
@@ -156,13 +212,26 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
             // Your logic to proceed to analysis
             cleanupTempFiles(true);
             setShowUploadAudio(false);
-            setAnalyzeAudio(true);
             setUserAudioData(userAudioData);
             setReferenceAudioData(referenceAudioData);
             setSelectedVoiceType(referenceVoiceType);
             setSelectedTechniques(selectedTechniques);
             setUserAudioSource(userAudioSource);
             setReferenceAudioSource(referenceAudioSource);
+
+            // Attempt to load precalculated features for presets
+            const { inputFeatures, referenceFeatures } =
+              await getPresetAudioFeatures(userAudioData, referenceAudioData);
+
+            // Pre-populate feature state if precalculated features are available
+            if (Object.keys(inputFeatures).length > 0) {
+              setInputAudioFeatures(inputFeatures);
+            }
+            if (Object.keys(referenceFeatures).length > 0) {
+              setReferenceAudioFeatures(referenceFeatures);
+            }
+
+            setAnalyzeAudio(true);
           }}
         />
       ) : analyzeAudio && userFileOrBlob && referenceFileOrBlob ? (

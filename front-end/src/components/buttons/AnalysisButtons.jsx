@@ -35,6 +35,7 @@ const AnalysisButtons = ({
   if (!analysisButtonConfig[selectedInstrument]) return null;
 
   // Helper function to process features for a given file
+  // Helper function to process features for a given file
   const fetchAndSetFeatures = async (
     file,
     featureLabel,
@@ -100,8 +101,10 @@ const AnalysisButtons = ({
         }
         // If it's an array of feature objects with a `.data` array
         if (typeof arr[0] === "object" && Array.isArray(arr[0].data)) {
-          return arr.some((obj) =>
-            Array.isArray(obj.data) && obj.data.some((v) => Number.isFinite(v)),
+          return arr.some(
+            (obj) =>
+              Array.isArray(obj.data) &&
+              obj.data.some((v) => Number.isFinite(v)),
           );
         }
         return false;

@@ -58,7 +58,7 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
       setShowSurvey(false);
       setShowUploadAudio(true);
     }
-      
+
     if (uploadsEnabled) {
       setShowSurvey(true);
       setShowUploadAudio(false);

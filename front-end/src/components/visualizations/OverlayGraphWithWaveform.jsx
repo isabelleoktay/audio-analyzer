@@ -209,6 +209,12 @@ const OverlayGraphWithWaveform = ({
 
   const hasReferenceFile = Boolean(referenceFeatureData);
 
+  console.log("inputFeatureData: ", inputFeatureData)
+  console.log("referenceFeatureData: ", referenceFeatureData)
+
+  console.log("inputAudioURL: ", inputAudioURL)
+  console.log("referenceAudioURL: ", referenceAudioURL)
+
   return (
     <div className="flex flex-col items-center justify-center w-full">
       {/* Reference Waveform player above */}
