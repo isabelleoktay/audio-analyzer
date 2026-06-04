@@ -45,7 +45,7 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
   useEffect(() => {
     // Always generate a new sessionId when the page/component mounts
     const newSessionId = uuidv4();
-    sessionStorage.setItem("musaVoiceSessionId", newSessionId);
+    sessionStorage.setItem("ICMEdemoSessionId", newSessionId);
     setSessionId(newSessionId);
 
     // Get user token from localStorage
@@ -259,7 +259,6 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
               isPresetAudio(userAudioData) ? false : uploadsEnabled
             }
             voiceType={selectedVoiceType}
-            musaVoiceSessionId={sessionId}
             monitorResources={false}
           />
 

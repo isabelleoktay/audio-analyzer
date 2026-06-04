@@ -1,7 +1,36 @@
+import { useState } from "react";
 import SurveyTextAnswer from "../components/survey/SurveyTextAnswer";
 import SecondaryButton from "../components/buttons/SecondaryButton";
+import { uploadEmail } from "../utils/api.js";
 
 const LandingPage = () => {
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [email, setEmail] = useState("");
+
+  const handleSubmitEmail = async (emailText) => {
+    if (!emailText || !emailText.trim()) {
+      setSubmitError("Please enter a valid email address");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await uploadEmail(emailText.trim());
+      setEmail("");
+      setSubmitError(null);
+      setSubmitSuccess(true);
+      setTimeout(() => setSubmitSuccess(false), 3000);
+    } catch (error) {
+      console.error("Error submitting email:", error);
+      setSubmitError("Failed to submit email. Please try again.");
+      setSubmitSuccess(false);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen justify-center pt-20 flex flex-col">
       <div className="w-full flex justify-center">
@@ -37,7 +66,7 @@ const LandingPage = () => {
           <div className="flex-1 flex items-center justify-center p-10">
             <div className="w-full">
               <video className="w-full rounded-lg" controls>
-                <source src="video/MuSA demo.mp4" type="video/mp4" />
+                <source src="videos/MuSA_welcome.mp4" type="video/mp4" />
               </video>
             </div>
           </div>
@@ -72,10 +101,10 @@ const LandingPage = () => {
                 MuSA is a technology-enhanced learning (TEL) tool designed to
                 improve music practice by addressing a critical, often-neglected
                 component of skill develop- ment: the reflection phase. MuSA is
-                a pedagogically- grounded platform for analyzing recorded
+                a pedagogically-grounded platform for analyzing recorded
                 performances to make reflection more efficient and effective.
-                MuSA’s design is informed by key educational theories, in-
-                cluding the Talent-Development-in-Achievement-Domains (TAD)
+                MuSA’s design is informed by key educational theories, including 
+                the Talent-Development-in-Achievement-Domains (TAD)
                 Music Model and learner-centered teaching (LCT) principles like
                 scaffolding, self-regulated learning (SRL), and self-directed
                 learning (SDL).
@@ -91,7 +120,7 @@ const LandingPage = () => {
               </p>
               <p className="text-lg text-lightgray">
                 Unlike tools that offer prescriptive, "correct/incorrect"
-                feedback, MuSA encourages a learner’s own inter- pretation. As
+                feedback, MuSA encourages a learner’s own interpretation. As
                 an accessible, web-based platform, it allows users to upload or
                 record audio for analysis, supporting reflective learning in
                 between in-person music learning classes and independent
@@ -160,17 +189,35 @@ const LandingPage = () => {
         <div className="w-full">
           <SurveyTextAnswer
             question="We are constantly evolving and looking for input. You can provide your email if you are interested in receiving updates and e.g. participating in user studies of future versions of MuSA voice:"
-            placeholder=""
+            value={email}
+            onChange={setEmail}
           />
         </div>
+
+        {submitError && (
+          <div className="w-full flex justify-end mt-4">
+            <div className="text-red-400 text-sm bg-red-500/20 px-4 py-2 rounded-lg">
+              {submitError}
+            </div>
+          </div>
+        )}
+
+        {submitSuccess && (
+          <div className="w-full flex justify-end mt-4">
+            <div className="text-green-400 text-sm bg-green-500/20 px-4 py-2 rounded-lg">
+              Thank you! We'll be in touch soon.
+            </div>
+          </div>
+        )}
 
         <div className="w-full flex justify-end mt-6">
           <SecondaryButton
             onClick={() => {
-              // need to add email submit handling -- remove written text and send to a MongoDB database just for interested peoples emails
+              handleSubmitEmail(email);
             }}
+            disabled={isSubmitting || !email.trim()}
           >
-            submit email
+            {isSubmitting ? "submitting..." : "submit email"}
           </SecondaryButton>
         </div>
       </div>

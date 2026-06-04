@@ -150,6 +150,7 @@ const MusaDemoAudioSection = ({ onProceed }) => {
               handleAudioDataChange(data, "reference")
             }
             filterVoiceCategory={null}
+            disableRecording={true}
           />
 
           {/* Voice type selector for reference recording */}

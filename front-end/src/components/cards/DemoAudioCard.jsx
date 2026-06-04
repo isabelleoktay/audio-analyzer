@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import WaveSurfer from "wavesurfer.js";
 import RecordPlugin from "wavesurfer.js/dist/plugins/record.esm.js";
 import { presetAudios } from "../../config/presetAudios.js";
+import HighlightedText from "../text/HighlightedText.jsx";
 
 const SCROLLING_WAVEFORM = true;
 const CONTINUOUS_WAVEFORM = false;
@@ -15,6 +16,7 @@ const DemoAudioCard = ({
   onAudioSourceChange,
   onAudioDataChange,
   filterVoiceCategory = null, // "female" | "male" | null (no filter)
+  disableRecording = false,
 }) => {
   const [selectedAudioSource, setSelectedAudioSource] = useState("presets");
   const [selectedPreset, setSelectedPreset] = useState(null);
@@ -26,7 +28,8 @@ const DemoAudioCard = ({
   const [audioBlob, setAudioBlob] = useState(null);
   const [recordingPlayback, setRecordingPlayback] = useState(false);
 
-  const waveSurferRef = useRef(null);
+  const demoWaveSurferRef = useRef(null);
+  const recordingWaveSurferRef = useRef(null);
   const recordRef = useRef(null);
 
   const VOICE_CATEGORY_MAP = {
@@ -96,31 +99,7 @@ const DemoAudioCard = ({
     }
   };
 
-  useEffect(() => {
-    if (
-      selectedAudioSource === "presets" &&
-      playingPreset &&
-      !waveSurferRef.current
-    ) {
-      const waveSurfer = WaveSurfer.create({
-        container: "#demo-waveform",
-        waveColor: "rgb(255, 214, 232)",
-        progressColor: "rgb(255, 137, 187)",
-        interact: true,
-        height: 60,
-      });
-
-      waveSurferRef.current = waveSurfer;
-
-      waveSurfer.on("finish", () => setIsPlaying(false));
-
-      return () => {
-        waveSurfer.destroy();
-        waveSurferRef.current = null;
-      };
-    }
-  }, [playingPreset, selectedAudioSource]);
-
+  // For recording mode
   useEffect(() => {
     if (selectedAudioSource === "record" && isRecordingMode) {
       const waveSurfer = WaveSurfer.create({
@@ -137,7 +116,7 @@ const DemoAudioCard = ({
         continuousWaveform: CONTINUOUS_WAVEFORM,
       });
 
-      waveSurferRef.current = waveSurfer;
+      recordingWaveSurferRef.current = waveSurfer;
       recordRef.current = waveSurfer.registerPlugin(recordPlugin);
 
       if (audioBlob) {
@@ -171,7 +150,12 @@ const DemoAudioCard = ({
 
       waveSurfer.on("finish", () => setRecordingPlayback(false));
 
-      return () => waveSurfer.destroy();
+      return () => {
+        if (recordingWaveSurferRef.current) {
+          recordingWaveSurferRef.current.destroy();
+          recordingWaveSurferRef.current = null;
+        }
+      };
     }
   }, [
     selectedAudioSource,
@@ -231,24 +215,52 @@ const DemoAudioCard = ({
     }
   };
 
-  const handlePlayPreset = (e, preset) => {
+  const handlePlayPreset = async (e, preset) => {
     e.stopPropagation();
 
+    // Initialize waveSurfer if it doesn't exist yet
+    if (!demoWaveSurferRef.current) {
+      // First, set the preset so the DOM container appears
+      setPlayingPreset(preset);
+
+      // Wait for the DOM to render the container
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Now create the waveSurfer
+      const waveSurfer = WaveSurfer.create({
+        container: "#demo-waveform",
+        waveColor: "rgb(255, 214, 232)",
+        progressColor: "rgb(255, 137, 187)",
+        interact: true,
+        height: 60,
+      });
+
+      demoWaveSurferRef.current = waveSurfer;
+
+      waveSurfer.on("finish", () => {
+        setIsPlaying(false);
+      });
+
+      // Load and play the audio
+      await waveSurfer.load(preset.path);
+      waveSurfer.play();
+      setIsPlaying(true);
+      return;
+    }
+
+    // If waveSurfer already exists, just toggle or load new preset
     if (playingPreset?.id !== preset.id) {
       setPlayingPreset(preset);
-      if (waveSurferRef.current) {
-        waveSurferRef.current.load(preset.path);
-        setTimeout(() => {
-          waveSurferRef.current?.play();
-          setIsPlaying(true);
-        }, 100);
-      }
+      await demoWaveSurferRef.current.load(preset.path);
+      demoWaveSurferRef.current.play();
+      setIsPlaying(true);
     } else {
+      // Toggle play/pause for the same preset
       if (isPlaying) {
-        waveSurferRef.current?.pause();
+        demoWaveSurferRef.current.pause();
         setIsPlaying(false);
       } else {
-        waveSurferRef.current?.play();
+        demoWaveSurferRef.current.play();
         setIsPlaying(true);
       }
     }
@@ -280,7 +292,7 @@ const DemoAudioCard = ({
 
   const handleResetRecording = () => {
     setAudioBlob(null);
-    waveSurferRef.current.empty();
+    recordingWaveSurferRef.current?.empty();
 
     if (selectedAudioSource === "record") {
       onAudioDataChange?.({
@@ -295,13 +307,17 @@ const DemoAudioCard = ({
 
   const handlePlayPauseRecording = () => {
     if (recordingPlayback) {
-      waveSurferRef.current.pause();
+      recordingWaveSurferRef.current?.pause();
       setRecordingPlayback(false);
     } else {
-      waveSurferRef.current.play();
+      recordingWaveSurferRef.current?.play();
       setRecordingPlayback(true);
     }
   };
+
+  // Check if the playing preset has highlight data
+  const hasHighlightData =
+    playingPreset && playingPreset.phrase && playingPreset.highlightedText;
 
   return (
     <div className="w-full flex flex-col gap-1">
@@ -320,25 +336,52 @@ const DemoAudioCard = ({
           >
             Presets
           </button>
-          <button
-            onClick={() => handleSelectAudioSource("record")}
-            className={`flex-1 py-2 px-4 rounded-xl font-medium transition-all duration-200 ${
-              selectedAudioSource === "record"
-                ? "bg-lightpink text-blueblack"
-                : "bg-lightgray/10 text-lightgray hover:bg-lightgray/15"
-            }`}
-          >
-            Record
-          </button>
+          {!disableRecording && (
+            <button
+              onClick={() => handleSelectAudioSource("record")}
+              className={`flex-1 py-2 px-4 rounded-xl font-medium transition-all duration-200 ${
+                selectedAudioSource === "record"
+                  ? "bg-lightpink text-blueblack"
+                  : "bg-lightgray/10 text-lightgray hover:bg-lightgray/15"
+              }`}
+            >
+              Record
+            </button>
+          )}
         </div>
 
         {selectedAudioSource === "presets" ? (
           <>
             {playingPreset && (
-              <div className="w-full">
-                <div className="text-sm text-lightgray mb-2">
+              <div className="w-full flex flex-col gap-3">
+                <div className="text-sm text-lightgray">
                   Now playing: {playingPreset.name}
                 </div>
+
+                {/* Highlighted Text Section - Only show if preset has highlight data */}
+                {hasHighlightData && (
+                  <div className="w-full bg-lightgray/10 rounded-xl p-4 text-center">
+                    <HighlightedText
+                      text={playingPreset.phrase}
+                      highlightWords={playingPreset.highlightedText}
+                      highlightClass={playingPreset.highlightClass}
+                      defaultClass={playingPreset.defaultClass}
+                      highlightLabel={
+                        playingPreset.highlightLabel || "Technique"
+                      }
+                      highlightLabelColor={
+                        playingPreset.highlightLabelColor || "text-darkpink"
+                      }
+                      defaultLabel={playingPreset.defaultLabel || "Text"}
+                      defaultLabelColor={
+                        playingPreset.defaultLabelColor || "text-lightgray"
+                      }
+                      className="text-sm"
+                    />
+                  </div>
+                )}
+
+                {/* Waveform */}
                 <div id="demo-waveform" className="w-full"></div>
               </div>
             )}
