@@ -240,4 +240,10 @@ export const feedbackFormDemoConfig = [
       "If you could imagine any future technology or tool to enhance music practice, what might it look like? (e.g., AI-driven performance analytics, wearable devices for real-time feedback, interactive practice journals, etc.)?",
     required: false,
   },
+  {
+    type: "textAnswer",
+    question:
+      "We are constantly evolving and looking for input. You can provide your email if you are interested in receiving updates and e.g. participating in user studies of future versions of MuSA voice:",
+    required: false,
+  },
 ];
