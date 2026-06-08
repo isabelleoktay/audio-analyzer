@@ -58,6 +58,14 @@ Ensure you have the following software installed on your machine. The specified 
 - **Python:** 3.10 or higher
 - **MongoDB:** 6.x or higher
 
+You should have redis installed and running in your machine to run localhost.
+
+You need to have installed ffmpeg into your environment installed to run the backend.
+
+```bash
+conda install -c conda-forge ffmpeg
+```
+
 You can check your versions with the following commands:
 
 ```bash

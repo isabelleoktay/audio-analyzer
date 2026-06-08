@@ -48,10 +48,22 @@ const MusaVoice = ({ uploadsEnabled, setUploadsEnabled, tooltipMode }) => {
   //     return () => clearTimeout(timer);
   //   }, []);
 
+  // useEffect(() => {
+  //   // disable enabling uploads from main application
+  //   setUploadsEnabled(false);
+  // }, [setUploadsEnabled]);
+
   useEffect(() => {
-    // disable enabling uploads from main application
-    setUploadsEnabled(false);
-  }, [setUploadsEnabled]);
+    if (!uploadsEnabled) {
+      setShowSurvey(false);
+      setShowUploadAudio(true);
+    }
+
+    if (uploadsEnabled) {
+      setShowSurvey(true);
+      setShowUploadAudio(false);
+    }
+  }, [uploadsEnabled]);
 
   useEffect(() => {
     // Always generate a new sessionId when the page/component mounts

@@ -158,3 +158,92 @@ export const feedbackForm3Config = [
     required: false,
   },
 ];
+
+export const feedbackFormDemoConfig = [
+  {
+    type: "singleselect",
+    question: "Please describe your musical experience level",
+    options: [
+      "No background",
+      "Beginner",
+      "Intermediate",
+      "Advanced",
+      "Professional",
+    ],
+    required: true,
+  },
+  {
+    type: "multiselect",
+    question: "What genres/styles do you typically play?",
+    options: [
+      "Pop",
+      "Rock",
+      "Classical",
+      "Jazz",
+      "Folk",
+      "Country",
+      "I don't play",
+    ],
+    required: true,
+  },
+  {
+    type: "multiselect",
+    question: "What instruments do you play?",
+    options: [
+      "Guitar",
+      "Piano",
+      "Voice",
+      "Violin/viola/cello",
+      "Flute/sax/trumpet/clarinet",
+      "Bass",
+      "Drums/percussion",
+      "I don't play",
+    ],
+    required: true,
+  },
+  {
+    type: "multiselect",
+    question: "How do you typically practice?",
+    options: [
+      "In person vocal coaching lessons",
+      "Group singing e.g. choir, quartet",
+      "Independent practice e.g. home",
+      "With a band(s)",
+      "Recording videos/audio of myself",
+      "I don't play",
+    ],
+    required: true,
+  },
+  {
+    type: "singleselect",
+    question:
+      "Have you used automatic vocal analysis or visualiser tools before?",
+    options: ["Yes", "No", "I'm not sure"],
+    required: true,
+  },
+
+  {
+    type: "statementRating",
+    question: "To what extent do you agree with the following statements?",
+    statements: [
+      "I learned new things about the voice when exploring this tool.",
+      "The visual feedback helped me identify what was happening in the recordings.",
+      "I would use a tool like to learn, support my practice, or recommend would it to others who practice.",
+      "I thought the system was easy to use.",
+    ],
+    scaleLabels: ["Strongly disagree", "", "", "", "", "Strongly agree"],
+    required: true,
+  },
+  {
+    type: "textAnswer",
+    question:
+      "If you could imagine any future technology or tool to enhance music practice, what might it look like? (e.g., AI-driven performance analytics, wearable devices for real-time feedback, interactive practice journals, etc.)?",
+    required: false,
+  },
+  {
+    type: "textAnswer",
+    question:
+      "We are constantly evolving and looking for input. You can provide your email if you are interested in receiving updates and e.g. participating in user studies of future versions of MuSA voice:",
+    required: false,
+  },
+];

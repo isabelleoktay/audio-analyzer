@@ -1,7 +1,7 @@
 from config import PHONATION_DIMENSION, VGGISH, PHONATION_MODEL
 
 import numpy as np
-from keras.models import load_model
+import tensorflow as tf
 from keras.preprocessing.sequence import pad_sequences
 import logging
 
@@ -11,8 +11,16 @@ def extract_phonation(audio):
 
     # 1) Prepare audio for model input
     logging.info("Getting audio embeddings...")
-    audio_embeddings = VGGISH(audio)
-    audio_embeddings = audio_embeddings.numpy()  # Convert to numpy array
+    try:
+        audio_embeddings = VGGISH(audio)
+    except tf.errors.UnknownError as e:
+        if "libdevice" in str(e) or "JIT compilation failed" in str(e):
+            logging.warning("VGGish GPU JIT failed (libdevice issue), falling back to CPU...")
+            with tf.device('/CPU:0'):
+                audio_embeddings = VGGISH(audio)
+        else:
+            raise
+    audio_embeddings = audio_embeddings.numpy()
     logging.info("Retrieved audio embeddings.")
 
     print(f"Audio embeddings shape: {audio_embeddings.shape}")
@@ -29,21 +37,27 @@ def extract_phonation(audio):
     logging.info("Successfully loaded phonation model.")
     all_preds = []
     
-    # predict class for window based on dataset audio length dimension and hop through longer audio
     for start in range(0, audio_embeddings.shape[0] - window_size + 1, hop_size):
         window_feats = audio_embeddings[start:start + window_size]
 
-        # Pad or truncate just in case (shouldn't be needed if slicing exactly)
         window_feats_padded = pad_sequences([window_feats], maxlen=window_size,
                                             dtype='float32', padding='post', truncating='post')
-        window_feats_padded = np.expand_dims(window_feats_padded, -1)  # add channel dim
+        window_feats_padded = np.expand_dims(window_feats_padded, -1)
 
         logging.info("Predicting window...")
-        preds = PHONATION_MODEL.predict(window_feats_padded)  # shape: (1, num_classes)
-        all_preds.append(preds[0])  # collect the prediction vector
+        try:
+            preds = PHONATION_MODEL.predict(window_feats_padded)
+        except tf.errors.UnknownError as e:
+            if "libdevice" in str(e) or "JIT compilation failed" in str(e):
+                logging.warning("PHONATION_MODEL GPU JIT failed, falling back to CPU...")
+                with tf.device('/CPU:0'):
+                    preds = PHONATION_MODEL.predict(window_feats_padded)
+            else:
+                raise
+        all_preds.append(preds[0])
         logging.info("Successfully predicted window...")
 
-    all_preds = np.array(all_preds)  # shape: (num_windows, num_classes)
+    all_preds = np.array(all_preds)
     print(f"All predictions shape: {all_preds.shape}")
     print(f"All predictions: {all_preds}")
 

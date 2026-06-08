@@ -1,4 +1,17 @@
 import os
+import sys
+import platform
+
+if platform.system() == "Linux":
+    import sys
+    # Find libdevice relative to the current Python env
+    python_prefix = sys.prefix  # points to the active conda env
+    libdevice_path = os.path.join(python_prefix, "lib", f"python{sys.version_info.major}.{sys.version_info.minor}", "site-packages", "triton", "third_party", "cuda")
+    if os.path.exists(libdevice_path):
+        os.environ["XLA_FLAGS"] = f"--xla_gpu_cuda_data_dir={libdevice_path}"
+
+print(f">>> XLA_FLAGS at startup: {os.environ.get('XLA_FLAGS', 'NOT SET')}")
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 from dotenv import load_dotenv
 load_dotenv()

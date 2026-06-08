@@ -46,28 +46,18 @@ const NavBar = ({
       <div className="hidden lg:flex items-center justify-between w-full">
         {/* Left Section - Desktop */}
         <div className="flex items-center space-x-2">
-          <SecondaryButton onClick={handleReset}>reset</SecondaryButton>
-          <Tooltip
-            position="bottom"
-            text="toggle tooltips"
-            show={tooltipMode === "global"}
-            tooltipMode={tooltipMode}
+          {/* Logo with click navigating to landingpage */}
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center justify-center hover:opacity-80 transition-opacity"
+            title="Go to home"
           >
-            <SecondaryButton
-              onMouseEnter={() => handleTooltipsHover(true)}
-              onMouseLeave={() => handleTooltipsHover(false)}
-              onClick={toggleTooltipsActive}
-              isActive={tooltipMode === "active"}
-            >
-              ?
-            </SecondaryButton>
-          </Tooltip>
-          <SecondaryButton
-            onClick={() => setUploadsEnabled(!uploadsEnabled)}
-            isActive={uploadsEnabled}
-          >{`uploads ${
-            uploadsEnabled ? "enabled" : "disabled"
-          }`}</SecondaryButton>
+            <img
+              src="/musa_logo.png"
+              alt="MuSA Logo"
+              className="h-10 w-auto"
+            />
+          </button>
         </div>
 
         {/* Center Section - Desktop */}
@@ -77,8 +67,14 @@ const NavBar = ({
               {
                 type: "left",
                 to: "/",
-                label: "analyzer",
+                label: "about MuSA",
                 active: isActive("/"),
+              },
+              {
+                type: "center",
+                to: "/analyzer",
+                label: "performance analyzer",
+                active: isActive("/analyzer"),
               },
               // {
               //   type: "center",
@@ -88,15 +84,27 @@ const NavBar = ({
               // },
               {
                 type: "center",
+                to: "/musa-demo",
+                label: "MuSA demo",
+                active: isActive("/musa-demo"),
+              },
+              {
+                type: "center",
                 to: "/musa-voice",
                 label: "MuSA voice",
                 active: isActive("/musa-voice"),
               },
               {
-                type: "right",
+                type: "center",
                 to: "/how-to-use",
                 label: "how to use",
                 active: isActive("/how-to-use"),
+              },
+              {
+                type: "right",
+                to: "/musa-team",
+                label: "meet the team",
+                active: isActive("/musa-team"),
               },
               //   {
               //     type: "right",
@@ -110,6 +118,35 @@ const NavBar = ({
 
         {/* Right Section - Desktop */}
         <div className="flex items-center space-x-2">
+{isActive("/analyzer") && (
+            <>
+          <SecondaryButton onClick={handleReset}>reset</SecondaryButton>
+              <Tooltip
+                  position="bottom"
+                  text="toggle tooltips"
+                  show={tooltipMode === "global"}
+                  tooltipMode={tooltipMode}
+                >
+                <SecondaryButton
+                  onMouseEnter={() => handleTooltipsHover(true)}
+                  onMouseLeave={() => handleTooltipsHover(false)}
+                  onClick={toggleTooltipsActive}
+                  isActive={tooltipMode === "active"}
+                  className={tooltipMode === "inactive" ? "opacity-40" : ""}
+                >
+                  ?
+                </SecondaryButton>
+              </Tooltip>
+            </>
+          )}
+
+          <SecondaryButton
+            onClick={() => setUploadsEnabled(!uploadsEnabled)}
+            isActive={uploadsEnabled}
+            className={!uploadsEnabled ? "opacity-40" : ""}
+          >{`uploads ${
+            uploadsEnabled ? "enabled" : "disabled"
+          }`}</SecondaryButton>
           <SecondaryButton onClick={handleFeedback}>
             feedback form
           </SecondaryButton>
@@ -118,8 +155,18 @@ const NavBar = ({
 
       {/* Mobile Layout */}
       <div className="lg:hidden flex items-center justify-between w-full">
-        {/* Mobile Left - Logo or Main Action */}
-        <SecondaryButton onClick={handleReset}>reset</SecondaryButton>
+        {/* Mobile Left - Logo */}
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center justify-center hover:opacity-80 transition-opacity"
+          title="Go to home"
+        >
+          <img
+            src="/musa_logo.png"
+            alt="MuSA Logo"
+            className="h-8 w-auto"
+          />
+        </button>
 
         {/* Hamburger Menu Button */}
         <button
@@ -166,63 +213,99 @@ const NavBar = ({
           <div className="flex justify-center space-y-3">
             <ButtonGroup
               buttons={[
-                {
-                  type: "left",
-                  to: "/",
-                  label: "analyzer",
-                  active: isActive("/"),
-                },
-                // {
-                //   type: "center",
-                //   to: "/multi-audio",
-                //   label: "multi audio",
-                //   active: isActive("/multi-audio"),
-                // },
-                {
-                  type: "center",
-                  to: "/musa-voice",
-                  label: "MuSA voice",
-                  active: isActive("/musa-voice"),
-                },
-                {
-                  type: "center",
-                  to: "/how-to-use",
-                  label: "how to use",
-                  active: isActive("/how-to-use"),
-                },
-                {
-                  type: "right",
-                  to: "https://github.com/isabelleoktay/audio-analyzer",
-                  label: "github",
-                  external: true,
-                },
+              {
+                type: "left",
+                to: "/",
+                label: "about MuSA",
+                active: isActive("/"),
+              },
+              {
+                type: "center",
+                to: "/analyzer",
+                label: "performance analyzer",
+                active: isActive("/analyzer"),
+              },
+              // {
+              //   type: "center",
+              //   to: "/multi-audio",
+              //   label: "multi audio",
+              //   active: isActive("/multi-audio"),
+              // },
+              {
+                type: "center",
+                to: "/musa-demo",
+                label: "MuSA demo",
+                active: isActive("/musa-demo"),
+              },
+              {
+                type: "center",
+                to: "/musa-voice",
+                label: "MuSA voice",
+                active: isActive("/musa-voice"),
+              },
+              {
+                type: "center",
+                to: "/how-to-use",
+                label: "how to use",
+                active: isActive("/how-to-use"),
+              },
+              {
+                type: "right",
+                to: "/meet-the-team",
+                label: "meet the team",
+                active: isActive("/meet-the-team"),
+              },
+              //   {
+              //     type: "right",
+              //     to: "https://github.com/isabelleoktay/audio-analyzer/",
+              //     label: "github",
+              //     external: true,
+              //   },
               ]}
             />
           </div>
 
           {/* Mobile Controls */}
-          <div className="pt-4 border-t border-gray-700 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-lightgray">tooltips</span>
-              <SecondaryButton
-                onClick={toggleTooltipsActive}
-                isActive={tooltipMode === "active"}
-              >
-                {tooltipMode === "active" ? "on" : "off"}
-              </SecondaryButton>
-            </div>
+          {isActive("/analyzer") && (
+            <div className="pt-4 border-t border-gray-700 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-lightgray">tooltips</span>
+                <SecondaryButton
+                  onClick={toggleTooltipsActive}
+                  isActive={tooltipMode === "active"}
+                  className={tooltipMode === "inactive" ? "opacity-40" : ""}
+                >
+                  {tooltipMode === "active" ? "on" : "off"}
+                </SecondaryButton>
+              </div>
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-lightgray">uploads</span>
-              <SecondaryButton
-                onClick={() => setUploadsEnabled(!uploadsEnabled)}
-                isActive={uploadsEnabled}
-              >
-                {uploadsEnabled ? "enabled" : "disabled"}
-              </SecondaryButton>
-            </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-lightgray">uploads</span>
+                <SecondaryButton
+                  onClick={() => setUploadsEnabled(!uploadsEnabled)}
+                  isActive={uploadsEnabled}
+                  className={!uploadsEnabled ? "opacity-40" : ""}
+                >
+                  {uploadsEnabled ? "enabled" : "disabled"}
+                </SecondaryButton>
+              </div>
 
-            <div className="pt-2">
+              <div className="pt-2">
+                <SecondaryButton
+                  onClick={() => {
+                    handleFeedback();
+                    closeMobileMenu();
+                  }}
+                  className="w-full"
+                >
+                  feedback form
+                </SecondaryButton>
+              </div>
+            </div>
+          )}
+
+          {!isActive("/analyzer") && (
+            <div className="pt-4 border-t border-gray-700">
               <SecondaryButton
                 onClick={() => {
                   handleFeedback();
@@ -233,7 +316,7 @@ const NavBar = ({
                 feedback form
               </SecondaryButton>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </nav>

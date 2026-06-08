@@ -122,7 +122,6 @@ const processFeatures = async ({
       formData.append("voiceType", voiceType);
       formData.append("useWhisper", useWhisper);
       formData.append("useCLAP", useCLAP);
-
       const response = await pythonClient.post(
         "/python-service/process-pitch-mod",
         formData,
@@ -316,6 +315,27 @@ const uploadFeedback = async (feedbackData) => {
 };
 
 /**
+ * Uploads email of interested parties to the backend.
+ *
+ * @param {Object} emailData - The provided email address.
+ * @returns {Promise<Object>} The response data from the backend.
+ * @throws Will throw an error if the upload fails.
+ */
+
+const uploadEmail = async (emailData) => {
+  try {
+    const response = await apiClient.post("/api/upload-email", {
+      email: emailData,
+      timestamp: new Date().toISOString(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading email:", error);
+    throw error;
+  }
+};
+
+/**
  * Uploads MusaVoice session data to the backend.
  *
  * @param {Object} musaVoiceSessionData - The session data including sessionId, userToken, surveyAnswers, etc.
@@ -458,6 +478,7 @@ export {
   cleanupTempFiles,
   startNewSession,
   uploadFeedback,
+  uploadEmail,
   uploadMusaVoiceSessionData,
   uploadAllMusaUserStudyData,
   uploadUserStudyEntrySurvey,

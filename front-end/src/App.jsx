@@ -10,6 +10,9 @@ import {
   MusaVoice,
   //   MultiAudio,
   FeedbackForm,
+  LandingPage,
+  MeetTheTeam,
+  Demo,
 } from "./pages";
 
 import { cleanupTempFiles } from "./utils/api.js";
@@ -96,8 +99,15 @@ const App = () => {
             >
               <Routes>
                 {/* Main Analyzer page for audio analysis */}
+                <Route path="/" element={<LandingPage />} />
+                {/* Testing page for additional functionality */}
                 <Route
-                  path="/"
+                  path="/testing"
+                  element={<Testing setUploadsEnabled={setUploadsEnabled} />}
+                />
+                <Route path="/musa-team" element={<MeetTheTeam />} />
+                <Route
+                  path="/analyzer"
                   element={
                     <Analyzer
                       selectedInstrument={selectedInstrument}
@@ -129,11 +139,6 @@ const App = () => {
                     />
                   }
                 />
-                {/* Testing page for additional functionality */}
-                <Route
-                  path="/testing"
-                  element={<Testing setUploadsEnabled={setUploadsEnabled} />}
-                />
                 {/* <Route
                   path="/multi-audio"
                   element={<MultiAudio setUploadsEnabled={setUploadsEnabled} />}
@@ -145,7 +150,15 @@ const App = () => {
                     <MusaVoice
                       uploadsEnabled={uploadsEnabled}
                       setUploadsEnabled={setUploadsEnabled}
-                      tooltipMode={tooltipMode}
+                    />
+                  }
+                />
+                <Route
+                  path="/musa-demo"
+                  element={
+                    <Demo
+                      uploadsEnabled={uploadsEnabled}
+                      setUploadsEnabled={setUploadsEnabled}
                     />
                   }
                 />

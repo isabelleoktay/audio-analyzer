@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import SurveySection from "../components/survey/SurveySection.jsx";
 import { uploadFeedback } from "../utils/api.js";
 import {
-  feedbackForm1Config,
-  feedbackForm2Config,
-  feedbackForm3Config,
+  // feedbackForm1Config,
+  // feedbackForm2Config,
+  // feedbackForm3Config,
+  feedbackFormDemoConfig,
 } from "../config/feedbackFormConfig.js";
 
 const FeedbackForm = () => {
@@ -17,18 +18,25 @@ const FeedbackForm = () => {
 
   const navigate = useNavigate();
 
-  const surveySections = [
+  // const surveySections = [
+  //   {
+  //     config: feedbackForm1Config,
+  //     title: "Understanding Your Practice Habits",
+  //   },
+  //   {
+  //     config: feedbackForm2Config,
+  //     title: "MuSA Impact",
+  //   },
+  //   {
+  //     config: feedbackForm3Config,
+  //     title: "Technology Awareness",
+  //   },
+  // ];
+
+    const surveySections = [
     {
-      config: feedbackForm1Config,
-      title: "Understanding Your Practice Habits",
-    },
-    {
-      config: feedbackForm2Config,
-      title: "MuSA Impact",
-    },
-    {
-      config: feedbackForm3Config,
-      title: "Technology Awareness",
+      config: feedbackFormDemoConfig,
+      title: "Thank you for providing your insights to the MuSA team",
     },
   ];
 
