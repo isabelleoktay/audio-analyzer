@@ -8,27 +8,19 @@ export const presetAudios = [
       "/demo_presets/precalc_features/f2_arpeggios_belt_e.json",
   },
   {
-    id: "m3_scales_belt_o",
-    name: "m3_scales_belt_o - from test dataset",
-    path: "/demo_presets/audio/m3_scales_belt_o.wav",
-    voiceType: "tenor",
-    audioFeaturesPath: "/demo_presets/precalc_features/m3_scales_belt_o.json",
-  },
-  {
-    id: "f8_scales_breathy_i",
-    name: "f8_scales_breathy_i - from test dataset",
-    path: "/demo_presets/audio/f8_scales_breathy_i.wav",
+    id: "f8_arpeggios_breathy_u",
+    name: "f8_arpeggios_breathy_u - from test dataset",
+    path: "/demo_presets/audio/f8_arpeggios_breathy_u.wav",
     voiceType: "soprano",
     audioFeaturesPath:
-      "/demo_presets/precalc_features/f8_scales_breathy_i.json",
+      "/demo_presets/precalc_features/f8_arpeggios_breathy_u.json",
   },
   {
-    id: "m10_scales_breathy_u",
-    name: "m10_scales_breathy_u - from test dataset",
-    path: "/demo_presets/audio/m10_scales_breathy_u.wav",
-    voiceType: "bass",
-    audioFeaturesPath:
-      "/demo_presets/precalc_features/m10_scales_breathy_u.json",
+    id: "f8_scales_straight_o",
+    name: "f8_scales_straight_o - from test dataset",
+    path: "/demo_presets/audio/f8_scales_straight_o.wav",
+    voiceType: "soprano",
+    audioFeaturesPath: "/demo_presets/precalc_features/f8_scales_straight_o.json",
   },
   {
     id: "f2_scales_vibrato_a",
@@ -39,6 +31,21 @@ export const presetAudios = [
       "/demo_presets/precalc_features/f2_scales_vibrato_a.json",
   },
   {
+    id: "m3_scales_belt_o",
+    name: "m3_scales_belt_o - from test dataset",
+    path: "/demo_presets/audio/m3_scales_belt_o.wav",
+    voiceType: "tenor",
+    audioFeaturesPath: "/demo_presets/precalc_features/m3_scales_belt_o.json",
+  },
+  {
+    id: "m10_scales_breathy_u",
+    name: "m10_scales_breathy_u - from test dataset",
+    path: "/demo_presets/audio/m10_scales_breathy_u.wav",
+    voiceType: "bass",
+    audioFeaturesPath:
+      "/demo_presets/precalc_features/m10_scales_breathy_u.json",
+  },
+  {
     id: "m10_arpeggios_vibrato_a",
     name: "m10_arpeggios_vibrato_a - from test dataset",
     path: "/demo_presets/audio/m10_arpeggios_vibrato_a.wav",
@@ -46,13 +53,7 @@ export const presetAudios = [
     audioFeaturesPath:
       "/demo_presets/precalc_features/m10_arpeggios_vibrato_a.json",
   },
-  {
-    id: "f8_long_straight_a",
-    name: "f8_long_straight_a - from test dataset",
-    path: "/demo_presets/audio/f8_long_straight_a.wav",
-    voiceType: "soprano",
-    audioFeaturesPath: "/demo_presets/precalc_features/f8_long_straight_a.json",
-  },
+
   {
     id: "m3_long_straight_u",
     name: "m3_long_straight_u - from test dataset",
