@@ -76,57 +76,57 @@ const Demo = ({ uploadsEnabled, setUploadsEnabled }) => {
     setSelectedAnalysisFeature(feature);
   };
 
-  useEffect(() => {
-    if (
-      Object.keys(inputAudioFeatures).length > 0 &&
-      Object.keys(referenceAudioFeatures).length > 0
-    ) {
-      const inputJson = JSON.stringify(inputAudioFeatures);
-      const referenceJson = JSON.stringify(referenceAudioFeatures);
+  // useEffect(() => {
+  //   if (
+  //     Object.keys(inputAudioFeatures).length > 0 &&
+  //     Object.keys(referenceAudioFeatures).length > 0
+  //   ) {
+  //     const inputJson = JSON.stringify(inputAudioFeatures);
+  //     const referenceJson = JSON.stringify(referenceAudioFeatures);
 
-      if (
-        previousFeaturesJsonRef.current.input === inputJson &&
-        previousFeaturesJsonRef.current.reference === referenceJson
-      ) {
-        return;
-      }
+  //     if (
+  //       previousFeaturesJsonRef.current.input === inputJson &&
+  //       previousFeaturesJsonRef.current.reference === referenceJson
+  //     ) {
+  //       return;
+  //     }
 
-      previousFeaturesJsonRef.current = {
-        input: inputJson,
-        reference: referenceJson,
-      };
+  //     previousFeaturesJsonRef.current = {
+  //       input: inputJson,
+  //       reference: referenceJson,
+  //     };
 
-      const downloadJson = (data, filename) => {
-        const jsonString = JSON.stringify(data, null, 2);
-        const blob = new Blob([jsonString], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      };
+  //     const downloadJson = (data, filename) => {
+  //       const jsonString = JSON.stringify(data, null, 2);
+  //       const blob = new Blob([jsonString], { type: "application/json" });
+  //       const url = URL.createObjectURL(blob);
+  //       const link = document.createElement("a");
+  //       link.href = url;
+  //       link.download = filename;
+  //       document.body.appendChild(link);
+  //       link.click();
+  //       document.body.removeChild(link);
+  //       URL.revokeObjectURL(url);
+  //     };
 
-      // const refName = referenceAudioData?.file?.name || referenceAudioData?.name || "Input Audio"
-      // const inputName = userAudioData?.file?.name || userAudioData?.name || "Input Audio"
+  //     // const refName = referenceAudioData?.file?.name || referenceAudioData?.name || "Input Audio"
+  //     // const inputName = userAudioData?.file?.name || userAudioData?.name || "Input Audio"
 
-      // downloadJson(referenceAudioFeatures, `${refName}.json`);
-      // setTimeout(
-      //   () => downloadJson(inputAudioFeatures,  `${inputName}.json`),
-      //   300,
-      // );
+  //     // downloadJson(referenceAudioFeatures, `${refName}.json`);
+  //     // setTimeout(
+  //     //   () => downloadJson(inputAudioFeatures,  `${inputName}.json`),
+  //     //   300,
+  //     // );
 
-      try {
-        localStorage.setItem("referenceAudioFeaturesJson", referenceJson);
-        localStorage.setItem("inputAudioFeaturesJson", inputJson);
-        console.log("Features saved to localStorage");
-      } catch (e) {
-        console.error("Failed to save to localStorage:", e);
-      }
-    }
-  }, [inputAudioFeatures, referenceAudioFeatures]);
+  //     try {
+  //       localStorage.setItem("referenceAudioFeaturesJson", referenceJson);
+  //       localStorage.setItem("inputAudioFeaturesJson", inputJson);
+  //       console.log("Features saved to localStorage");
+  //     } catch (e) {
+  //       console.error("Failed to save to localStorage:", e);
+  //     }
+  //   }
+  // }, [inputAudioFeatures, referenceAudioFeatures]);
 
   const getAudioFileOrBlob = (audioData) => {
     if (!audioData) return null;
